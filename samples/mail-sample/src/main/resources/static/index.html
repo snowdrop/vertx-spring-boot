@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Vert.x Mail Sample</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/wingcss/0.1.8/wing.min.css"/>
+    <!-- Load AngularJS -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <script type="text/javascript">
+      var app = angular.module("MailSender", []);
+
+      //Controller Part
+      app.controller("MailSenderController", function ($scope, $http, $httpParamSerializerJQLike) {
+        $scope.form = {
+          from: "",
+          to: "",
+          subject: "",
+          text: ""
+        };
+
+        $scope.send = function () {
+          $http({
+            method: "POST",
+            url: "/mail",
+            data: $httpParamSerializerJQLike($scope.form),
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+            }
+          }).then(_success, _error);
+        };
+
+        function _success(response) {
+          _clearForm()
+        }
+
+        function _error(response) {
+          alert(response.data.message || response.statusText);
+        }
+
+        function _clearForm() {
+          $scope.form.from = "";
+          $scope.form.to = "";
+          $scope.form.subject = "";
+          $scope.form.text = "";
+        }
+      });
+
+    </script>
+</head>
+<body ng-app="MailSender" ng-controller="MailSenderController">
+
+<div class="container">
+    <h1>Vert.x Mail Sample</h1>
+    <p>
+        This application demonstrates how to send an email using a Vert.x mail client with Spring Boot.
+    </p>
+
+    <h3>Compose an email</h3>
+    <form ng-submit="send()">
+        <div class="row">
+            <div class="col-6">
+                <input type="email" placeholder="From" ng-model="form.from" size="60" required/>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-6">
+                <input type="email" placeholder="To" ng-model="form.to" size="60" required/>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-6">
+                <input type="text" placeholder="Subject" ng-model="form.subject" size="60" required/>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-6">
+                <textarea placeholder="Text" ng-model="form.text" required></textarea>
+            </div>
+        </div>
+        <input type="submit" value="Send"/>
+    </form>
+</div>
+
+</body>
+</html>

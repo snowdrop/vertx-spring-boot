@@ -45,5 +45,6 @@
   <modules>
     <module>core</module>
     <module>mail</module>
+    <module>samples</module>
   </modules>
 </project>
