@@ -14,5 +14,6 @@
 
   <modules>
     <module>mail-sample</module>
+    <module>http-sample</module>
   </modules>
 </project>

@@ -13,10 +13,10 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
 @SpringBootApplication
-public class SampleApplication {
+public class MailSampleApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SampleApplication.class, args);
+        SpringApplication.run(MailSampleApplication.class, args);
     }
 
     @Bean

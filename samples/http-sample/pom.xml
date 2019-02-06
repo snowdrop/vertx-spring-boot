@@ -2,19 +2,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>samples</artifactId>
     <groupId>me.snowdrop</groupId>
+    <artifactId>samples</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>mail-sample</artifactId>
+  <artifactId>http-sample</artifactId>
 
   <dependencies>
     <dependency>
       <groupId>me.snowdrop</groupId>
-      <artifactId>vertx-spring-boot-mail</artifactId>
+      <artifactId>vertx-spring-boot-http-server</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
