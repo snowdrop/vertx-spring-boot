@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Chunked Data Example</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script>
+    function processErrors(response) {
+      if (!response.ok) {
+          throw Error(response.statusText);
+      }
+      return response;
+    }
+
+    /**
+     * Recursively get available chunks of data, parse them and display them.
+     */
+    function processResponse(response) {
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      readChunk();
+
+      /**
+       * Get the latest received chunk of data rom the body reader.
+       */
+      function readChunk() {
+        reader.read()
+          .then(processChunk);
+      }
+
+      /**
+       * Parse the data and add display it.
+       */
+      function processChunk(result) {
+        if (!result.done) {
+          const entries = parseData(result.value);
+          for (var i in entries) {
+            $("#entries")
+              .prepend(`<li class="list-group-item"><code>${JSON.stringify(entries[i])}</code></li>`);
+          }
+          readChunk();
+        }
+      }
+
+      /**
+       * Raw response data is an encoded string of JSON objects without separators.
+       * This method decodes the data, separates the objects and returns them as a JSON array.
+       */
+      function parseData(rawData) {
+        const objects = decoder
+          .decode(rawData, {stream: true})
+          .replace(/}{/g, "},{");
+
+        return JSON.parse(`[${objects}]`);
+      }
+    }
+
+    $(document).ready(function() {
+      $("form").submit(function(event) {
+        $("#entries").empty();
+
+        const count = $("#count").val();
+        const email = $("#email").val();
+
+        fetch(`/data?count=${count}&email=${email}`)
+          .then(processErrors)
+          .then(processResponse)
+          .catch(alert);
+
+        event.preventDefault();
+      });
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <div class="jumbotron">
+          <h1 class="display-4">Chunked Data Example</h1>
+          <p class="lead">
+            This application demonstrates a reactive services which requests a stream
+            of data from another service (httpbin) and forwards each peace of data
+            back to the caller. In the meantime, it buffers all the entires in the
+            groups of 10 and sends an email with each group.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <form class="form">
+          <div class="form-row">
+            <div class="col-md-3">
+              <input id="count" type="number" class="form-control mb-2" min="0" max="100" placeholder="Number of entires (0-100)" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col-md-3">
+              <input id="email" type="email" class="form-control mb-2" placeholder="Email" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col-md-3">
+              <button type="submit" class="btn btn-primary mb-2">Submit</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <hr/>
+    <h1>Entries</h1>
+    <div class="row">
+      <div class="col">
+        <ul id="entries" class="list-group"></ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -13,6 +13,7 @@
   <packaging>pom</packaging>
 
   <modules>
+    <module>chunked-response-sample</module>
     <module>mail-sample</module>
     <module>http-sample</module>
   </modules>
