@@ -32,6 +32,12 @@ public class VertxServerHttpResponse extends AbstractServerHttpResponse implemen
     }
 
     @Override
+    public Mono<Void> writeWith(Path file, long position, long count) {
+        response.sendFile(file.toString(), position, count);
+        return Mono.empty();
+    }
+
+    @Override
     protected Mono<Void> writeWithInternal(Publisher<? extends DataBuffer> chunks) {
         return Flux.from(chunks)
             .map(NettyDataBufferFactory::toByteBuf)
@@ -66,10 +72,4 @@ public class VertxServerHttpResponse extends AbstractServerHttpResponse implemen
     protected void applyCookies() {
         // TODO
     }
-
-    @Override
-    public Mono<Void> writeWith(Path file, long position, long count) {
-        return Mono.empty(); // TODO
-    }
-
 }

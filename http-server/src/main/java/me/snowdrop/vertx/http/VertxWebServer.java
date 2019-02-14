@@ -15,12 +15,15 @@ public class VertxWebServer implements WebServer {
 
     private final Vertx vertx;
 
+    private final HttpServerOptions httpServerOptions;
+
     private final Handler<HttpServerRequest> requestHandler;
 
     private HttpServer server;
 
-    public VertxWebServer(Vertx vertx, Handler<HttpServerRequest> requestHandler) {
+    public VertxWebServer(Vertx vertx, HttpServerOptions httpServerOptions, Handler<HttpServerRequest> requestHandler) {
         this.vertx = vertx;
+        this.httpServerOptions = httpServerOptions;
         this.requestHandler = requestHandler;
     }
 
@@ -30,12 +33,8 @@ public class VertxWebServer implements WebServer {
             return;
         }
 
-        HttpServerOptions options = new HttpServerOptions()
-            .setPort(8080)
-            .setLogActivity(true);
-
         CompletableFuture<Void> future = new CompletableFuture<>();
-        server = vertx.createHttpServer(options)
+        server = vertx.createHttpServer(httpServerOptions)
             .requestHandler(requestHandler)
             .listen(result -> {
                 if (result.succeeded()) {
@@ -64,7 +63,7 @@ public class VertxWebServer implements WebServer {
 
     @Override
     public int getPort() {
-        return 8080;
+        return httpServerOptions.getPort();
     }
 
 }

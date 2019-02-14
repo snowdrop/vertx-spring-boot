@@ -1,6 +1,7 @@
 package me.snowdrop.vertx.http;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerOptions;
 import org.springframework.boot.web.reactive.server.AbstractReactiveWebServerFactory;
 import org.springframework.boot.web.server.WebServer;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
@@ -19,7 +20,14 @@ public class VertxReactiveWebServerFactory extends AbstractReactiveWebServerFact
 
     @Override
     public WebServer getWebServer(HttpHandler httpHandler) {
-        return new VertxWebServer(vertx, new VertxHttpHandlerAdapter(httpHandler, dataBufferFactory));
+        HttpServerOptions httpServerOptions = new HttpServerOptions();
+        if (getPort() > 0) {
+            httpServerOptions.setPort(getPort());
+        }
+
+        VertxHttpHandlerAdapter handler = new VertxHttpHandlerAdapter(httpHandler, dataBufferFactory);
+
+        return new VertxWebServer(vertx, httpServerOptions, handler);
     }
 
 }
