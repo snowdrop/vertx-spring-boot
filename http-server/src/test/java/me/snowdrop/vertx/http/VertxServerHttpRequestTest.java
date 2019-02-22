@@ -15,11 +15,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
-import reactor.test.StepVerifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static reactor.test.StepVerifier.create;
 
 @RunWith(MockitoJUnitRunner.class)
 public class VertxServerHttpRequestTest {
@@ -66,7 +66,7 @@ public class VertxServerHttpRequestTest {
             return mockHttpServerRequest;
         });
 
-        StepVerifier.create(vertxServerHttpRequest.getBody())
+        create(vertxServerHttpRequest.getBody())
             .expectNext(nettyDataBufferFactory.wrap("chunk 1".getBytes()))
             .expectNext(nettyDataBufferFactory.wrap("chunk 2".getBytes()))
             .verifyComplete();

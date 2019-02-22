@@ -21,6 +21,7 @@ public class VertxServerHttpResponse extends AbstractServerHttpResponse implemen
     private final HttpServerResponse response;
 
     public VertxServerHttpResponse(HttpServerResponse response, NettyDataBufferFactory dataBufferFactory) {
+        // TODO add headers
         super(dataBufferFactory);
         this.response = response;
     }
