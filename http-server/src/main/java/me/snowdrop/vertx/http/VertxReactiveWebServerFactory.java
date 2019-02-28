@@ -1,5 +1,8 @@
 package me.snowdrop.vertx.http;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerOptions;
 import org.springframework.boot.web.reactive.server.AbstractReactiveWebServerFactory;
@@ -13,6 +16,8 @@ public class VertxReactiveWebServerFactory extends AbstractReactiveWebServerFact
 
     private final NettyDataBufferFactory dataBufferFactory;
 
+    private final List<HttpServerOptionsCustomizer> httpServerOptionsCustomizers = new LinkedList<>();
+
     public VertxReactiveWebServerFactory(Vertx vertx, NettyDataBufferFactory dataBufferFactory) {
         this.vertx = vertx;
         this.dataBufferFactory = dataBufferFactory;
@@ -20,14 +25,20 @@ public class VertxReactiveWebServerFactory extends AbstractReactiveWebServerFact
 
     @Override
     public WebServer getWebServer(HttpHandler httpHandler) {
-        HttpServerOptions httpServerOptions = new HttpServerOptions();
-        if (getPort() > 0) {
-            httpServerOptions.setPort(getPort());
-        }
-
+        HttpServerOptions httpServerOptions = customizeHttpServerOptions(new HttpServerOptions());
         VertxHttpHandlerAdapter handler = new VertxHttpHandlerAdapter(httpHandler, dataBufferFactory);
 
         return new VertxWebServer(vertx, httpServerOptions, handler);
     }
 
+    public void registerHttpServerOptionsCustomizer(HttpServerOptionsCustomizer customizer) {
+        httpServerOptionsCustomizers.add(customizer);
+    }
+
+    private HttpServerOptions customizeHttpServerOptions(HttpServerOptions httpServerOptions) {
+        for (HttpServerOptionsCustomizer customizer : httpServerOptionsCustomizers) {
+            httpServerOptions = customizer.apply(httpServerOptions);
+        }
+        return httpServerOptions;
+    }
 }

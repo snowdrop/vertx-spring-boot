@@ -8,11 +8,15 @@ public class VertxWebServerFactoryCustomizer
 
     @Override
     public void customize(VertxReactiveWebServerFactory factory) {
-        // TODO
+        factory.registerHttpServerOptionsCustomizer(portCustomizer(factory.getPort()));
     }
 
     @Override
     public int getOrder() {
-        return 0;
+        return 1; // Run after ReactiveWebServerFactoryCustomizer
+    }
+
+    private HttpServerOptionsCustomizer portCustomizer(int port) {
+        return options -> port > 0 ? options.setPort(port) : options;
     }
 }

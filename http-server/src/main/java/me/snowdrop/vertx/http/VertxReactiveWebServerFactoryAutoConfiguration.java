@@ -26,4 +26,9 @@ public class VertxReactiveWebServerFactoryAutoConfiguration {
         return new VertxReactiveWebServerFactory(vertx, dataBufferFactory);
     }
 
+    @Bean
+    public VertxWebServerFactoryCustomizer vertxWebServerFactoryCustomizer() {
+        return new VertxWebServerFactoryCustomizer();
+    }
+
 }
