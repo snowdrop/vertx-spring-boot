@@ -1,4 +1,4 @@
-package me.snowdrop.vertx.http;
+package me.snowdrop.vertx.http.properties;
 
 import java.util.function.Function;
 

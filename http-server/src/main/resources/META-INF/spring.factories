@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-me.snowdrop.vertx.http.VertxReactiveWebServerFactoryAutoConfiguration
+me.snowdrop.vertx.http.VertxHttpServerAutoConfiguration
