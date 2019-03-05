@@ -7,7 +7,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.http.HttpServerRequest;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.CookieHandler;
 import org.springframework.boot.web.server.WebServer;
 import org.springframework.boot.web.server.WebServerException;
 
@@ -17,11 +19,11 @@ public class VertxWebServer implements WebServer {
 
     private final HttpServerOptions httpServerOptions;
 
-    private final Handler<HttpServerRequest> requestHandler;
+    private final Handler<RoutingContext> requestHandler;
 
     private HttpServer server;
 
-    public VertxWebServer(Vertx vertx, HttpServerOptions httpServerOptions, Handler<HttpServerRequest> requestHandler) {
+    public VertxWebServer(Vertx vertx, HttpServerOptions httpServerOptions, Handler<RoutingContext> requestHandler) {
         this.vertx = vertx;
         this.httpServerOptions = httpServerOptions;
         this.requestHandler = requestHandler;
@@ -33,9 +35,14 @@ public class VertxWebServer implements WebServer {
             return;
         }
 
+        Router router = Router.router(vertx);
+        router.route()
+            .handler(CookieHandler.create())
+            .handler(requestHandler);
+
         CompletableFuture<Void> future = new CompletableFuture<>();
         server = vertx.createHttpServer(httpServerOptions)
-            .requestHandler(requestHandler)
+            .requestHandler(router)
             .listen(result -> {
                 if (result.succeeded()) {
                     future.complete(null);

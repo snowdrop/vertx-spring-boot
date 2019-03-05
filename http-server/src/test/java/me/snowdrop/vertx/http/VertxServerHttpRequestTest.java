@@ -1,6 +1,10 @@
 package me.snowdrop.vertx.http;
 
 import java.net.InetSocketAddress;
+import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import io.netty.buffer.ByteBufAllocator;
 import io.vertx.core.Handler;
@@ -9,12 +13,15 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.impl.headers.VertxHttpHeaders;
 import io.vertx.core.net.SocketAddress;
+import io.vertx.ext.web.Cookie;
+import io.vertx.ext.web.RoutingContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
+import org.springframework.http.HttpCookie;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,6 +32,9 @@ import static reactor.test.StepVerifier.create;
 public class VertxServerHttpRequestTest {
 
     @Mock
+    private RoutingContext mockRoutingContext;
+
+    @Mock
     private HttpServerRequest mockHttpServerRequest;
 
     private NettyDataBufferFactory nettyDataBufferFactory;
@@ -33,11 +43,12 @@ public class VertxServerHttpRequestTest {
 
     @Before
     public void setUp() {
+        given(mockRoutingContext.request()).willReturn(mockHttpServerRequest);
         given(mockHttpServerRequest.uri()).willReturn("http://localhost:8080");
         given(mockHttpServerRequest.headers()).willReturn(new VertxHttpHeaders());
 
         nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
-        vertxServerHttpRequest = new VertxServerHttpRequest(mockHttpServerRequest, nettyDataBufferFactory);
+        vertxServerHttpRequest = new VertxServerHttpRequest(mockRoutingContext, nettyDataBufferFactory);
     }
 
     @Test
@@ -79,5 +90,19 @@ public class VertxServerHttpRequestTest {
 
         InetSocketAddress expected = InetSocketAddress.createUnresolved("localhost", 8080);
         assertThat(vertxServerHttpRequest.getRemoteAddress()).isEqualTo(expected);
+    }
+
+    @Test
+    public void shouldInitCookies() {
+        Set<Cookie> originalCookies = new HashSet<>(2);
+        originalCookies.add(Cookie.cookie("cookie1", "value1"));
+        originalCookies.add(Cookie.cookie("cookie2", "value2"));
+
+        given(mockRoutingContext.cookies()).willReturn(originalCookies);
+
+        assertThat(vertxServerHttpRequest.initCookies()).containsOnly(
+            new AbstractMap.SimpleEntry<>("cookie1", Collections.singletonList(new HttpCookie("cookie1", "value1"))),
+            new AbstractMap.SimpleEntry<>("cookie2", Collections.singletonList(new HttpCookie("cookie2", "value2")))
+        );
     }
 }

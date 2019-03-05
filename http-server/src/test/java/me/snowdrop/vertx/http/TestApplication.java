@@ -4,6 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpCookie;
+import org.springframework.http.ResponseCookie;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
@@ -24,6 +26,28 @@ public class TestApplication {
         return route()
             .GET("/echo", request -> ok().body(request.bodyToMono(String.class), String.class))
             .GET("/noop", request -> noContent().build())
+            .GET("/cookie-counter", request -> {
+                int counter = request.cookies()
+                    .get("counter")
+                    .stream()
+                    .map(HttpCookie::getValue)
+                    .map(Integer::valueOf)
+                    .findAny()
+                    .orElse(0);
+
+                ResponseCookie cookie = ResponseCookie.from("counter", String.valueOf(counter++)).build();
+                return noContent().cookie(cookie).build();
+            })
+            .GET("/header-counter", request -> {
+                int counter = request.headers()
+                    .header("counter")
+                    .stream()
+                    .map(Integer::valueOf)
+                    .findAny()
+                    .orElse(0);
+
+                return noContent().header("counter", String.valueOf(counter++)).build();
+            })
             .build();
     }
 

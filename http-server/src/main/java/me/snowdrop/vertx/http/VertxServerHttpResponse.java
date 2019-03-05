@@ -4,11 +4,14 @@ import java.nio.file.Path;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.ext.web.Cookie;
+import io.vertx.ext.web.RoutingContext;
 import org.reactivestreams.Publisher;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ZeroCopyHttpOutputMessage;
 import org.springframework.http.server.reactive.AbstractServerHttpResponse;
 import reactor.core.publisher.Flux;
@@ -18,12 +21,15 @@ import static java.util.function.Function.identity;
 
 public class VertxServerHttpResponse extends AbstractServerHttpResponse implements ZeroCopyHttpOutputMessage {
 
+    private final RoutingContext context;
+
     private final HttpServerResponse response;
 
-    public VertxServerHttpResponse(HttpServerResponse response, NettyDataBufferFactory dataBufferFactory) {
+    public VertxServerHttpResponse(RoutingContext context, NettyDataBufferFactory dataBufferFactory) {
         // TODO add headers
         super(dataBufferFactory);
-        this.response = response;
+        this.context = context;
+        this.response = context.response();
     }
 
     @SuppressWarnings("unchecked")
@@ -71,6 +77,20 @@ public class VertxServerHttpResponse extends AbstractServerHttpResponse implemen
 
     @Override
     protected void applyCookies() {
-        // TODO
+        getCookies()
+            .toSingleValueMap() // Vert.x doesn't support multi-value cookies
+            .values()
+            .stream()
+            .map(this::cookieMapper)
+            .forEach(context::addCookie);
+    }
+
+    private Cookie cookieMapper(ResponseCookie responseCookie) {
+        return Cookie.cookie(responseCookie.getName(), responseCookie.getValue())
+            .setDomain(responseCookie.getDomain())
+            .setPath(responseCookie.getPath())
+            .setMaxAge(responseCookie.getMaxAge().getSeconds())
+            .setHttpOnly(responseCookie.isHttpOnly())
+            .setSecure(responseCookie.isSecure());
     }
 }

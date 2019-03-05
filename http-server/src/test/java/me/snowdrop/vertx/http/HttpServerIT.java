@@ -54,4 +54,26 @@ public class HttpServerIT {
         XmlPath xmlPath = new XmlPath(HTML, html);
         assertThat(xmlPath.getString("html.body.div")).isEqualTo("Test div");
     }
+
+    @Test
+    public void shouldUpdateCookie() {
+        given()
+            .port(port)
+            .cookie("counter", "10")
+            .get("cookie-counter")
+            .then()
+            .assertThat()
+            .cookie("counter", equalTo("11"));
+    }
+
+    @Test
+    public void shouldUpdateHeader() {
+        given()
+            .port(port)
+            .header("counter", "10")
+            .get("header-counter")
+            .then()
+            .assertThat()
+            .header("counter", equalTo("11"));
+    }
 }
