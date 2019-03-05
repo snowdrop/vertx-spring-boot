@@ -1,7 +1,10 @@
 package me.snowdrop.vertx.http;
 
+import java.util.Set;
+
 import io.netty.buffer.ByteBufAllocator;
 import io.vertx.core.Vertx;
+import me.snowdrop.vertx.http.properties.HttpServerOptionsCustomizer;
 import me.snowdrop.vertx.http.properties.VertxHttpServerProperties;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -31,8 +34,9 @@ public class VertxHttpServerAutoConfiguration {
     }
 
     @Bean
-    public VertxReactiveWebServerFactoryCustomizer vertxWebServerFactoryCustomizer() {
-        return new VertxReactiveWebServerFactoryCustomizer();
+    public VertxReactiveWebServerFactoryCustomizer vertxWebServerFactoryCustomizer(
+        Set<HttpServerOptionsCustomizer> userDefinedCustomizers) {
+        return new VertxReactiveWebServerFactoryCustomizer(userDefinedCustomizers);
     }
 
 }

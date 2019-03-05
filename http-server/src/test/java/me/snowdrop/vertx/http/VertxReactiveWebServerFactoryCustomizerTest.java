@@ -1,8 +1,11 @@
 package me.snowdrop.vertx.http;
 
+import java.util.Collections;
+
 import me.snowdrop.vertx.http.properties.AddressCustomizer;
 import me.snowdrop.vertx.http.properties.CompressionCustomizer;
 import me.snowdrop.vertx.http.properties.Http2Customizer;
+import me.snowdrop.vertx.http.properties.HttpServerOptionsCustomizer;
 import me.snowdrop.vertx.http.properties.PortCustomizer;
 import me.snowdrop.vertx.http.properties.SslCustomizer;
 import org.junit.Before;
@@ -21,11 +24,15 @@ public class VertxReactiveWebServerFactoryCustomizerTest {
     @Mock
     private VertxReactiveWebServerFactory mockVertxReactiveWebServerFactory;
 
+    @Mock
+    private HttpServerOptionsCustomizer mockHttpServerOptionsCustomizer;
+
     private VertxReactiveWebServerFactoryCustomizer customizer;
 
     @Before
     public void setUp() {
-        customizer = new VertxReactiveWebServerFactoryCustomizer();
+        customizer =
+            new VertxReactiveWebServerFactoryCustomizer(Collections.singleton(mockHttpServerOptionsCustomizer));
     }
 
     @Test
@@ -43,6 +50,7 @@ public class VertxReactiveWebServerFactoryCustomizerTest {
         verify(mockVertxReactiveWebServerFactory).registerHttpServerOptionsCustomizer(any(SslCustomizer.class));
         verify(mockVertxReactiveWebServerFactory).registerHttpServerOptionsCustomizer(any(Http2Customizer.class));
         verify(mockVertxReactiveWebServerFactory).registerHttpServerOptionsCustomizer(any(CompressionCustomizer.class));
+        verify(mockVertxReactiveWebServerFactory).registerHttpServerOptionsCustomizer(mockHttpServerOptionsCustomizer);
     }
 
     @Test
