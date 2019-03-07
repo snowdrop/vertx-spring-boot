@@ -17,7 +17,10 @@ import static org.hamcrest.CoreMatchers.is;
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-    properties = "server.port=" + HttpServerIT.PORT
+    properties = {
+        "server.port=" + HttpServerIT.PORT,
+        "server.compression.enabled=true"
+    }
 )
 public class HttpServerIT {
 
@@ -31,7 +34,6 @@ public class HttpServerIT {
     @Test
     public void shouldGetResponseWithContent() {
         given()
-            .and()
             .body("test")
             .get("echo")
             .then()
@@ -78,5 +80,19 @@ public class HttpServerIT {
             .then()
             .assertThat()
             .header("counter", equalTo("11"));
+    }
+
+    @Test
+    public void shouldGetCompressedBody() {
+        given()
+            .header("Accept-Encoding", "gzip")
+            .and()
+            .body("test")
+            .get("echo")
+            .then()
+            .assertThat()
+            .body(is(equalTo("test")))
+            .and()
+            .header("Content-Encoding", "gzip");
     }
 }
