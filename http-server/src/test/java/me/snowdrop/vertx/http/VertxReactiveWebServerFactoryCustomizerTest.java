@@ -4,7 +4,6 @@ import java.util.Collections;
 
 import me.snowdrop.vertx.http.properties.AddressCustomizer;
 import me.snowdrop.vertx.http.properties.CompressionCustomizer;
-import me.snowdrop.vertx.http.properties.Http2Customizer;
 import me.snowdrop.vertx.http.properties.HttpServerOptionsCustomizer;
 import me.snowdrop.vertx.http.properties.PortCustomizer;
 import me.snowdrop.vertx.http.properties.SslCustomizer;
@@ -42,13 +41,11 @@ public class VertxReactiveWebServerFactoryCustomizerTest {
         verify(mockVertxReactiveWebServerFactory).getPort();
         verify(mockVertxReactiveWebServerFactory).getAddress();
         verify(mockVertxReactiveWebServerFactory).getSsl();
-        verify(mockVertxReactiveWebServerFactory).getHttp2();
         verify(mockVertxReactiveWebServerFactory).getCompression();
 
         verify(mockVertxReactiveWebServerFactory).registerHttpServerOptionsCustomizer(any(PortCustomizer.class));
         verify(mockVertxReactiveWebServerFactory).registerHttpServerOptionsCustomizer(any(AddressCustomizer.class));
         verify(mockVertxReactiveWebServerFactory).registerHttpServerOptionsCustomizer(any(SslCustomizer.class));
-        verify(mockVertxReactiveWebServerFactory).registerHttpServerOptionsCustomizer(any(Http2Customizer.class));
         verify(mockVertxReactiveWebServerFactory).registerHttpServerOptionsCustomizer(any(CompressionCustomizer.class));
         verify(mockVertxReactiveWebServerFactory).registerHttpServerOptionsCustomizer(mockHttpServerOptionsCustomizer);
     }

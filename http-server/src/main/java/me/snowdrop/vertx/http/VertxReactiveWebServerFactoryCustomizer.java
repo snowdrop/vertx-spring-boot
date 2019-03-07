@@ -4,7 +4,6 @@ import java.util.Set;
 
 import me.snowdrop.vertx.http.properties.AddressCustomizer;
 import me.snowdrop.vertx.http.properties.CompressionCustomizer;
-import me.snowdrop.vertx.http.properties.Http2Customizer;
 import me.snowdrop.vertx.http.properties.HttpServerOptionsCustomizer;
 import me.snowdrop.vertx.http.properties.PortCustomizer;
 import me.snowdrop.vertx.http.properties.SslCustomizer;
@@ -25,7 +24,6 @@ public class VertxReactiveWebServerFactoryCustomizer
         factory.registerHttpServerOptionsCustomizer(new PortCustomizer(factory.getPort()));
         factory.registerHttpServerOptionsCustomizer(new AddressCustomizer(factory.getAddress()));
         factory.registerHttpServerOptionsCustomizer(new SslCustomizer(factory.getSsl()));
-        factory.registerHttpServerOptionsCustomizer(new Http2Customizer(factory.getHttp2()));
         factory.registerHttpServerOptionsCustomizer(new CompressionCustomizer(factory.getCompression()));
 
         if (userDefinedCustomizers != null) {
