@@ -35,7 +35,7 @@ public class TestApplication {
                     .findAny()
                     .orElse(0);
 
-                ResponseCookie cookie = ResponseCookie.from("counter", String.valueOf(counter++)).build();
+                ResponseCookie cookie = ResponseCookie.from("counter", String.valueOf(counter + 1)).build();
                 return noContent().cookie(cookie).build();
             })
             .GET("/header-counter", request -> {
@@ -46,7 +46,7 @@ public class TestApplication {
                     .findAny()
                     .orElse(0);
 
-                return noContent().header("counter", String.valueOf(counter++)).build();
+                return noContent().header("counter", String.valueOf(counter + 1)).build();
             })
             .build();
     }

@@ -74,7 +74,11 @@ public class VertxServerHttpRequest extends AbstractServerHttpRequest {
 
     @Override
     protected SslInfo initSslInfo() {
-        return null; // TODO
+        if (request.sslSession() == null) {
+            return null;
+        }
+
+        return new SslInfoImpl(request.sslSession());
     }
 
     private static URI initUri(HttpServerRequest request) {

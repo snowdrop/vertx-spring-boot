@@ -10,6 +10,7 @@
   <url>http://snowdrop.me</url>
 
   <properties>
+    <awaitility.version>3.1.6</awaitility.version>
     <rest-assured.version>3.3.0</rest-assured.version>
     <smallrye-reactive.version>1.0.0</smallrye-reactive.version>
     <spring-boot.version>2.1.2.RELEASE</spring-boot.version>
@@ -49,6 +50,11 @@
         <groupId>io.rest-assured</groupId>
         <artifactId>rest-assured</artifactId>
         <version>${rest-assured.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.awaitility</groupId>
+        <artifactId>awaitility</artifactId>
+        <version>${awaitility.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

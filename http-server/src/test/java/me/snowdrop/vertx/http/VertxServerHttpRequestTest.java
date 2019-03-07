@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.net.ssl.SSLSession;
+
 import io.netty.buffer.ByteBufAllocator;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -36,6 +38,9 @@ public class VertxServerHttpRequestTest {
 
     @Mock
     private HttpServerRequest mockHttpServerRequest;
+
+    @Mock
+    private SSLSession mockSslSession;
 
     private NettyDataBufferFactory nettyDataBufferFactory;
 
@@ -104,5 +109,17 @@ public class VertxServerHttpRequestTest {
             new AbstractMap.SimpleEntry<>("cookie1", Collections.singletonList(new HttpCookie("cookie1", "value1"))),
             new AbstractMap.SimpleEntry<>("cookie2", Collections.singletonList(new HttpCookie("cookie2", "value2")))
         );
+    }
+
+    @Test
+    public void shouldInitSslInfo() {
+        given(mockHttpServerRequest.sslSession()).willReturn(mockSslSession);
+
+        assertThat(vertxServerHttpRequest.initSslInfo()).isInstanceOf(SslInfoImpl.class);
+    }
+
+    @Test
+    public void shouldIgnoreNullSslSession() {
+        assertThat(vertxServerHttpRequest.initSslInfo()).isNull();
     }
 }

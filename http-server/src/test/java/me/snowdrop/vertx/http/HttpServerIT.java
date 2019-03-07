@@ -1,9 +1,10 @@
 package me.snowdrop.vertx.http;
 
+import io.restassured.RestAssured;
 import io.restassured.path.xml.XmlPath;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -14,16 +15,22 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
+    properties = "server.port=" + HttpServerIT.PORT
+)
 public class HttpServerIT {
 
-    @Value("${local.server.port}")
-    private int port;
+    static final int PORT = 8080;
+
+    @Before
+    public void setUp() {
+        RestAssured.port = PORT;
+    }
 
     @Test
     public void shouldGetResponseWithContent() {
         given()
-            .port(port)
             .and()
             .body("test")
             .get("echo")
@@ -36,7 +43,6 @@ public class HttpServerIT {
     @Test
     public void shouldGetResponseWithoutContent() {
         given()
-            .port(port)
             .get("noop")
             .then()
             .assertThat()
@@ -46,7 +52,6 @@ public class HttpServerIT {
     @Test
     public void shouldGetStaticContent() {
         String html = given()
-            .port(port)
             .get("static/index.html")
             .andReturn()
             .asString();
@@ -58,7 +63,6 @@ public class HttpServerIT {
     @Test
     public void shouldUpdateCookie() {
         given()
-            .port(port)
             .cookie("counter", "10")
             .get("cookie-counter")
             .then()
@@ -69,7 +73,6 @@ public class HttpServerIT {
     @Test
     public void shouldUpdateHeader() {
         given()
-            .port(port)
             .header("counter", "10")
             .get("header-counter")
             .then()
