@@ -17,6 +17,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.ReactiveHttpInputMessage;
+import org.springframework.web.reactive.socket.server.WebSocketService;
+import org.springframework.web.reactive.socket.server.support.HandshakeWebSocketService;
+import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAdapter;
 
 @Configuration
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
@@ -26,10 +29,11 @@ import org.springframework.http.ReactiveHttpInputMessage;
 @EnableConfigurationProperties(VertxHttpServerProperties.class)
 public class VertxHttpServerAutoConfiguration {
 
+    private final NettyDataBufferFactory dataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
+
     @Bean
     public VertxReactiveWebServerFactory vertxReactiveWebServerFactory(Vertx vertx,
         VertxHttpServerProperties vertxHttpServerProperties) {
-        NettyDataBufferFactory dataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
         return new VertxReactiveWebServerFactory(vertx, vertxHttpServerProperties, dataBufferFactory);
     }
 
@@ -39,4 +43,14 @@ public class VertxHttpServerAutoConfiguration {
         return new VertxReactiveWebServerFactoryCustomizer(userDefinedCustomizers);
     }
 
+    @Bean
+    public WebSocketService webSocketService() {
+        VertxRequestUpgradeStrategy requestUpgradeStrategy = new VertxRequestUpgradeStrategy(dataBufferFactory);
+        return new HandshakeWebSocketService(requestUpgradeStrategy);
+    }
+
+    @Bean
+    public WebSocketHandlerAdapter webSocketHandlerAdapter(WebSocketService webSocketService) {
+        return new WebSocketHandlerAdapter(webSocketService);
+    }
 }
