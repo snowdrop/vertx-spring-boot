@@ -18,12 +18,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.reactive.function.server.RouterFunction;
+import org.springframework.web.reactive.function.server.ServerResponse;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.fail;
+import static org.springframework.web.reactive.function.server.RouterFunctions.route;
+import static org.springframework.web.reactive.function.server.ServerResponse.noContent;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -92,7 +96,14 @@ public class HttpServerTlsIT {
     }
 
     @TestConfiguration
-    static class Customizers {
+    static class Beans {
+
+        @Bean
+        public RouterFunction<ServerResponse> testRouter() {
+            return route()
+                .GET("/noop", request -> noContent().build())
+                .build();
+        }
 
         @Bean
         public HttpServerOptionsCustomizer tlsCustomizer() {

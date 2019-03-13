@@ -6,13 +6,24 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpCookie;
+import org.springframework.http.ResponseCookie;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.reactive.function.server.RouterFunction;
+import org.springframework.web.reactive.function.server.ServerResponse;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.path.xml.XmlPath.CompatibilityMode.HTML;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.springframework.web.reactive.function.server.RouterFunctions.resources;
+import static org.springframework.web.reactive.function.server.RouterFunctions.route;
+import static org.springframework.web.reactive.function.server.ServerResponse.noContent;
+import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -94,5 +105,44 @@ public class HttpServerIT {
             .body(is(equalTo("test")))
             .and()
             .header("Content-Encoding", "gzip");
+    }
+
+    @TestConfiguration
+    static class Routers {
+
+        @Bean
+        public RouterFunction<ServerResponse> testRouter() {
+            return route()
+                .GET("/echo", request -> ok().body(request.bodyToMono(String.class), String.class))
+                .GET("/noop", request -> noContent().build())
+                .GET("/cookie-counter", request -> {
+                    int counter = request.cookies()
+                        .get("counter")
+                        .stream()
+                        .map(HttpCookie::getValue)
+                        .map(Integer::valueOf)
+                        .findAny()
+                        .orElse(0);
+
+                    ResponseCookie cookie = ResponseCookie.from("counter", String.valueOf(counter + 1)).build();
+                    return noContent().cookie(cookie).build();
+                })
+                .GET("/header-counter", request -> {
+                    int counter = request.headers()
+                        .header("counter")
+                        .stream()
+                        .map(Integer::valueOf)
+                        .findAny()
+                        .orElse(0);
+
+                    return noContent().header("counter", String.valueOf(counter + 1)).build();
+                })
+                .build();
+        }
+
+        @Bean
+        public RouterFunction<ServerResponse> staticRouter() {
+            return resources("/**", new ClassPathResource("static"));
+        }
     }
 }
