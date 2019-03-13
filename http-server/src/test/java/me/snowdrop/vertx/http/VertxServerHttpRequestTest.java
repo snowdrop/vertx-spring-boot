@@ -49,7 +49,7 @@ public class VertxServerHttpRequestTest {
     @Before
     public void setUp() {
         given(mockRoutingContext.request()).willReturn(mockHttpServerRequest);
-        given(mockHttpServerRequest.uri()).willReturn("http://localhost:8080");
+        given(mockHttpServerRequest.absoluteURI()).willReturn("http://localhost:8080");
         given(mockHttpServerRequest.headers()).willReturn(new VertxHttpHeaders());
 
         nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);

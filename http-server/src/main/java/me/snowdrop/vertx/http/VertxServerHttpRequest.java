@@ -25,7 +25,7 @@ public class VertxServerHttpRequest extends AbstractServerHttpRequest {
     private final NettyDataBufferFactory dataBufferFactory;
 
     public VertxServerHttpRequest(RoutingContext context, NettyDataBufferFactory dataBufferFactory) {
-        super(initUri(context.request()), context.request().path(), initHeaders(context.request()));
+        super(initUri(context.request()), "", initHeaders(context.request()));
         this.context = context;
         this.request = context.request();
         this.dataBufferFactory = dataBufferFactory;
@@ -82,7 +82,7 @@ public class VertxServerHttpRequest extends AbstractServerHttpRequest {
     }
 
     private static URI initUri(HttpServerRequest request) {
-        return URI.create(request.uri());
+        return URI.create(request.absoluteURI());
     }
 
     private static HttpHeaders initHeaders(HttpServerRequest request) {
