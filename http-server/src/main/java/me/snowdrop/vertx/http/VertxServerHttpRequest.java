@@ -45,12 +45,15 @@ public class VertxServerHttpRequest extends AbstractServerHttpRequest {
     @Override
     public Flux<DataBuffer> getBody() {
         return Flux.create(sink -> {
-            request.handler(chunk -> {
-                DataBuffer dataBuffer = dataBufferFactory.wrap(chunk.getByteBuf());
-                sink.next(dataBuffer);
-            });
-
-            request.endHandler(v -> sink.complete());
+            request
+                .pause()
+                .handler(chunk -> {
+                    DataBuffer dataBuffer = dataBufferFactory.wrap(chunk.getByteBuf());
+                    sink.next(dataBuffer);
+                })
+                .exceptionHandler(sink::error)
+                .endHandler(v -> sink.complete());
+            sink.onRequest(request::fetch);
         });
     }
 

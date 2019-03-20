@@ -26,8 +26,7 @@ public class VertxServerHttpResponse extends AbstractServerHttpResponse implemen
     private final HttpServerResponse response;
 
     public VertxServerHttpResponse(RoutingContext context, NettyDataBufferFactory dataBufferFactory) {
-        // TODO add headers
-        super(dataBufferFactory);
+        super(dataBufferFactory, initHeaders(context.response()));
         this.context = context;
         this.response = context.response();
     }
@@ -40,22 +39,30 @@ public class VertxServerHttpResponse extends AbstractServerHttpResponse implemen
 
     @Override
     public Mono<Void> writeWith(Path file, long position, long count) {
+        // applyHeaders is also called by WebFlux but only after writeWithInternal.
+        // However, Vert.x needs to have Content-Length or chunked set before writing begins.
+        applyHeaders();
         response.sendFile(file.toString(), position, count);
         return Mono.empty();
     }
 
     @Override
     protected Mono<Void> writeWithInternal(Publisher<? extends DataBuffer> chunks) {
-        return Flux.from(chunks)
+        // applyHeaders is also called by WebFlux but only after writeWithInternal.
+        // However, Vert.x needs to have Content-Length or chunked set before writing begins.
+        applyHeaders();
+        Flux<Buffer> source = Flux.from(chunks)
             .map(NettyDataBufferFactory::toByteBuf)
-            .map(Buffer::buffer)
-            .doOnNext(response::write)
-            .then();
+            .map(Buffer::buffer);
+
+        source.subscribe(new WriteStreamSubscriber<>(response));
+
+        return source.then();
     }
 
     @Override
     protected Mono<Void> writeAndFlushWithInternal(Publisher<? extends Publisher<? extends DataBuffer>> chunks) {
-        return writeWithInternal(Flux.from(chunks).flatMap(identity())); // TODO
+        return writeWithInternal(Flux.from(chunks).flatMap(identity()));
     }
 
     @Override
@@ -92,5 +99,13 @@ public class VertxServerHttpResponse extends AbstractServerHttpResponse implemen
             .setMaxAge(responseCookie.getMaxAge().getSeconds())
             .setHttpOnly(responseCookie.isHttpOnly())
             .setSecure(responseCookie.isSecure());
+    }
+
+    private static HttpHeaders initHeaders(HttpServerResponse response) {
+        HttpHeaders headers = new HttpHeaders();
+        response.headers()
+            .forEach(e -> headers.add(e.getKey(), e.getValue()));
+
+        return headers;
     }
 }

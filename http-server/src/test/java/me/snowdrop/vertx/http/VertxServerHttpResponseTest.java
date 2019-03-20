@@ -1,14 +1,17 @@
 package me.snowdrop.vertx.http;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
 
 import io.netty.buffer.ByteBufAllocator;
+import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.http.impl.headers.VertxHttpHeaders;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -16,16 +19,20 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+import reactor.test.publisher.TestPublisher;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static reactor.test.StepVerifier.create;
 
 @RunWith(MockitoJUnitRunner.class)
 public class VertxServerHttpResponseTest {
@@ -38,24 +45,43 @@ public class VertxServerHttpResponseTest {
 
     private NettyDataBufferFactory nettyDataBufferFactory;
 
-    private VertxServerHttpResponse vertxServerHttpResponse;
-
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         given(mockRoutingContext.response()).willReturn(mockHttpServerResponse);
+        given(mockHttpServerResponse.headers()).willReturn(new VertxHttpHeaders());
 
         nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
-        vertxServerHttpResponse = new VertxServerHttpResponse(mockRoutingContext, nettyDataBufferFactory);
+    }
+
+    @Test
+    public void shouldInitHeaders() {
+        MultiMap originalHeaders = new VertxHttpHeaders()
+            .add("key1", "value1")
+            .add("key1", "value2")
+            .add("key2", "value3");
+        given(mockHttpServerResponse.headers()).willReturn(originalHeaders);
+
+        VertxServerHttpResponse response = new VertxServerHttpResponse(mockRoutingContext, nettyDataBufferFactory);
+
+        HttpHeaders expectedHeaders = new HttpHeaders();
+        expectedHeaders.add("key1", "value1");
+        expectedHeaders.add("key1", "value2");
+        expectedHeaders.add("key2", "value3");
+
+        assertThat(response.getHeaders()).isEqualTo(expectedHeaders);
     }
 
     @Test
     public void shouldGetNativeResponse() {
-        assertThat((HttpServerResponse) vertxServerHttpResponse.getNativeResponse()).isEqualTo(mockHttpServerResponse);
+        VertxServerHttpResponse response = new VertxServerHttpResponse(mockRoutingContext, nettyDataBufferFactory);
+        assertThat((HttpServerResponse) response.getNativeResponse()).isEqualTo(mockHttpServerResponse);
     }
 
     @Test
     public void shouldWriteFile() {
-        create(vertxServerHttpResponse.writeWith(new File("/tmp/test").toPath(), 0, 0))
+        VertxServerHttpResponse response = new VertxServerHttpResponse(mockRoutingContext, nettyDataBufferFactory);
+
+        StepVerifier.create(response.writeWith(new File("/tmp/test").toPath(), 0, 0))
             .expectComplete();
 
         verify(mockHttpServerResponse).sendFile("/tmp/test", 0, 0);
@@ -63,67 +89,106 @@ public class VertxServerHttpResponseTest {
 
     @Test
     public void shouldWriteFromPublisher() {
+        VertxServerHttpResponse response = new VertxServerHttpResponse(mockRoutingContext, nettyDataBufferFactory);
         Buffer firstChunk = Buffer.buffer("chunk 1");
         Buffer secondChunk = Buffer.buffer("chunk 2");
 
-        Flux<DataBuffer> source = Flux.just(nettyDataBufferFactory.wrap(firstChunk.getByteBuf()),
-            nettyDataBufferFactory.wrap(secondChunk.getByteBuf()));
+        TestPublisher<DataBuffer> source = TestPublisher.create();
+        Mono<Void> result = response.writeWithInternal(source);
 
-        create(vertxServerHttpResponse.writeWithInternal(source))
+        source.assertMinRequested(1);
+        source.next(nettyDataBufferFactory.wrap(firstChunk.getByteBuf()));
+        source.assertMinRequested(1);
+        source.next(nettyDataBufferFactory.wrap(secondChunk.getByteBuf()));
+        source.assertMinRequested(1);
+        source.complete();
+
+        StepVerifier.create(result)
             .verifyComplete();
 
         verify(mockHttpServerResponse).write(firstChunk);
         verify(mockHttpServerResponse).write(secondChunk);
+        verify(mockHttpServerResponse).setChunked(true);
+    }
+
+    @Test
+    public void shouldWriteFromPublisherWithoutChunks() {
+        given(mockHttpServerResponse.headers()).willReturn(new VertxHttpHeaders().add(HttpHeaders.CONTENT_LENGTH, "4"));
+
+        VertxServerHttpResponse response = new VertxServerHttpResponse(mockRoutingContext, nettyDataBufferFactory);
+        Buffer data = Buffer.buffer("data");
+
+        TestPublisher<DataBuffer> source = TestPublisher.create();
+        Mono<Void> result = response.writeWithInternal(source);
+
+        source.assertMinRequested(1);
+        source.next(nettyDataBufferFactory.wrap(data.getByteBuf()));
+        source.assertMinRequested(1);
+        source.complete();
+
+        StepVerifier.create(result)
+            .verifyComplete();
+
+        verify(mockHttpServerResponse).write(data);
+        verify(mockHttpServerResponse, times(0)).setChunked(anyBoolean());
     }
 
     @Test
     public void shouldWriteFromPublisherAndFlush() {
+        VertxServerHttpResponse response = new VertxServerHttpResponse(mockRoutingContext, nettyDataBufferFactory);
         Buffer firstChunk = Buffer.buffer("chunk 1");
         Buffer secondChunk = Buffer.buffer("chunk 2");
 
-        Flux<DataBuffer> source = Flux.just(nettyDataBufferFactory.wrap(firstChunk.getByteBuf()),
-            nettyDataBufferFactory.wrap(secondChunk.getByteBuf()));
+        TestPublisher<DataBuffer> source = TestPublisher.create();
+        Mono<Void> result = response.writeAndFlushWithInternal(Flux.just(source));
 
-        create(vertxServerHttpResponse.writeAndFlushWithInternal(Flux.just(source)))
+        source.assertMinRequested(1);
+        source.next(nettyDataBufferFactory.wrap(firstChunk.getByteBuf()));
+        source.assertMinRequested(1);
+        source.next(nettyDataBufferFactory.wrap(secondChunk.getByteBuf()));
+        source.assertMinRequested(1);
+        source.complete();
+
+        StepVerifier.create(result)
             .verifyComplete();
 
         verify(mockHttpServerResponse).write(firstChunk);
         verify(mockHttpServerResponse).write(secondChunk);
+        verify(mockHttpServerResponse).setChunked(true);
     }
 
     @Test
     public void shouldApplyStatusCode() {
-        vertxServerHttpResponse.setStatusCode(HttpStatus.OK);
-        vertxServerHttpResponse.applyStatusCode();
+        VertxServerHttpResponse response = new VertxServerHttpResponse(mockRoutingContext, nettyDataBufferFactory);
+
+        response.setStatusCode(HttpStatus.OK);
+        response.applyStatusCode();
         verify(mockHttpServerResponse).setStatusCode(200);
     }
 
     @Test
     public void shouldNotApplyNullStatusCode() {
-        vertxServerHttpResponse.applyStatusCode();
+        VertxServerHttpResponse response = new VertxServerHttpResponse(mockRoutingContext, nettyDataBufferFactory);
+
+        response.applyStatusCode();
         verify(mockHttpServerResponse, times(0)).setStatusCode(anyInt());
     }
 
     @Test
-    public void shouldApplyEmptyHeaders() {
-        vertxServerHttpResponse.applyHeaders();
-        verify(mockHttpServerResponse).setChunked(true);
-    }
-
-    @Test
-    @Ignore
     public void shouldApplyHeaders() {
+        VertxServerHttpResponse response = new VertxServerHttpResponse(mockRoutingContext, nettyDataBufferFactory);
+        response.getHeaders().put("key1", Arrays.asList("value1", "value2"));
+        response.getHeaders().add("key2", "value3");
 
-    }
-
-    @Test
-    @Ignore
-    public void shouldApplyHeadersWithContentLength() {
-
+        response.applyHeaders();
+        verify(mockHttpServerResponse).putHeader("key1", (Iterable<String>) Arrays.asList("value1", "value2"));
+        verify(mockHttpServerResponse).putHeader("key2", (Iterable<String>) Collections.singletonList("value3"));
     }
 
     @Test
     public void shouldApplyCookies() {
+        VertxServerHttpResponse response = new VertxServerHttpResponse(mockRoutingContext, nettyDataBufferFactory);
+
         ResponseCookie firstCookie = ResponseCookie.from("cookie1", "value1")
             .domain("domain1")
             .path("path1")
@@ -139,9 +204,9 @@ public class VertxServerHttpResponseTest {
             .secure(false)
             .build();
 
-        vertxServerHttpResponse.addCookie(firstCookie);
-        vertxServerHttpResponse.addCookie(secondCookie);
-        vertxServerHttpResponse.applyCookies();
+        response.addCookie(firstCookie);
+        response.addCookie(secondCookie);
+        response.applyCookies();
 
         Cookie expectedFirstCookie = Cookie.cookie("cookie1", "value1")
             .setDomain("domain1")

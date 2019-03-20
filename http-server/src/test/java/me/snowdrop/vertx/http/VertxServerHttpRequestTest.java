@@ -24,11 +24,11 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpCookie;
+import reactor.test.StepVerifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static reactor.test.StepVerifier.create;
 
 @RunWith(MockitoJUnitRunner.class)
 public class VertxServerHttpRequestTest {
@@ -70,6 +70,8 @@ public class VertxServerHttpRequestTest {
 
     @Test
     public void shouldGetBody() {
+        given(mockHttpServerRequest.pause()).willReturn(mockHttpServerRequest);
+        given(mockHttpServerRequest.exceptionHandler(any())).willReturn(mockHttpServerRequest);
         given(mockHttpServerRequest.handler(any())).will(invocation -> {
             Handler<Buffer> handler = invocation.getArgument(0);
             handler.handle(Buffer.buffer("chunk 1"));
@@ -82,7 +84,7 @@ public class VertxServerHttpRequestTest {
             return mockHttpServerRequest;
         });
 
-        create(vertxServerHttpRequest.getBody())
+        StepVerifier.create(vertxServerHttpRequest.getBody())
             .expectNext(nettyDataBufferFactory.wrap("chunk 1".getBytes()))
             .expectNext(nettyDataBufferFactory.wrap("chunk 2".getBytes()))
             .verifyComplete();
