@@ -2,7 +2,6 @@ package me.snowdrop.vertx.http;
 
 import java.nio.file.Path;
 
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
@@ -39,25 +38,13 @@ public class VertxServerHttpResponse extends AbstractServerHttpResponse implemen
 
     @Override
     public Mono<Void> writeWith(Path file, long position, long count) {
-        // applyHeaders is also called by WebFlux but only after writeWithInternal.
-        // However, Vert.x needs to have Content-Length or chunked set before writing begins.
-        applyHeaders();
         response.sendFile(file.toString(), position, count);
         return Mono.empty();
     }
 
     @Override
     protected Mono<Void> writeWithInternal(Publisher<? extends DataBuffer> chunks) {
-        // applyHeaders is also called by WebFlux but only after writeWithInternal.
-        // However, Vert.x needs to have Content-Length or chunked set before writing begins.
-        applyHeaders();
-        Flux<Buffer> source = Flux.from(chunks)
-            .map(NettyDataBufferFactory::toByteBuf)
-            .map(Buffer::buffer);
-
-        source.subscribe(new WriteStreamSubscriber<>(response));
-
-        return source.then();
+        return Mono.create(sink -> chunks.subscribe(new HttpWriteStreamSubscriber(response, sink)));
     }
 
     @Override

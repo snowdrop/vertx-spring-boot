@@ -26,27 +26,29 @@ public class VertxWebSocketSession extends AbstractWebSocketSession<ServerWebSoc
 
     @Override
     public Flux<WebSocketMessage> receive() {
-        return Flux.create(sink -> getDelegate()
-                .textMessageHandler(payload -> sink.next(textMessage(payload)))
-                .binaryMessageHandler(payload -> sink.next(binaryMessageAdapter(payload)))
-                .pongHandler(payload -> sink.next(pongMessageAdapter(payload)))
+        return Flux.create(sink -> {
+                ServerWebSocket socket = getDelegate();
+                socket.pause()
+                    .textMessageHandler(payload -> sink.next(textMessage(payload)))
+                    .binaryMessageHandler(payload -> sink.next(binaryMessageAdapter(payload)))
+                    .pongHandler(payload -> sink.next(pongMessageAdapter(payload)))
+                    .exceptionHandler(sink::error)
+                    .endHandler(e -> sink.complete());
+                sink.onRequest(socket::fetch);
+            }
         );
     }
 
     @Override
     public Mono<Void> send(Publisher<WebSocketMessage> messages) {
-        return Flux.from(messages)
-            .doOnNext(this::sendMessage)
-            .then();
+        return Mono.create(sink -> messages.subscribe(new ServerWebSocketSubscriber(getDelegate(), sink)));
     }
 
     @Override
     public Mono<Void> close(CloseStatus status) {
-        return Mono.create(sink -> {
-            getDelegate()
-                .close((short) status.getCode(), status.getReason());
-            sink.success();
-        });
+        return Mono.create(sink -> getDelegate()
+            .closeHandler(e -> sink.success())
+            .close((short) status.getCode(), status.getReason()));
     }
 
     private WebSocketMessage binaryMessageAdapter(Buffer payload) {
@@ -61,23 +63,5 @@ public class VertxWebSocketSession extends AbstractWebSocketSession<ServerWebSoc
         DataBuffer dataBuffer = dataBufferFactory.wrap(byteBuf);
 
         return new WebSocketMessage(WebSocketMessage.Type.PONG, dataBuffer);
-    }
-
-    private void sendMessage(WebSocketMessage message) {
-        if (message.getType() == WebSocketMessage.Type.TEXT) {
-            getDelegate().writeTextMessage(message.getPayloadAsText());
-            return;
-        }
-
-        ByteBuf byteBuf = NettyDataBufferFactory.toByteBuf(message.getPayload());
-        Buffer buffer = Buffer.buffer(byteBuf);
-
-        if (message.getType() == WebSocketMessage.Type.PING) {
-            getDelegate().writePing(buffer);
-        } else if (message.getType() == WebSocketMessage.Type.PONG) {
-            getDelegate().writePong(buffer);
-        } else {
-            getDelegate().writeBinaryMessage(buffer);
-        }
     }
 }

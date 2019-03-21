@@ -28,7 +28,6 @@ import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
@@ -96,19 +95,18 @@ public class VertxServerHttpResponseTest {
         TestPublisher<DataBuffer> source = TestPublisher.create();
         Mono<Void> result = response.writeWithInternal(source);
 
-        source.assertMinRequested(1);
-        source.next(nettyDataBufferFactory.wrap(firstChunk.getByteBuf()));
-        source.assertMinRequested(1);
-        source.next(nettyDataBufferFactory.wrap(secondChunk.getByteBuf()));
-        source.assertMinRequested(1);
-        source.complete();
-
         StepVerifier.create(result)
+            .expectSubscription()
+            .then(() -> source.assertMinRequested(1))
+            .then(() -> source.next(nettyDataBufferFactory.wrap(firstChunk.getByteBuf())))
+            .then(() -> source.assertMinRequested(1))
+            .then(() -> source.next(nettyDataBufferFactory.wrap(secondChunk.getByteBuf())))
+            .then(() -> source.assertMinRequested(1))
+            .then(source::complete)
             .verifyComplete();
 
         verify(mockHttpServerResponse).write(firstChunk);
         verify(mockHttpServerResponse).write(secondChunk);
-        verify(mockHttpServerResponse).setChunked(true);
     }
 
     @Test
@@ -121,16 +119,15 @@ public class VertxServerHttpResponseTest {
         TestPublisher<DataBuffer> source = TestPublisher.create();
         Mono<Void> result = response.writeWithInternal(source);
 
-        source.assertMinRequested(1);
-        source.next(nettyDataBufferFactory.wrap(data.getByteBuf()));
-        source.assertMinRequested(1);
-        source.complete();
-
         StepVerifier.create(result)
+            .expectSubscription()
+            .then(() -> source.assertMinRequested(1))
+            .then(() -> source.next(nettyDataBufferFactory.wrap(data.getByteBuf())))
+            .then(() -> source.assertMinRequested(1))
+            .then(source::complete)
             .verifyComplete();
 
         verify(mockHttpServerResponse).write(data);
-        verify(mockHttpServerResponse, times(0)).setChunked(anyBoolean());
     }
 
     @Test
@@ -142,19 +139,18 @@ public class VertxServerHttpResponseTest {
         TestPublisher<DataBuffer> source = TestPublisher.create();
         Mono<Void> result = response.writeAndFlushWithInternal(Flux.just(source));
 
-        source.assertMinRequested(1);
-        source.next(nettyDataBufferFactory.wrap(firstChunk.getByteBuf()));
-        source.assertMinRequested(1);
-        source.next(nettyDataBufferFactory.wrap(secondChunk.getByteBuf()));
-        source.assertMinRequested(1);
-        source.complete();
-
         StepVerifier.create(result)
+            .expectSubscription()
+            .then(() -> source.assertMinRequested(1))
+            .then(() -> source.next(nettyDataBufferFactory.wrap(firstChunk.getByteBuf())))
+            .then(() -> source.assertMinRequested(1))
+            .then(() -> source.next(nettyDataBufferFactory.wrap(secondChunk.getByteBuf())))
+            .then(() -> source.assertMinRequested(1))
+            .then(source::complete)
             .verifyComplete();
 
         verify(mockHttpServerResponse).write(firstChunk);
         verify(mockHttpServerResponse).write(secondChunk);
-        verify(mockHttpServerResponse).setChunked(true);
     }
 
     @Test
