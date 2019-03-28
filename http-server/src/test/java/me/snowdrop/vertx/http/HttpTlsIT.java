@@ -1,13 +1,11 @@
 package me.snowdrop.vertx.http;
 
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
+import java.time.Duration;
 
 import javax.net.ssl.SSLHandshakeException;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.ClientAuth;
-import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.net.JksOptions;
 import me.snowdrop.vertx.http.properties.HttpServerOptionsCustomizer;
@@ -17,24 +15,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.fail;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 import static org.springframework.web.reactive.function.server.ServerResponse.noContent;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-    properties = "server.port=" + HttpServerTlsIT.PORT
+    properties = {
+        "server.port=" + HttpTlsIT.PORT,
+        "logging.level.me.snowdrop=DEBUG"
+    }
 )
-public class HttpServerTlsIT {
+public class HttpTlsIT {
 
     static final int PORT = 8081;
 
@@ -60,39 +61,43 @@ public class HttpServerTlsIT {
     @Test
     public void shouldMakeSecureRequest() {
         HttpClientOptions options = new HttpClientOptions()
-            .setDefaultPort(PORT)
             .setSsl(true)
             .setKeyStoreOptions(CLIENT_KEYSTORE)
             .setTrustOptions(CLIENT_TRUSTSTORE);
-        HttpClient client = vertx.createHttpClient(options);
+        WebClient client = WebClient.builder()
+            .clientConnector(new VertxClientHttpConnector(vertx, options))
+            .baseUrl("https://localhost:" + PORT)
+            .build();
 
-        AtomicInteger expectedStatus = new AtomicInteger();
-        client.getNow("/noop", response -> expectedStatus.set(response.statusCode()));
+        Mono<HttpStatus> statusMono = client.get()
+            .uri("/noop")
+            .exchange()
+            .map(ClientResponse::statusCode);
 
-        await("Wait for the response with status 204")
-            .atMost(2, SECONDS)
-            .untilAtomic(expectedStatus, equalTo(204));
+        StepVerifier.create(statusMono)
+            .expectNext(HttpStatus.NO_CONTENT)
+            .expectComplete()
+            .verify(Duration.ofSeconds(2));
     }
 
     @Test
     public void shouldRejectUntrustedClient() {
         HttpClientOptions options = new HttpClientOptions()
-            .setDefaultPort(PORT)
             .setSsl(true)
             .setKeyStoreOptions(SERVER_KEYSTORE) // Use different keystore than the one expected by the server
             .setTrustOptions(CLIENT_TRUSTSTORE);
-        HttpClient client = vertx.createHttpClient(options);
+        WebClient client = WebClient.builder()
+            .clientConnector(new VertxClientHttpConnector(vertx, options))
+            .baseUrl("https://localhost:" + PORT)
+            .build();
 
-        AtomicReference<Throwable> expectedException = new AtomicReference<>();
+        Mono<ClientResponse> responseMono = client.get()
+            .uri("/noop")
+            .exchange();
 
-        client.get("/noop")
-            .handler(response -> fail("SSL handshake exception expected"))
-            .exceptionHandler(expectedException::set)
-            .end();
-
-        await("Wait for the SSLHandshakeException")
-            .atMost(2, SECONDS)
-            .untilAtomic(expectedException, instanceOf(SSLHandshakeException.class));
+        StepVerifier.create(responseMono)
+            .expectError(SSLHandshakeException.class)
+            .verify(Duration.ofSeconds(2));
     }
 
     @TestConfiguration
@@ -112,7 +117,5 @@ public class HttpServerTlsIT {
                 .setKeyStoreOptions(SERVER_KEYSTORE)
                 .setTrustOptions(SERVER_TRUSTSTORE);
         }
-
     }
-
 }
