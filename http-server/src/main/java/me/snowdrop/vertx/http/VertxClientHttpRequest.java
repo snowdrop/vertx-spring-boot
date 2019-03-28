@@ -49,10 +49,18 @@ public class VertxClientHttpRequest extends AbstractClientHttpRequest {
 
     @Override
     public Mono<Void> writeWith(Publisher<? extends DataBuffer> chunks) {
-        return doCommit(() -> Mono.create(sink -> {
+        Mono<Void> writeCompletion = Mono.create(sink -> {
             logger.debug("Subscribing to body publisher");
             chunks.subscribe(new HttpWriteStreamSubscriber(request, sink));
-        }));
+        });
+
+        Mono<Void> endCompletion = Mono.create(sink -> {
+            logger.debug("Completing request after writing");
+            request.end();
+            sink.success();
+        });
+
+        return doCommit(() -> writeCompletion.then(endCompletion));
     }
 
     @Override
@@ -63,7 +71,7 @@ public class VertxClientHttpRequest extends AbstractClientHttpRequest {
     @Override
     public Mono<Void> setComplete() {
         return doCommit(() -> Mono.create(sink -> {
-            logger.debug("Completing request");
+            logger.debug("Completing empty request");
             request.end();
             sink.success();
         }));

@@ -57,7 +57,10 @@ public class VertxServerHttpRequest extends AbstractServerHttpRequest {
                     DataBuffer dataBuffer = dataBufferFactory.wrap(chunk.getByteBuf());
                     sink.next(dataBuffer);
                 })
-                .exceptionHandler(sink::error)
+                .exceptionHandler(throwable -> {
+                    logger.debug("Received exception '{}' from a request body read stream", throwable);
+                    sink.error(throwable);
+                })
                 .endHandler(v -> {
                     logger.debug("Request body read stream ended");
                     sink.complete();

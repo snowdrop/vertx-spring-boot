@@ -40,21 +40,19 @@ public abstract class AbstractWriteStreamSubscriber<T extends WriteStream<?>, U>
 
     @Override
     protected void hookOnComplete() {
-        logger.debug("Completing {}", delegate);
-        delegate.end();
+        logger.debug("Completed");
         endHook.success();
     }
 
     @Override
     protected void hookOnCancel() {
-        logger.debug("Canceling {}", delegate);
-        delegate.end();
+        logger.debug("Canceled");
         endHook.success();
     }
 
     @Override
     protected void hookOnError(Throwable throwable) {
-        logger.warn(throwable.getMessage(), throwable);
+        logger.debug("Error", throwable);
         endHook.error(throwable);
     }
 

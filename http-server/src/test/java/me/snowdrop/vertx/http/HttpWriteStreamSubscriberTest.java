@@ -86,7 +86,6 @@ public class HttpWriteStreamSubscriberTest {
 
         publisher.complete();
 
-        verify(mockWriteStream).end();
         verify(mockMonoSink).success();
     }
 
@@ -98,7 +97,6 @@ public class HttpWriteStreamSubscriberTest {
 
         subscriber.cancel();
 
-        verify(mockWriteStream).end();
         verify(mockMonoSink).success();
     }
 

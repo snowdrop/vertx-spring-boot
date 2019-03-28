@@ -123,7 +123,6 @@ public class ServerWebSocketSubscriberTest {
 
         publisher.complete();
 
-        verify(mockServerWebSocket).end();
         verify(mockMonoSink).success();
     }
 
@@ -135,7 +134,6 @@ public class ServerWebSocketSubscriberTest {
 
         subscriber.cancel();
 
-        verify(mockServerWebSocket).end();
         verify(mockMonoSink).success();
     }
 
