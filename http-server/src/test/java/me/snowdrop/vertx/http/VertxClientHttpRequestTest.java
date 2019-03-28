@@ -15,6 +15,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpMethod;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -114,6 +115,17 @@ public class VertxClientHttpRequestTest {
     }
 
     @Test
+    public void shouldSetComplete() {
+        Mono<Void> result = request.setComplete();
+
+        StepVerifier.create(result)
+            .expectSubscription()
+            .verifyComplete();
+
+        verify(mockHttpClientRequest).end();
+    }
+
+    @Test
     public void shouldApplyHeaders() {
         request.getHeaders().put("key1", Arrays.asList("value1", "value2"));
         request.getHeaders().add("key2", "value3");
@@ -122,5 +134,20 @@ public class VertxClientHttpRequestTest {
 
         verify(mockHttpClientRequest).putHeader("key1", (Iterable<String>) Arrays.asList("value1", "value2"));
         verify(mockHttpClientRequest).putHeader("key2", (Iterable<String>) Collections.singletonList("value3"));
+    }
+
+    @Test
+    public void shouldApplyCookies() {
+        HttpCookie cookie1 = new HttpCookie("key1", "value1");
+        HttpCookie cookie2 = new HttpCookie("key1", "value2");
+        HttpCookie cookie3 = new HttpCookie("key2", "value3");
+        request.getCookies().put("key1", Arrays.asList(cookie1, cookie2));
+        request.getCookies().add("key2", cookie3);
+
+        request.applyCookies();
+
+        verify(mockHttpClientRequest).putHeader("Cookie", cookie1.toString());
+        verify(mockHttpClientRequest).putHeader("Cookie", cookie2.toString());
+        verify(mockHttpClientRequest).putHeader("Cookie", cookie3.toString());
     }
 }
