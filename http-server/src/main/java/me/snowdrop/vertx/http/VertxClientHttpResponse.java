@@ -4,6 +4,8 @@ import java.net.HttpCookie;
 import java.util.Collection;
 
 import io.vertx.core.http.HttpClientResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpHeaders;
@@ -15,6 +17,8 @@ import org.springframework.util.MultiValueMap;
 import reactor.core.publisher.Flux;
 
 public class VertxClientHttpResponse implements ClientHttpResponse {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final HttpClientResponse response;
 
@@ -39,15 +43,23 @@ public class VertxClientHttpResponse implements ClientHttpResponse {
     public Flux<DataBuffer> getBody() {
         // TODO look into refactoring with VertxServerHttpRequest.getBody
         return Flux.create(sink -> {
+            logger.debug("Connecting to a response body read stream");
             response
                 .pause()
                 .handler(chunk -> {
+                    logger.debug("Received '{}' from a response body read stream", chunk);
                     DataBuffer dataBuffer = dataBufferFactory.wrap(chunk.getByteBuf());
                     sink.next(dataBuffer);
                 })
                 .exceptionHandler(sink::error)
-                .endHandler(v -> sink.complete());
-            sink.onRequest(response::fetch);
+                .endHandler(v -> {
+                    logger.debug("Response body read stream ended");
+                    sink.complete();
+                });
+            sink.onRequest(i -> {
+                logger.debug("Fetching '{}' entries from a response body read stream", i);
+                response.fetch(i);
+            });
         });
     }
 

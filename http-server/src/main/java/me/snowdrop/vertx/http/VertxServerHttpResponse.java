@@ -6,6 +6,8 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +21,8 @@ import reactor.core.publisher.Mono;
 import static java.util.function.Function.identity;
 
 public class VertxServerHttpResponse extends AbstractServerHttpResponse implements ZeroCopyHttpOutputMessage {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final RoutingContext context;
 
@@ -38,13 +42,17 @@ public class VertxServerHttpResponse extends AbstractServerHttpResponse implemen
 
     @Override
     public Mono<Void> writeWith(Path file, long position, long count) {
+        logger.debug("Sending file '{}'", file);
         response.sendFile(file.toString(), position, count);
         return Mono.empty();
     }
 
     @Override
     protected Mono<Void> writeWithInternal(Publisher<? extends DataBuffer> chunks) {
-        return Mono.create(sink -> chunks.subscribe(new HttpWriteStreamSubscriber(response, sink)));
+        return Mono.create(sink -> {
+            logger.debug("Subscribing to body publisher");
+            chunks.subscribe(new HttpWriteStreamSubscriber(response, sink));
+        });
     }
 
     @Override
@@ -64,6 +72,7 @@ public class VertxServerHttpResponse extends AbstractServerHttpResponse implemen
     protected void applyHeaders() {
         HttpHeaders headers = getHeaders();
         if (!headers.containsKey(HttpHeaders.CONTENT_LENGTH)) {
+            logger.debug("Setting chunked response");
             response.setChunked(true);
         }
         headers.forEach(response::putHeader);

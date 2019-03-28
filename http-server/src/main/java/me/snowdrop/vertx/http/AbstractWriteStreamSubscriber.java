@@ -2,10 +2,14 @@ package me.snowdrop.vertx.http;
 
 import io.vertx.core.streams.WriteStream;
 import org.reactivestreams.Subscription;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.BaseSubscriber;
 import reactor.core.publisher.MonoSink;
 
 public abstract class AbstractWriteStreamSubscriber<T extends WriteStream<?>, U> extends BaseSubscriber<U> {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final T delegate;
 
@@ -25,6 +29,7 @@ public abstract class AbstractWriteStreamSubscriber<T extends WriteStream<?>, U>
 
     @Override
     protected void hookOnSubscribe(Subscription subscription) {
+        logger.debug("{} subscribed", delegate);
         requestIfNotFull();
     }
 
@@ -35,18 +40,21 @@ public abstract class AbstractWriteStreamSubscriber<T extends WriteStream<?>, U>
 
     @Override
     protected void hookOnComplete() {
+        logger.debug("Completing {}", delegate);
         delegate.end();
         endHook.success();
     }
 
     @Override
     protected void hookOnCancel() {
+        logger.debug("Canceling {}", delegate);
         delegate.end();
         endHook.success();
     }
 
     @Override
     protected void hookOnError(Throwable throwable) {
+        logger.warn(throwable.getMessage(), throwable);
         endHook.error(throwable);
     }
 
@@ -56,6 +64,7 @@ public abstract class AbstractWriteStreamSubscriber<T extends WriteStream<?>, U>
 
     private void requestIfNotFull() {
         if (!delegate.writeQueueFull()) {
+            logger.debug("Requesting more data");
             request(1);
         }
     }

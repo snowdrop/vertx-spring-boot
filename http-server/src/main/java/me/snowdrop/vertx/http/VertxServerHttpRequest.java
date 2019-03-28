@@ -6,6 +6,8 @@ import java.net.URI;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.ext.web.RoutingContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpCookie;
@@ -17,6 +19,8 @@ import org.springframework.util.MultiValueMap;
 import reactor.core.publisher.Flux;
 
 public class VertxServerHttpRequest extends AbstractServerHttpRequest {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final RoutingContext context;
 
@@ -45,15 +49,23 @@ public class VertxServerHttpRequest extends AbstractServerHttpRequest {
     @Override
     public Flux<DataBuffer> getBody() {
         return Flux.create(sink -> {
+            logger.debug("Connecting to a request body read stream");
             request
                 .pause()
                 .handler(chunk -> {
+                    logger.debug("Received '{}' from a request body read stream", chunk);
                     DataBuffer dataBuffer = dataBufferFactory.wrap(chunk.getByteBuf());
                     sink.next(dataBuffer);
                 })
                 .exceptionHandler(sink::error)
-                .endHandler(v -> sink.complete());
-            sink.onRequest(request::fetch);
+                .endHandler(v -> {
+                    logger.debug("Request body read stream ended");
+                    sink.complete();
+                });
+            sink.onRequest(i -> {
+                logger.debug("Fetching '{}' entries from a request body read stream", i);
+                request.fetch(i);
+            });
         });
     }
 
