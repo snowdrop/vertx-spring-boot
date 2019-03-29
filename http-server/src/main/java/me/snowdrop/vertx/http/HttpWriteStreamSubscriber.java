@@ -20,7 +20,7 @@ public class HttpWriteStreamSubscriber extends AbstractWriteStreamSubscriber<Wri
     @Override
     protected void hookOnNext(DataBuffer payload) {
         Buffer buffer = dataBufferToBuffer(payload);
-        logger.debug("Next entry: {}", buffer);
+        logger.debug("{}Next entry: {}", getLogPrefix(), buffer);
         getDelegate().write(buffer);
         super.hookOnNext(payload);
     }

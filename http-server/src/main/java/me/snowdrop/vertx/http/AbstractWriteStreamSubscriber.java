@@ -4,6 +4,7 @@ import io.vertx.core.streams.WriteStream;
 import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.BaseSubscriber;
 import reactor.core.publisher.MonoSink;
 
@@ -15,9 +16,12 @@ public abstract class AbstractWriteStreamSubscriber<T extends WriteStream<?>, U>
 
     private final MonoSink endHook;
 
+    private final String logPrefix;
+
     public AbstractWriteStreamSubscriber(T delegate, MonoSink endHook) {
         this.delegate = delegate;
         this.endHook = endHook;
+        this.logPrefix = "[" + ObjectUtils.getIdentityHexString(delegate) + "] ";
 
         delegate.drainHandler(event -> requestIfNotFull());
         delegate.exceptionHandler(this::delegateExceptionHandler);
@@ -29,7 +33,7 @@ public abstract class AbstractWriteStreamSubscriber<T extends WriteStream<?>, U>
 
     @Override
     protected void hookOnSubscribe(Subscription subscription) {
-        logger.debug("{} subscribed", delegate);
+        logger.debug("{}{} subscribed", logPrefix, delegate);
         requestIfNotFull();
     }
 
@@ -40,20 +44,24 @@ public abstract class AbstractWriteStreamSubscriber<T extends WriteStream<?>, U>
 
     @Override
     protected void hookOnComplete() {
-        logger.debug("Completed");
+        logger.debug("{}Completed", logPrefix);
         endHook.success();
     }
 
     @Override
     protected void hookOnCancel() {
-        logger.debug("Canceled");
+        logger.debug("{}Canceled", logPrefix);
         endHook.success();
     }
 
     @Override
     protected void hookOnError(Throwable throwable) {
-        logger.debug("Error", throwable);
+        logger.debug("{}Error: {}", logPrefix, throwable);
         endHook.error(throwable);
+    }
+
+    protected String getLogPrefix() {
+        return logPrefix;
     }
 
     private void delegateExceptionHandler(Throwable ignored) {
@@ -62,7 +70,7 @@ public abstract class AbstractWriteStreamSubscriber<T extends WriteStream<?>, U>
 
     private void requestIfNotFull() {
         if (!delegate.writeQueueFull()) {
-            logger.debug("Requesting more data");
+            logger.debug("{}Requesting more data", logPrefix);
             request(1);
         }
     }
