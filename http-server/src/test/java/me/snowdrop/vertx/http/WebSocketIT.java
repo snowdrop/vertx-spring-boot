@@ -1,19 +1,18 @@
 package me.snowdrop.vertx.http;
 
+import java.net.URI;
+import java.time.Duration;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
-import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -24,11 +23,13 @@ import org.springframework.web.reactive.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.WebSocketSession;
-import reactor.core.publisher.Flux;
+import org.springframework.web.reactive.socket.client.WebSocketClient;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 
 @RunWith(SpringRunner.class)
@@ -36,134 +37,198 @@ import static org.hamcrest.Matchers.equalTo;
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
     properties = {
         "server.port=" + WebSocketIT.PORT,
-        "vertx.http.server.maxWebsocketFrameSize=5"
+        "vertx.http.server.maxWebsocketFrameSize=5",
+        "logging.level.me.snowdrop=DEBUG"
     }
 )
 public class WebSocketIT {
 
     static final int PORT = 8082;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketIT.class);
+    private static final String BASE_URL = String.format("ws://localhost:%d", PORT);
 
     @Autowired
     private Vertx vertx;
 
-    private HttpClient client;
+    private WebSocketClient client;
 
-    @After
-    public void tearDown() {
-        if (client != null) {
-            client.close();
-        }
+    @Before
+    public void setUp() {
+        client = new VertxWebSocketClient(vertx);
     }
 
     @Test
     public void shouldSendAndReceiveTextMessage() {
-        client = vertx.createHttpClient();
+        AtomicReference<String> expectedMessage = new AtomicReference<>();
 
-        AtomicReference<String> message = new AtomicReference<>();
-        client.websocket(PORT, "localhost", "/echo", socket -> {
-            socket.textMessageHandler(message::set);
-            socket.writeTextMessage("ping");
-        });
+        client.execute(URI.create(BASE_URL + "/echo"), session -> {
+            WebSocketMessage originalMessage = session.textMessage("ping");
+
+            Mono<Void> outputMono = session.send(Mono.just(originalMessage));
+            Mono<Void> inputMono = session.receive()
+                .filter(message -> message.getType().equals(WebSocketMessage.Type.TEXT))
+                .map(WebSocketMessage::getPayloadAsText)
+                .doOnNext(expectedMessage::set)
+                .then();
+
+            return outputMono.then(inputMono);
+        }).subscribe();
 
         await()
             .atMost(2, SECONDS)
-            .untilAtomic(message, equalTo("ping"));
+            .untilAtomic(expectedMessage, equalTo("ping"));
     }
 
     @Test
     public void shouldSendAndReceiveMultiFrameTextMessage() {
         HttpClientOptions options = new HttpClientOptions()
             .setMaxWebsocketFrameSize(5);
-        client = vertx.createHttpClient(options);
+        client = new VertxWebSocketClient(vertx, options);
 
-        AtomicReference<String> message = new AtomicReference<>();
-        client.websocket(PORT, "localhost", "/echo", socket -> {
-            socket.textMessageHandler(message::set);
-            socket.writeTextMessage("ping pong");
-        });
+        AtomicReference<String> expectedMessage = new AtomicReference<>();
+
+        client.execute(URI.create(BASE_URL + "/echo"), session -> {
+            WebSocketMessage originalMessage = session.textMessage("ping pong");
+
+            Mono<Void> outputMono = session.send(Mono.just(originalMessage));
+            Mono<Void> inputMono = session.receive()
+                .filter(message -> message.getType().equals(WebSocketMessage.Type.TEXT))
+                .map(WebSocketMessage::getPayloadAsText)
+                .doOnNext(expectedMessage::set)
+                .then();
+
+            return outputMono.then(inputMono);
+        }).subscribe();
 
         await()
             .atMost(2, SECONDS)
-            .untilAtomic(message, equalTo("ping pong"));
+            .untilAtomic(expectedMessage, equalTo("ping pong"));
     }
 
     @Test
     public void shouldSendAndReceiveBinaryMessage() {
-        client = vertx.createHttpClient();
+        AtomicReference<String> expectedMessage = new AtomicReference<>();
 
-        AtomicReference<Buffer> message = new AtomicReference<>();
-        client.websocket(PORT, "localhost", "/echo", socket -> {
-            socket.binaryMessageHandler(message::set);
-            socket.writeBinaryMessage(Buffer.buffer("ping"));
-        });
+        client.execute(URI.create(BASE_URL + "/echo"), session -> {
+            WebSocketMessage originalMessage = session.binaryMessage(factory -> factory.wrap("ping".getBytes()));
+
+            Mono<Void> outputMono = session.send(Mono.just(originalMessage));
+            Mono<Void> inputMono = session.receive()
+                .filter(message -> message.getType().equals(WebSocketMessage.Type.BINARY))
+                .map(WebSocketMessage::getPayloadAsText)
+                .doOnNext(expectedMessage::set)
+                .then();
+
+            return outputMono.then(inputMono);
+        }).subscribe();
 
         await()
             .atMost(2, SECONDS)
-            .untilAtomic(message, equalTo(Buffer.buffer("ping")));
+            .untilAtomic(expectedMessage, equalTo("ping"));
     }
 
     @Test
     public void shouldSendAndReceiveMultiFrameBinaryMessage() {
         HttpClientOptions options = new HttpClientOptions()
             .setMaxWebsocketFrameSize(5);
-        client = vertx.createHttpClient(options);
+        client = new VertxWebSocketClient(vertx, options);
 
-        AtomicReference<Buffer> message = new AtomicReference<>();
-        client.websocket(PORT, "localhost", "/echo", socket -> {
-            socket.binaryMessageHandler(message::set);
-            socket.writeBinaryMessage(Buffer.buffer("ping pong"));
-        });
+        AtomicReference<String> expectedMessage = new AtomicReference<>();
+
+        client.execute(URI.create(BASE_URL + "/echo"), session -> {
+            WebSocketMessage originalMessage = session.binaryMessage(factory -> factory.wrap("ping pong".getBytes()));
+
+            Mono<Void> outputMono = session.send(Mono.just(originalMessage));
+            Mono<Void> inputMono = session.receive()
+                .filter(message -> message.getType().equals(WebSocketMessage.Type.BINARY))
+                .map(WebSocketMessage::getPayloadAsText)
+                .doOnNext(expectedMessage::set)
+                .then();
+
+            return outputMono.then(inputMono);
+        }).subscribe();
 
         await()
             .atMost(2, SECONDS)
-            .untilAtomic(message, equalTo(Buffer.buffer("ping pong")));
+            .untilAtomic(expectedMessage, equalTo("ping pong"));
     }
 
     @Test
-    public void shouldSendAndReceivePing() {
-        client = vertx.createHttpClient();
+    public void shouldSendPingAndReceivePong() {
+        AtomicReference<String> expectedMessage = new AtomicReference<>();
 
-        AtomicReference<Buffer> message = new AtomicReference<>();
         // Ping should be handled by a server, not a handler
-        client.websocket(PORT, "localhost", "/sink", socket -> {
-            socket.pongHandler(message::set);
-            socket.writePing(Buffer.buffer("ping"));
-        });
+        client.execute(URI.create(BASE_URL + "/sink"), session -> {
+            WebSocketMessage originalMessage = session.pingMessage(factory -> factory.wrap("ping".getBytes()));
+
+            Mono<Void> outputMono = session.send(Mono.just(originalMessage));
+            Mono<Void> inputMono = session.receive()
+                .filter(message -> message.getType().equals(WebSocketMessage.Type.PONG))
+                .map(WebSocketMessage::getPayloadAsText)
+                .doOnNext(expectedMessage::set)
+                .then();
+
+            return outputMono.then(inputMono);
+        }).subscribe();
 
         await()
             .atMost(2, SECONDS)
-            .untilAtomic(message, equalTo(Buffer.buffer("ping")));
+            .untilAtomic(expectedMessage, equalTo("ping"));
     }
 
     @Test
     public void shouldSendAndReceivePong() {
-        client = vertx.createHttpClient();
+        AtomicReference<String> expectedMessage = new AtomicReference<>();
 
-        AtomicReference<Buffer> message = new AtomicReference<>();
-        client.websocket(PORT, "localhost", "/echo", socket -> {
-            socket.pongHandler(message::set);
-            socket.writePong(Buffer.buffer("pong"));
-        });
+        client.execute(URI.create(BASE_URL + "/echo"), session -> {
+            WebSocketMessage originalMessage = session.pongMessage(factory -> factory.wrap("pong".getBytes()));
+
+            Mono<Void> outputMono = session.send(Mono.just(originalMessage));
+            Mono<Void> inputMono = session.receive()
+                .filter(message -> message.getType().equals(WebSocketMessage.Type.PONG))
+                .map(WebSocketMessage::getPayloadAsText)
+                .doOnNext(expectedMessage::set)
+                .then();
+
+            return outputMono.then(inputMono);
+        }).subscribe();
 
         await()
             .atMost(2, SECONDS)
-            .untilAtomic(message, equalTo(Buffer.buffer("pong")));
+            .untilAtomic(expectedMessage, equalTo("pong"));
     }
 
     @Test
-    public void shouldCloseSocket() {
-        client = vertx.createHttpClient();
+    public void clientShouldCloseSocket() {
+        Mono<Void> completionMono = client.execute(URI.create(BASE_URL + "/echo"), WebSocketSession::close);
 
-        AtomicBoolean closed = new AtomicBoolean(false);
-        client.websocket(PORT, "localhost", "/close", socket -> {
-            socket.closeHandler(event -> closed.set(true));
-        });
+        StepVerifier.create(completionMono)
+            .expectComplete()
+            .verify(Duration.ofSeconds(2));
+    }
+
+    @Test
+    public void serverShouldCloseSocket() {
+        Mono<Void> completionMono = client.execute(URI.create(BASE_URL + "/close"), session -> Mono.empty());
+
+        StepVerifier.create(completionMono)
+            .expectComplete()
+            .verify(Duration.ofSeconds(2));
+    }
+
+    @Test
+    public void serverShouldSendFromTwoPublishers() {
+        List<String> expectedMessages = new LinkedList<>();
+
+        client.execute(URI.create(BASE_URL + "/double-producer"), session -> session.receive()
+            .map(WebSocketMessage::getPayloadAsText)
+            .doOnNext(expectedMessages::add)
+            .then()
+        ).subscribe();
 
         await()
             .atMost(2, SECONDS)
-            .untilAtomic(closed, equalTo(true));
+            .until(() -> expectedMessages, contains("ping", "pong"));
     }
 
     @TestConfiguration
@@ -174,6 +239,7 @@ public class WebSocketIT {
             Map<String, WebSocketHandler> map = new HashMap<>();
             map.put("/echo", this::echoHandler);
             map.put("/sink", this::sinkHandler);
+            map.put("/double-producer", this::doubleProducerHandler);
             map.put("/close", this::closeHandler);
 
             SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
@@ -183,18 +249,19 @@ public class WebSocketIT {
         }
 
         private Mono<Void> echoHandler(WebSocketSession session) {
-            Flux<WebSocketMessage> output = session.receive()
-                .log()
-                .doOnNext(message -> LOGGER.info("Echo handler received {}", message));
-
-            return session.send(output);
+            return session.send(session.receive());
         }
 
         private Mono<Void> sinkHandler(WebSocketSession session) {
             return session.receive()
-                .log()
-                .doOnNext(message -> LOGGER.info("Sink handler received {}", message))
                 .then();
+        }
+
+        private Mono<Void> doubleProducerHandler(WebSocketSession session) {
+            Mono<Void> firstSend = session.send(Mono.just(session.textMessage("ping")));
+            Mono<Void> secondSend = session.send(Mono.just(session.textMessage("pong")));
+
+            return firstSend.then(secondSend);
         }
 
         private Mono<Void> closeHandler(WebSocketSession session) {

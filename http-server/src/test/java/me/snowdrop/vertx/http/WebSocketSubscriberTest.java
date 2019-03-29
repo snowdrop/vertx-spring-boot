@@ -20,7 +20,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ServerWebSocketSubscriberTest {
+public class WebSocketSubscriberTest {
 
     @Mock
     private ServerWebSocket mockServerWebSocket;
@@ -33,7 +33,7 @@ public class ServerWebSocketSubscriberTest {
     @SuppressWarnings("unchecked")
     @Test
     public void shouldRegisterHandlersInConstructor() {
-        new ServerWebSocketSubscriber(mockServerWebSocket, mockMonoSink);
+        new WebSocketSubscriber(mockServerWebSocket, mockMonoSink);
 
         verify(mockServerWebSocket).drainHandler(any(Handler.class));
         verify(mockServerWebSocket).exceptionHandler(any(Handler.class));
@@ -41,14 +41,14 @@ public class ServerWebSocketSubscriberTest {
 
     @Test
     public void shouldGetDelegate() {
-        ServerWebSocketSubscriber subscriber = new ServerWebSocketSubscriber(mockServerWebSocket, mockMonoSink);
+        WebSocketSubscriber subscriber = new WebSocketSubscriber(mockServerWebSocket, mockMonoSink);
 
         assertThat(subscriber.getDelegate()).isEqualTo(mockServerWebSocket);
     }
 
     @Test
     public void shouldRequestOnSubscribe() {
-        ServerWebSocketSubscriber subscriber = new ServerWebSocketSubscriber(mockServerWebSocket, mockMonoSink);
+        WebSocketSubscriber subscriber = new WebSocketSubscriber(mockServerWebSocket, mockMonoSink);
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
 
         publisher.subscribe(subscriber);
@@ -58,7 +58,7 @@ public class ServerWebSocketSubscriberTest {
 
     @Test
     public void shouldWriteTextMessageAndPullOnNext() {
-        ServerWebSocketSubscriber subscriber = new ServerWebSocketSubscriber(mockServerWebSocket, mockMonoSink);
+        WebSocketSubscriber subscriber = new WebSocketSubscriber(mockServerWebSocket, mockMonoSink);
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
         publisher.subscribe(subscriber);
 
@@ -70,7 +70,7 @@ public class ServerWebSocketSubscriberTest {
 
     @Test
     public void shouldWriteBinaryMessageAndPullOnNext() {
-        ServerWebSocketSubscriber subscriber = new ServerWebSocketSubscriber(mockServerWebSocket, mockMonoSink);
+        WebSocketSubscriber subscriber = new WebSocketSubscriber(mockServerWebSocket, mockMonoSink);
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
         publisher.subscribe(subscriber);
 
@@ -82,7 +82,7 @@ public class ServerWebSocketSubscriberTest {
 
     @Test
     public void shouldWritePingMessageAndPullOnNext() {
-        ServerWebSocketSubscriber subscriber = new ServerWebSocketSubscriber(mockServerWebSocket, mockMonoSink);
+        WebSocketSubscriber subscriber = new WebSocketSubscriber(mockServerWebSocket, mockMonoSink);
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
         publisher.subscribe(subscriber);
 
@@ -94,7 +94,7 @@ public class ServerWebSocketSubscriberTest {
 
     @Test
     public void shouldWritePongMessageAndPullOnNext() {
-        ServerWebSocketSubscriber subscriber = new ServerWebSocketSubscriber(mockServerWebSocket, mockMonoSink);
+        WebSocketSubscriber subscriber = new WebSocketSubscriber(mockServerWebSocket, mockMonoSink);
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
         publisher.subscribe(subscriber);
 
@@ -108,7 +108,7 @@ public class ServerWebSocketSubscriberTest {
     public void shouldNotPullIfFull() {
         given(mockServerWebSocket.writeQueueFull()).willReturn(true);
 
-        ServerWebSocketSubscriber subscriber = new ServerWebSocketSubscriber(mockServerWebSocket, mockMonoSink);
+        WebSocketSubscriber subscriber = new WebSocketSubscriber(mockServerWebSocket, mockMonoSink);
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
         publisher.subscribe(subscriber);
 
@@ -117,7 +117,7 @@ public class ServerWebSocketSubscriberTest {
 
     @Test
     public void shouldHandleComplete() {
-        ServerWebSocketSubscriber subscriber = new ServerWebSocketSubscriber(mockServerWebSocket, mockMonoSink);
+        WebSocketSubscriber subscriber = new WebSocketSubscriber(mockServerWebSocket, mockMonoSink);
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
         publisher.subscribe(subscriber);
 
@@ -128,7 +128,7 @@ public class ServerWebSocketSubscriberTest {
 
     @Test
     public void shouldHandleCancel() {
-        ServerWebSocketSubscriber subscriber = new ServerWebSocketSubscriber(mockServerWebSocket, mockMonoSink);
+        WebSocketSubscriber subscriber = new WebSocketSubscriber(mockServerWebSocket, mockMonoSink);
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
         publisher.subscribe(subscriber);
 
@@ -139,7 +139,7 @@ public class ServerWebSocketSubscriberTest {
 
     @Test
     public void shouldHandleError() {
-        ServerWebSocketSubscriber subscriber = new ServerWebSocketSubscriber(mockServerWebSocket, mockMonoSink);
+        WebSocketSubscriber subscriber = new WebSocketSubscriber(mockServerWebSocket, mockMonoSink);
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
         publisher.subscribe(subscriber);
 
