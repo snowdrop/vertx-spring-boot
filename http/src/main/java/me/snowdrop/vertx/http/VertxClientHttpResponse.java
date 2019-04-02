@@ -20,11 +20,11 @@ public class VertxClientHttpResponse implements ClientHttpResponse {
 
     private final HttpClientResponse response;
 
-    private final BufferConverter bufferConverter;
+    private final HttpBodyToFluxConnector bodyToFluxConnector;
 
     public VertxClientHttpResponse(HttpClientResponse response, BufferConverter bufferConverter) {
         this.response = response;
-        this.bufferConverter = bufferConverter;
+        this.bodyToFluxConnector = new HttpBodyToFluxConnector(bufferConverter);
     }
 
     @Override
@@ -39,26 +39,8 @@ public class VertxClientHttpResponse implements ClientHttpResponse {
 
     @Override
     public Flux<DataBuffer> getBody() {
-        // TODO look into refactoring with VertxServerHttpRequest.getBody
-        return Flux.create(sink -> {
-            logger.debug("Connecting to a response body read stream");
-            response
-                .pause()
-                .handler(chunk -> {
-                    logger.debug("Received '{}' from a response body read stream", chunk);
-                    DataBuffer dataBuffer = bufferConverter.toDataBuffer(chunk);
-                    sink.next(dataBuffer);
-                })
-                .exceptionHandler(sink::error)
-                .endHandler(v -> {
-                    logger.debug("Response body read stream ended");
-                    sink.complete();
-                });
-            sink.onRequest(i -> {
-                logger.debug("Fetching '{}' entries from a response body read stream", i);
-                response.fetch(i);
-            });
-        });
+        logger.debug("Creating a response body read stream connector");
+        return bodyToFluxConnector.connect(response);
     }
 
     @Override

@@ -25,13 +25,13 @@ public class VertxServerHttpRequest extends AbstractServerHttpRequest {
 
     private final HttpServerRequest request;
 
-    private final BufferConverter bufferConverter;
+    private final HttpBodyToFluxConnector bodyToFluxConnector;
 
     public VertxServerHttpRequest(RoutingContext context, BufferConverter bufferConverter) {
         super(initUri(context.request()), "", initHeaders(context.request()));
         this.context = context;
         this.request = context.request();
-        this.bufferConverter = bufferConverter;
+        this.bodyToFluxConnector = new HttpBodyToFluxConnector(bufferConverter);
     }
 
     @SuppressWarnings("unchecked")
@@ -47,27 +47,8 @@ public class VertxServerHttpRequest extends AbstractServerHttpRequest {
 
     @Override
     public Flux<DataBuffer> getBody() {
-        return Flux.create(sink -> {
-            logger.debug("Connecting to a request body read stream");
-            request
-                .pause()
-                .handler(chunk -> {
-                    logger.debug("Received '{}' from a request body read stream", chunk);
-                    sink.next(bufferConverter.toDataBuffer(chunk));
-                })
-                .exceptionHandler(throwable -> {
-                    logger.debug("Received exception '{}' from a request body read stream", throwable);
-                    sink.error(throwable);
-                })
-                .endHandler(v -> {
-                    logger.debug("Request body read stream ended");
-                    sink.complete();
-                });
-            sink.onRequest(i -> {
-                logger.debug("Fetching '{}' entries from a request body read stream", i);
-                request.fetch(i);
-            });
-        });
+        logger.debug("Creating a request body read stream connector");
+        return bodyToFluxConnector.connect(request);
     }
 
     @Override
