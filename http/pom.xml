@@ -9,7 +9,7 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>vertx-spring-boot-http-server</artifactId>
+  <artifactId>vertx-spring-boot-http</artifactId>
 
   <dependencyManagement>
     <dependencies>
