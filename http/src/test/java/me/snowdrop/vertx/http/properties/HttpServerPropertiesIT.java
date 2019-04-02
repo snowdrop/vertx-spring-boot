@@ -25,10 +25,10 @@ import static org.assertj.core.api.Assertions.assertThat;
     "vertx.http.server.idle-timeout-unit=HOURS",
     "vertx.http.server.enabled-cipher-suites=cipher1,cipher2"
 })
-public class VertxHttpServerPropertiesIT {
+public class HttpServerPropertiesIT {
 
     @Autowired
-    private VertxHttpServerProperties properties;
+    private HttpServerProperties properties;
 
     @Test
     public void verifyHttpServerProperties() {

@@ -5,7 +5,7 @@ import java.util.Set;
 import io.netty.buffer.ByteBufAllocator;
 import io.vertx.core.Vertx;
 import me.snowdrop.vertx.http.properties.HttpServerOptionsCustomizer;
-import me.snowdrop.vertx.http.properties.VertxHttpServerProperties;
+import me.snowdrop.vertx.http.properties.HttpServerProperties;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -26,15 +26,15 @@ import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAd
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
 @ConditionalOnClass(ReactiveHttpInputMessage.class)
 @ConditionalOnMissingBean(ReactiveWebServerFactory.class)
-@EnableConfigurationProperties(VertxHttpServerProperties.class)
+@EnableConfigurationProperties(HttpServerProperties.class)
 public class VertxHttpServerAutoConfiguration {
 
     private final NettyDataBufferFactory dataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
 
     @Bean
     public VertxReactiveWebServerFactory vertxReactiveWebServerFactory(Vertx vertx,
-        VertxHttpServerProperties vertxHttpServerProperties) {
-        return new VertxReactiveWebServerFactory(vertx, vertxHttpServerProperties, dataBufferFactory);
+        HttpServerProperties httpServerProperties) {
+        return new VertxReactiveWebServerFactory(vertx, httpServerProperties, dataBufferFactory);
     }
 
     @Bean

@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBufAllocator;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerOptions;
 import me.snowdrop.vertx.http.properties.HttpServerOptionsCustomizer;
-import me.snowdrop.vertx.http.properties.VertxHttpServerProperties;
+import me.snowdrop.vertx.http.properties.HttpServerProperties;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,7 +27,7 @@ public class VertxReactiveWebServerFactoryTest {
     private HttpServerOptionsCustomizer mockCustomizer;
 
     @Mock
-    private VertxHttpServerProperties mockVertxHttpServerProperties;
+    private HttpServerProperties mockHttpServerProperties;
 
     @Mock
     private HttpServerOptions mockHttpServerOptions;
@@ -36,11 +36,11 @@ public class VertxReactiveWebServerFactoryTest {
 
     @Before
     public void setUp() {
-        given(mockVertxHttpServerProperties.getHttpServerOptions()).willReturn(mockHttpServerOptions);
+        given(mockHttpServerProperties.getHttpServerOptions()).willReturn(mockHttpServerOptions);
 
         NettyDataBufferFactory nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
         webServerFactory =
-            new VertxReactiveWebServerFactory(mockVertx, mockVertxHttpServerProperties, nettyDataBufferFactory);
+            new VertxReactiveWebServerFactory(mockVertx, mockHttpServerProperties, nettyDataBufferFactory);
     }
 
     @Test
