@@ -8,7 +8,6 @@ import java.util.Set;
 
 import javax.net.ssl.SSLSession;
 
-import io.netty.buffer.ByteBufAllocator;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
@@ -22,7 +21,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpCookie;
 import reactor.test.StepVerifier;
 
@@ -42,7 +40,7 @@ public class VertxServerHttpRequestTest {
     @Mock
     private SSLSession mockSslSession;
 
-    private NettyDataBufferFactory nettyDataBufferFactory;
+    private BufferConverter bufferConverter;
 
     private VertxServerHttpRequest vertxServerHttpRequest;
 
@@ -52,8 +50,8 @@ public class VertxServerHttpRequestTest {
         given(mockHttpServerRequest.absoluteURI()).willReturn("http://localhost:8080");
         given(mockHttpServerRequest.headers()).willReturn(new VertxHttpHeaders());
 
-        nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
-        vertxServerHttpRequest = new VertxServerHttpRequest(mockRoutingContext, nettyDataBufferFactory);
+        bufferConverter = new BufferConverter();
+        vertxServerHttpRequest = new VertxServerHttpRequest(mockRoutingContext, bufferConverter);
     }
 
     @Test
@@ -70,12 +68,14 @@ public class VertxServerHttpRequestTest {
 
     @Test
     public void shouldGetBody() {
+        Buffer firstBuffer = Buffer.buffer("chunk 1");
+        Buffer secondBuffer = Buffer.buffer("chunk 2");
         given(mockHttpServerRequest.pause()).willReturn(mockHttpServerRequest);
         given(mockHttpServerRequest.exceptionHandler(any())).willReturn(mockHttpServerRequest);
         given(mockHttpServerRequest.handler(any())).will(invocation -> {
             Handler<Buffer> handler = invocation.getArgument(0);
-            handler.handle(Buffer.buffer("chunk 1"));
-            handler.handle(Buffer.buffer("chunk 2"));
+            handler.handle(firstBuffer);
+            handler.handle(secondBuffer);
             return mockHttpServerRequest;
         });
         given(mockHttpServerRequest.endHandler(any())).will(invocation -> {
@@ -85,8 +85,8 @@ public class VertxServerHttpRequestTest {
         });
 
         StepVerifier.create(vertxServerHttpRequest.getBody())
-            .expectNext(nettyDataBufferFactory.wrap("chunk 1".getBytes()))
-            .expectNext(nettyDataBufferFactory.wrap("chunk 2".getBytes()))
+            .expectNext(bufferConverter.toDataBuffer(firstBuffer))
+            .expectNext(bufferConverter.toDataBuffer(secondBuffer))
             .verifyComplete();
     }
 

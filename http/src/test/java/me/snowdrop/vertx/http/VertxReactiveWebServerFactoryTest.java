@@ -1,6 +1,5 @@
 package me.snowdrop.vertx.http;
 
-import io.netty.buffer.ByteBufAllocator;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerOptions;
 import me.snowdrop.vertx.http.properties.HttpServerOptionsCustomizer;
@@ -11,7 +10,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.boot.web.server.WebServer;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -38,9 +36,8 @@ public class VertxReactiveWebServerFactoryTest {
     public void setUp() {
         given(mockHttpServerProperties.getHttpServerOptions()).willReturn(mockHttpServerOptions);
 
-        NettyDataBufferFactory nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
-        webServerFactory =
-            new VertxReactiveWebServerFactory(mockVertx, mockHttpServerProperties, nettyDataBufferFactory);
+        BufferConverter bufferConverter = new BufferConverter();
+        webServerFactory = new VertxReactiveWebServerFactory(mockVertx, mockHttpServerProperties, bufferConverter);
     }
 
     @Test

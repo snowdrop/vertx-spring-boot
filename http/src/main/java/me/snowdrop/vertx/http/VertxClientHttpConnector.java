@@ -4,7 +4,6 @@ import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
-import io.netty.buffer.ByteBufAllocator;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
@@ -13,7 +12,6 @@ import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.ClientHttpRequest;
 import org.springframework.http.client.reactive.ClientHttpResponse;
@@ -26,7 +24,7 @@ public class VertxClientHttpConnector implements ClientHttpConnector {
 
     private final HttpClient httpClient;
 
-    private final NettyDataBufferFactory dataBufferFactory;
+    private final BufferConverter bufferConverter;
 
     public VertxClientHttpConnector(Vertx vertx) {
         this(vertx.createHttpClient());
@@ -39,7 +37,7 @@ public class VertxClientHttpConnector implements ClientHttpConnector {
     public VertxClientHttpConnector(HttpClient httpClient) {
         Assert.notNull(httpClient, "HttpClient is required");
         this.httpClient = httpClient;
-        this.dataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
+        this.bufferConverter = new BufferConverter();
     }
 
     @Override
@@ -63,14 +61,14 @@ public class VertxClientHttpConnector implements ClientHttpConnector {
     }
 
     private ClientHttpRequest requestAdapter(HttpClientRequest request) {
-        return new VertxClientHttpRequest(request, dataBufferFactory);
+        return new VertxClientHttpRequest(request, bufferConverter);
     }
 
     private ClientHttpResponse responseAdapter(HttpClientResponse response) {
-        return new VertxClientHttpResponse(response, dataBufferFactory);
+        return new VertxClientHttpResponse(response, bufferConverter);
     }
 
     private HttpMethod httpMethodAdapter(org.springframework.http.HttpMethod method) {
-        return HttpMethod.valueOf(method.name());
+        return HttpMethod.valueOf(method.name());  // TODO refactor
     }
 }

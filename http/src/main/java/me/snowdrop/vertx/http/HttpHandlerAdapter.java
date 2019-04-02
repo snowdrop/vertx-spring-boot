@@ -2,7 +2,6 @@ package me.snowdrop.vertx.http;
 
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.HttpHandler;
 
@@ -10,17 +9,17 @@ public class HttpHandlerAdapter implements Handler<RoutingContext> {
 
     private final HttpHandler httpHandler;
 
-    private final NettyDataBufferFactory dataBufferFactory;
+    private final BufferConverter bufferConverter;
 
-    public HttpHandlerAdapter(HttpHandler httpHandler, NettyDataBufferFactory dataBufferFactory) {
+    public HttpHandlerAdapter(HttpHandler httpHandler, BufferConverter bufferConverter) {
         this.httpHandler = httpHandler;
-        this.dataBufferFactory = dataBufferFactory;
+        this.bufferConverter = bufferConverter;
     }
 
     @Override
     public void handle(RoutingContext context) {
-        VertxServerHttpRequest webFluxRequest = new VertxServerHttpRequest(context, dataBufferFactory);
-        VertxServerHttpResponse webFluxResponse = new VertxServerHttpResponse(context, dataBufferFactory);
+        VertxServerHttpRequest webFluxRequest = new VertxServerHttpRequest(context, bufferConverter);
+        VertxServerHttpResponse webFluxResponse = new VertxServerHttpResponse(context, bufferConverter);
 
         httpHandler.handle(webFluxRequest, webFluxResponse)
             .doOnSuccess(v -> context

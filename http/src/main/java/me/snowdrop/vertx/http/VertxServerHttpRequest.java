@@ -9,7 +9,6 @@ import io.vertx.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.AbstractServerHttpRequest;
@@ -26,13 +25,13 @@ public class VertxServerHttpRequest extends AbstractServerHttpRequest {
 
     private final HttpServerRequest request;
 
-    private final NettyDataBufferFactory dataBufferFactory;
+    private final BufferConverter bufferConverter;
 
-    public VertxServerHttpRequest(RoutingContext context, NettyDataBufferFactory dataBufferFactory) {
+    public VertxServerHttpRequest(RoutingContext context, BufferConverter bufferConverter) {
         super(initUri(context.request()), "", initHeaders(context.request()));
         this.context = context;
         this.request = context.request();
-        this.dataBufferFactory = dataBufferFactory;
+        this.bufferConverter = bufferConverter;
     }
 
     @SuppressWarnings("unchecked")
@@ -54,8 +53,7 @@ public class VertxServerHttpRequest extends AbstractServerHttpRequest {
                 .pause()
                 .handler(chunk -> {
                     logger.debug("Received '{}' from a request body read stream", chunk);
-                    DataBuffer dataBuffer = dataBufferFactory.wrap(chunk.getByteBuf());
-                    sink.next(dataBuffer);
+                    sink.next(bufferConverter.toDataBuffer(chunk));
                 })
                 .exceptionHandler(throwable -> {
                     logger.debug("Received exception '{}' from a request body read stream", throwable);
@@ -84,7 +82,7 @@ public class VertxServerHttpRequest extends AbstractServerHttpRequest {
 
         context.cookies()
             .stream()
-            .map(cookie -> new HttpCookie(cookie.getName(), cookie.getValue()))
+            .map(CookieConverter::toHttpCookie)
             .forEach(cookie -> cookies.add(cookie.getName(), cookie));
 
         return cookies;
@@ -99,7 +97,7 @@ public class VertxServerHttpRequest extends AbstractServerHttpRequest {
         return new SslInfoImpl(request.sslSession());
     }
 
-    private static URI initUri(HttpServerRequest request) {
+    private static URI initUri(HttpServerRequest request) { // TODO refactor
         return URI.create(request.absoluteURI());
     }
 

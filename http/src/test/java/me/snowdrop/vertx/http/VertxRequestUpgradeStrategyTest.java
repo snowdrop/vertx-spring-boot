@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.web.reactive.socket.HandshakeInfo;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.server.ServerWebExchange;
@@ -36,16 +35,13 @@ public class VertxRequestUpgradeStrategyTest {
     @Mock
     private HandshakeInfo mockHandshakeInfo;
 
-    @Mock
-    private NettyDataBufferFactory mockNettyDataBufferFactory;
-
     @Test
     public void shouldUpgradeToWebSocket() {
         given(mockServerWebExchange.getRequest()).willReturn(mockVertxServerHttpRequest);
         given(mockVertxServerHttpRequest.getNativeRequest()).willReturn(mockHttpServerRequest);
         given(mockHttpServerRequest.upgrade()).willReturn(mockServerWebSocket);
 
-        VertxRequestUpgradeStrategy strategy = new VertxRequestUpgradeStrategy(mockNettyDataBufferFactory);
+        VertxRequestUpgradeStrategy strategy = new VertxRequestUpgradeStrategy(new BufferConverter());
         strategy.upgrade(mockServerWebExchange, mockWebSocketHandler, null, () -> mockHandshakeInfo);
 
         verify(mockHttpServerRequest).upgrade();

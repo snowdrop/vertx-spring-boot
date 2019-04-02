@@ -7,20 +7,22 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
 import reactor.core.publisher.MonoSink;
 
-import static me.snowdrop.vertx.http.Utils.dataBufferToBuffer;
-
 public class PublisherToHttpBodyConnector
     extends AbstractPublisherToWriteStreamConnector<WriteStream<Buffer>, DataBuffer> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public PublisherToHttpBodyConnector(WriteStream<Buffer> delegate, MonoSink endHook) {
+    private final BufferConverter bufferConverter;
+
+    public PublisherToHttpBodyConnector(WriteStream<Buffer> delegate, MonoSink endHook,
+        BufferConverter bufferConverter) {
         super(delegate, endHook);
+        this.bufferConverter = bufferConverter;
     }
 
     @Override
     protected void hookOnNext(DataBuffer payload) {
-        Buffer buffer = dataBufferToBuffer(payload);
+        Buffer buffer = bufferConverter.toBuffer(payload);
         logger.debug("{}Next entry: {}", getLogPrefix(), buffer);
         getDelegate().write(buffer);
         super.hookOnNext(payload);

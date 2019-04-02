@@ -1,13 +1,11 @@
 package me.snowdrop.vertx.http;
 
-import java.net.HttpCookie;
 import java.util.Collection;
 
 import io.vertx.core.http.HttpClientResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -22,11 +20,11 @@ public class VertxClientHttpResponse implements ClientHttpResponse {
 
     private final HttpClientResponse response;
 
-    private final NettyDataBufferFactory dataBufferFactory;
+    private final BufferConverter bufferConverter;
 
-    public VertxClientHttpResponse(HttpClientResponse response, NettyDataBufferFactory dataBufferFactory) {
+    public VertxClientHttpResponse(HttpClientResponse response, BufferConverter bufferConverter) {
         this.response = response;
-        this.dataBufferFactory = dataBufferFactory;
+        this.bufferConverter = bufferConverter;
     }
 
     @Override
@@ -48,7 +46,7 @@ public class VertxClientHttpResponse implements ClientHttpResponse {
                 .pause()
                 .handler(chunk -> {
                     logger.debug("Received '{}' from a response body read stream", chunk);
-                    DataBuffer dataBuffer = dataBufferFactory.wrap(chunk.getByteBuf());
+                    DataBuffer dataBuffer = bufferConverter.toDataBuffer(chunk);
                     sink.next(dataBuffer);
                 })
                 .exceptionHandler(sink::error)
@@ -65,7 +63,6 @@ public class VertxClientHttpResponse implements ClientHttpResponse {
 
     @Override
     public HttpHeaders getHeaders() {
-        // TODO look into refactoring with VertxServerHttpRequest.initHeaders
         HttpHeaders headers = new HttpHeaders();
         response.headers()
             .forEach(e -> headers.add(e.getKey(), e.getValue()));
@@ -79,21 +76,10 @@ public class VertxClientHttpResponse implements ClientHttpResponse {
 
         response.cookies()
             .stream()
-            .map(HttpCookie::parse)
+            .map(CookieConverter::toResponseCookies)
             .flatMap(Collection::stream)
-            .map(this::cookieMapper)
             .forEach(cookie -> cookies.add(cookie.getName(), cookie));
 
         return cookies;
-    }
-
-    private ResponseCookie cookieMapper(HttpCookie cookie) {
-        return ResponseCookie.from(cookie.getName(), cookie.getValue())
-            .domain(cookie.getDomain())
-            .httpOnly(cookie.isHttpOnly())
-            .maxAge(cookie.getMaxAge())
-            .path(cookie.getPath())
-            .secure(cookie.getSecure())
-            .build();
     }
 }

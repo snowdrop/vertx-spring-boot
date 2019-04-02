@@ -1,6 +1,5 @@
 package me.snowdrop.vertx.http;
 
-import io.netty.buffer.ByteBufAllocator;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.ServerWebSocket;
@@ -10,7 +9,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.web.reactive.socket.CloseStatus;
 import org.springframework.web.reactive.socket.HandshakeInfo;
 import org.springframework.web.reactive.socket.WebSocketMessage;
@@ -31,7 +29,7 @@ public class VertxWebSocketSessionTest {
     @Mock
     private HandshakeInfo mockHandshakeInfo;
 
-    private NettyDataBufferFactory dataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
+    private BufferConverter bufferConverter = new BufferConverter();
 
     private VertxWebSocketSession session;
 
@@ -48,7 +46,7 @@ public class VertxWebSocketSessionTest {
             return mockServerWebSocket;
         });
 
-        session = new VertxWebSocketSession(mockServerWebSocket, mockHandshakeInfo, dataBufferFactory);
+        session = new VertxWebSocketSession(mockServerWebSocket, mockHandshakeInfo, bufferConverter);
     }
 
     @Test
@@ -190,7 +188,7 @@ public class VertxWebSocketSessionTest {
     }
 
     private WebSocketMessage getWebSocketMessage(WebSocketMessage.Type type, String data) {
-        DataBuffer dataBuffer = dataBufferFactory.wrap(data.getBytes());
+        DataBuffer dataBuffer = bufferConverter.toDataBuffer(Buffer.buffer(data));
 
         return new WebSocketMessage(type, dataBuffer);
     }

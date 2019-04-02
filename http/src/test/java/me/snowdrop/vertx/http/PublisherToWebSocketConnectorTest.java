@@ -1,15 +1,14 @@
 package me.snowdrop.vertx.http;
 
-import io.netty.buffer.ByteBufAllocator;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.ServerWebSocket;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.web.reactive.socket.WebSocketMessage;
 import reactor.core.publisher.MonoSink;
 import reactor.test.publisher.TestPublisher;
@@ -28,39 +27,40 @@ public class PublisherToWebSocketConnectorTest {
     @Mock
     private MonoSink<Void> mockMonoSink;
 
-    private NettyDataBufferFactory dataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
+    private BufferConverter bufferConverter = new BufferConverter();
+
+    private PublisherToWebSocketConnector connector;
+
+    @Before
+    public void setUp() {
+        connector = new PublisherToWebSocketConnector(mockServerWebSocket, mockMonoSink, bufferConverter);
+    }
 
     @SuppressWarnings("unchecked")
     @Test
     public void shouldRegisterHandlersInConstructor() {
-        new PublisherToWebSocketConnector(mockServerWebSocket, mockMonoSink);
-
         verify(mockServerWebSocket).drainHandler(any(Handler.class));
         verify(mockServerWebSocket).exceptionHandler(any(Handler.class));
     }
 
     @Test
     public void shouldGetDelegate() {
-        PublisherToWebSocketConnector subscriber = new PublisherToWebSocketConnector(mockServerWebSocket, mockMonoSink);
-
-        assertThat(subscriber.getDelegate()).isEqualTo(mockServerWebSocket);
+        assertThat(connector.getDelegate()).isEqualTo(mockServerWebSocket);
     }
 
     @Test
     public void shouldRequestOnSubscribe() {
-        PublisherToWebSocketConnector subscriber = new PublisherToWebSocketConnector(mockServerWebSocket, mockMonoSink);
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
 
-        publisher.subscribe(subscriber);
+        publisher.subscribe(connector);
 
         publisher.assertMinRequested(1);
     }
 
     @Test
     public void shouldWriteTextMessageAndPullOnNext() {
-        PublisherToWebSocketConnector subscriber = new PublisherToWebSocketConnector(mockServerWebSocket, mockMonoSink);
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
-        publisher.subscribe(subscriber);
+        publisher.subscribe(connector);
 
         publisher.next(getWebSocketMessage(WebSocketMessage.Type.TEXT, "test"));
 
@@ -70,9 +70,8 @@ public class PublisherToWebSocketConnectorTest {
 
     @Test
     public void shouldWriteBinaryMessageAndPullOnNext() {
-        PublisherToWebSocketConnector subscriber = new PublisherToWebSocketConnector(mockServerWebSocket, mockMonoSink);
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
-        publisher.subscribe(subscriber);
+        publisher.subscribe(connector);
 
         publisher.next(getWebSocketMessage(WebSocketMessage.Type.BINARY, "test"));
 
@@ -82,9 +81,8 @@ public class PublisherToWebSocketConnectorTest {
 
     @Test
     public void shouldWritePingMessageAndPullOnNext() {
-        PublisherToWebSocketConnector subscriber = new PublisherToWebSocketConnector(mockServerWebSocket, mockMonoSink);
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
-        publisher.subscribe(subscriber);
+        publisher.subscribe(connector);
 
         publisher.next(getWebSocketMessage(WebSocketMessage.Type.PING, "test"));
 
@@ -94,9 +92,8 @@ public class PublisherToWebSocketConnectorTest {
 
     @Test
     public void shouldWritePongMessageAndPullOnNext() {
-        PublisherToWebSocketConnector subscriber = new PublisherToWebSocketConnector(mockServerWebSocket, mockMonoSink);
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
-        publisher.subscribe(subscriber);
+        publisher.subscribe(connector);
 
         publisher.next(getWebSocketMessage(WebSocketMessage.Type.PONG, "test"));
 
@@ -108,18 +105,16 @@ public class PublisherToWebSocketConnectorTest {
     public void shouldNotPullIfFull() {
         given(mockServerWebSocket.writeQueueFull()).willReturn(true);
 
-        PublisherToWebSocketConnector subscriber = new PublisherToWebSocketConnector(mockServerWebSocket, mockMonoSink);
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
-        publisher.subscribe(subscriber);
+        publisher.subscribe(connector);
 
         publisher.assertMinRequested(0);
     }
 
     @Test
     public void shouldHandleComplete() {
-        PublisherToWebSocketConnector subscriber = new PublisherToWebSocketConnector(mockServerWebSocket, mockMonoSink);
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
-        publisher.subscribe(subscriber);
+        publisher.subscribe(connector);
 
         publisher.complete();
 
@@ -128,20 +123,18 @@ public class PublisherToWebSocketConnectorTest {
 
     @Test
     public void shouldHandleCancel() {
-        PublisherToWebSocketConnector subscriber = new PublisherToWebSocketConnector(mockServerWebSocket, mockMonoSink);
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
-        publisher.subscribe(subscriber);
+        publisher.subscribe(connector);
 
-        subscriber.cancel();
+        connector.cancel();
 
         verify(mockMonoSink).success();
     }
 
     @Test
     public void shouldHandleError() {
-        PublisherToWebSocketConnector subscriber = new PublisherToWebSocketConnector(mockServerWebSocket, mockMonoSink);
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
-        publisher.subscribe(subscriber);
+        publisher.subscribe(connector);
 
         RuntimeException exception = new RuntimeException("test");
         publisher.error(exception);
@@ -150,7 +143,7 @@ public class PublisherToWebSocketConnectorTest {
     }
 
     private WebSocketMessage getWebSocketMessage(WebSocketMessage.Type type, String data) {
-        DataBuffer dataBuffer = dataBufferFactory.wrap(data.getBytes());
+        DataBuffer dataBuffer = bufferConverter.toDataBuffer(Buffer.buffer(data));
 
         return new WebSocketMessage(type, dataBuffer);
     }

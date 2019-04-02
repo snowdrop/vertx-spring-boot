@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -25,16 +24,16 @@ public class VertxClientHttpRequest extends AbstractClientHttpRequest {
 
     private final HttpClientRequest request;
 
-    private final NettyDataBufferFactory dataBufferFactory;
+    private final BufferConverter bufferConverter;
 
-    public VertxClientHttpRequest(HttpClientRequest request, NettyDataBufferFactory dataBufferFactory) {
+    public VertxClientHttpRequest(HttpClientRequest request, BufferConverter bufferConverter) {
         this.request = request;
-        this.dataBufferFactory = dataBufferFactory;
+        this.bufferConverter = bufferConverter;
     }
 
     @Override
     public HttpMethod getMethod() {
-        return HttpMethod.resolve(request.method().name());
+        return HttpMethod.resolve(request.method().name()); // TODO refactor
     }
 
     @Override
@@ -44,14 +43,14 @@ public class VertxClientHttpRequest extends AbstractClientHttpRequest {
 
     @Override
     public DataBufferFactory bufferFactory() {
-        return dataBufferFactory;
+        return bufferConverter.getDataBufferFactory();
     }
 
     @Override
     public Mono<Void> writeWith(Publisher<? extends DataBuffer> chunks) {
         Mono<Void> writeCompletion = Mono.create(sink -> {
             logger.debug("Subscribing to body publisher");
-            chunks.subscribe(new PublisherToHttpBodyConnector(request, sink));
+            chunks.subscribe(new PublisherToHttpBodyConnector(request, sink, bufferConverter));
         });
 
         Mono<Void> endCompletion = Mono.create(sink -> {

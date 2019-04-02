@@ -2,7 +2,6 @@ package me.snowdrop.vertx.http;
 
 import java.util.Arrays;
 
-import io.netty.buffer.ByteBufAllocator;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
@@ -12,10 +11,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -34,14 +31,14 @@ public class VertxClientHttpResponseTest {
     @Mock
     private HttpClientResponse mockHttpClientResponse;
 
-    private NettyDataBufferFactory nettyDataBufferFactory;
+    private BufferConverter bufferConverter;
 
     private VertxClientHttpResponse vertxClientHttpResponse;
 
     @Before
     public void setUp() {
-        nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
-        vertxClientHttpResponse = new VertxClientHttpResponse(mockHttpClientResponse, nettyDataBufferFactory);
+        bufferConverter = new BufferConverter();
+        vertxClientHttpResponse = new VertxClientHttpResponse(mockHttpClientResponse, bufferConverter);
     }
 
     @Test
@@ -64,16 +61,27 @@ public class VertxClientHttpResponseTest {
 
     @Test
     public void shouldGetBodyChunks() {
+        Buffer firstBuffer = Buffer.buffer("chunk 1");
+        Buffer secondBuffer = Buffer.buffer("chunk 2");
         given(mockHttpClientResponse.pause()).willReturn(mockHttpClientResponse);
         given(mockHttpClientResponse.exceptionHandler(any())).willReturn(mockHttpClientResponse);
-        given(mockHttpClientResponse.handler(any())).will(this::mockHandler);
-        given(mockHttpClientResponse.endHandler(any())).will(this::mockEndHandler);
+        given(mockHttpClientResponse.handler(any())).will(invocation -> {
+            Handler<Buffer> handler = invocation.getArgument(0);
+            handler.handle(firstBuffer);
+            handler.handle(secondBuffer);
+            return mockHttpClientResponse;
+        });
+        given(mockHttpClientResponse.endHandler(any())).will(invocation -> {
+            Handler<Void> handler = invocation.getArgument(0);
+            handler.handle(null);
+            return mockHttpClientResponse;
+        });
 
         Flux<DataBuffer> bodyPublisher = vertxClientHttpResponse.getBody();
 
         StepVerifier.create(bodyPublisher)
-            .expectNext(nettyDataBufferFactory.wrap("chunk 1".getBytes()))
-            .expectNext(nettyDataBufferFactory.wrap("chunk 2".getBytes()))
+            .expectNext(bufferConverter.toDataBuffer(firstBuffer))
+            .expectNext(bufferConverter.toDataBuffer(secondBuffer))
             .verifyComplete();
     }
 
@@ -117,18 +125,5 @@ public class VertxClientHttpResponseTest {
         MultiValueMap<String, ResponseCookie> actualCookies = vertxClientHttpResponse.getCookies();
 
         assertThat(actualCookies).isEqualTo(expectedCookies);
-    }
-
-    private HttpClientResponse mockHandler(InvocationOnMock invocation) {
-        Handler<Buffer> handler = invocation.getArgument(0);
-        handler.handle(Buffer.buffer("chunk 1"));
-        handler.handle(Buffer.buffer("chunk 2"));
-        return mockHttpClientResponse;
-    }
-
-    private HttpClientResponse mockEndHandler(InvocationOnMock invocation) {
-        Handler<Void> handler = invocation.getArgument(0);
-        handler.handle(null);
-        return mockHttpClientResponse;
     }
 }

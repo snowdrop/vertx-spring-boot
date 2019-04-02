@@ -1,15 +1,14 @@
 package me.snowdrop.vertx.http;
 
-import io.netty.buffer.ByteBufAllocator;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.streams.WriteStream;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import reactor.core.publisher.MonoSink;
 import reactor.test.publisher.TestPublisher;
 
@@ -27,43 +26,45 @@ public class PublisherToHttpBodyConnectorTest {
     @Mock
     private MonoSink<Void> mockMonoSink;
 
-    private NettyDataBufferFactory dataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
+    private BufferConverter bufferConverter = new BufferConverter();
+
+    private PublisherToHttpBodyConnector connector;
+
+    @Before
+    public void setUp() {
+        connector = new PublisherToHttpBodyConnector(mockWriteStream, mockMonoSink, bufferConverter);
+    }
 
     @SuppressWarnings("unchecked")
     @Test
     public void shouldRegisterHandlersInConstructor() {
-        new PublisherToHttpBodyConnector(mockWriteStream, mockMonoSink);
-
         verify(mockWriteStream).drainHandler(any(Handler.class));
         verify(mockWriteStream).exceptionHandler(any(Handler.class));
     }
 
     @Test
     public void shouldGetDelegate() {
-        PublisherToHttpBodyConnector subscriber = new PublisherToHttpBodyConnector(mockWriteStream, mockMonoSink);
-
-        assertThat(subscriber.getDelegate()).isEqualTo(mockWriteStream);
+        assertThat(connector.getDelegate()).isEqualTo(mockWriteStream);
     }
 
     @Test
     public void shouldRequestOnSubscribe() {
-        PublisherToHttpBodyConnector subscriber = new PublisherToHttpBodyConnector(mockWriteStream, mockMonoSink);
         TestPublisher<DataBuffer> publisher = TestPublisher.create();
 
-        publisher.subscribe(subscriber);
+        publisher.subscribe(connector);
 
         publisher.assertMinRequested(1);
     }
 
     @Test
     public void shouldWriteAndRequestOnNext() {
-        PublisherToHttpBodyConnector subscriber = new PublisherToHttpBodyConnector(mockWriteStream, mockMonoSink);
         TestPublisher<DataBuffer> publisher = TestPublisher.create();
-        publisher.subscribe(subscriber);
+        publisher.subscribe(connector);
 
-        publisher.next(getDataBuffer("test"));
+        Buffer buffer = Buffer.buffer("test");
+        publisher.next(bufferConverter.toDataBuffer(buffer));
 
-        verify(mockWriteStream).write(Buffer.buffer("test"));
+        verify(mockWriteStream).write(buffer);
         publisher.assertMinRequested(1);
     }
 
@@ -71,18 +72,16 @@ public class PublisherToHttpBodyConnectorTest {
     public void shouldNotRequestIfFull() {
         given(mockWriteStream.writeQueueFull()).willReturn(true);
 
-        PublisherToHttpBodyConnector subscriber = new PublisherToHttpBodyConnector(mockWriteStream, mockMonoSink);
         TestPublisher<DataBuffer> publisher = TestPublisher.create();
-        publisher.subscribe(subscriber);
+        publisher.subscribe(connector);
 
         publisher.assertMinRequested(0);
     }
 
     @Test
     public void shouldHandleComplete() {
-        PublisherToHttpBodyConnector subscriber = new PublisherToHttpBodyConnector(mockWriteStream, mockMonoSink);
         TestPublisher<DataBuffer> publisher = TestPublisher.create();
-        publisher.subscribe(subscriber);
+        publisher.subscribe(connector);
 
         publisher.complete();
 
@@ -91,20 +90,18 @@ public class PublisherToHttpBodyConnectorTest {
 
     @Test
     public void shouldHandleCancel() {
-        PublisherToHttpBodyConnector subscriber = new PublisherToHttpBodyConnector(mockWriteStream, mockMonoSink);
         TestPublisher<DataBuffer> publisher = TestPublisher.create();
-        publisher.subscribe(subscriber);
+        publisher.subscribe(connector);
 
-        subscriber.cancel();
+        connector.cancel();
 
         verify(mockMonoSink).success();
     }
 
     @Test
     public void shouldHandleError() {
-        PublisherToHttpBodyConnector subscriber = new PublisherToHttpBodyConnector(mockWriteStream, mockMonoSink);
         TestPublisher<DataBuffer> publisher = TestPublisher.create();
-        publisher.subscribe(subscriber);
+        publisher.subscribe(connector);
 
         RuntimeException exception = new RuntimeException("test");
         publisher.error(exception);
@@ -117,28 +114,29 @@ public class PublisherToHttpBodyConnectorTest {
         TestWriteStream<Buffer> writeStream = new TestWriteStream<>();
         TestPublisher<DataBuffer> publisher = TestPublisher.create();
 
-        PublisherToHttpBodyConnector subscriber = new PublisherToHttpBodyConnector(writeStream, mockMonoSink);
+        Buffer firstBuffer = Buffer.buffer("first");
+        Buffer secondBuffer = Buffer.buffer("second");
+        Buffer thirdBuffer = Buffer.buffer("third");
+
+        PublisherToHttpBodyConnector connector =
+            new PublisherToHttpBodyConnector(writeStream, mockMonoSink, bufferConverter);
 
         writeStream.setWriteQueueMaxSize(2);
 
-        publisher.subscribe(subscriber);
+        publisher.subscribe(connector);
         publisher.assertMinRequested(1);
 
-        publisher.next(getDataBuffer("first"));
+        publisher.next(bufferConverter.toDataBuffer(firstBuffer));
         publisher.assertMinRequested(1);
 
-        publisher.next(getDataBuffer("second"));
+        publisher.next(bufferConverter.toDataBuffer(secondBuffer));
         publisher.assertMinRequested(0);
-        assertThat(writeStream.getReceived()).containsOnly(Buffer.buffer("first"), Buffer.buffer("second"));
+        assertThat(writeStream.getReceived()).containsOnly(firstBuffer, secondBuffer);
 
         writeStream.clearReceived();
         publisher.assertMinRequested(1);
 
-        publisher.next(getDataBuffer("third"));
-        assertThat(writeStream.getReceived()).containsOnly(Buffer.buffer("third"));
-    }
-
-    private DataBuffer getDataBuffer(String data) {
-        return dataBufferFactory.wrap(data.getBytes());
+        publisher.next(bufferConverter.toDataBuffer(thirdBuffer));
+        assertThat(writeStream.getReceived()).containsOnly(thirdBuffer);
     }
 }

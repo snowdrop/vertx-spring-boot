@@ -2,13 +2,11 @@ package me.snowdrop.vertx.http;
 
 import java.net.URI;
 
-import io.netty.buffer.ByteBufAllocator;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.http.impl.headers.VertxHttpHeaders;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.Assert;
 import org.springframework.web.reactive.socket.HandshakeInfo;
@@ -21,7 +19,7 @@ public class VertxWebSocketClient implements WebSocketClient {
 
     private final HttpClient httpClient;
 
-    private final NettyDataBufferFactory dataBufferFactory;
+    private final BufferConverter bufferConverter;
 
     public VertxWebSocketClient(Vertx vertx) {
         this(vertx.createHttpClient());
@@ -34,7 +32,7 @@ public class VertxWebSocketClient implements WebSocketClient {
     public VertxWebSocketClient(HttpClient httpClient) {
         Assert.notNull(httpClient, "HttpClient is required");
         this.httpClient = httpClient;
-        this.dataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
+        this.bufferConverter = new BufferConverter();
     }
 
     @Override
@@ -58,7 +56,7 @@ public class VertxWebSocketClient implements WebSocketClient {
         );
     }
 
-    private VertxHttpHeaders adaptHeaders(HttpHeaders headers) {
+    private VertxHttpHeaders adaptHeaders(HttpHeaders headers) {// TODO refactor
         VertxHttpHeaders vertxHeaders = new VertxHttpHeaders();
         headers.forEach(vertxHeaders::add);
 
@@ -69,6 +67,6 @@ public class VertxWebSocketClient implements WebSocketClient {
         // Vert.x handshake doesn't return headers so passing an empty collection
         HandshakeInfo handshakeInfo = new HandshakeInfo(uri, new HttpHeaders(), Mono.empty(), socket.subProtocol());
 
-        return new VertxWebSocketSession(socket, handshakeInfo, dataBufferFactory);
+        return new VertxWebSocketSession(socket, handshakeInfo, bufferConverter);
     }
 }

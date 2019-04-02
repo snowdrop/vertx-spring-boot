@@ -1,13 +1,11 @@
 package me.snowdrop.vertx.http;
 
-import io.netty.buffer.ByteBuf;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.WebSocketBase;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.reactive.socket.CloseStatus;
 import org.springframework.web.reactive.socket.HandshakeInfo;
@@ -20,12 +18,12 @@ public class VertxWebSocketSession extends AbstractWebSocketSession<WebSocketBas
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final NettyDataBufferFactory dataBufferFactory;
+    private final BufferConverter bufferConverter;
 
-    public VertxWebSocketSession(WebSocketBase delegate, HandshakeInfo handshakeInfo,
-        NettyDataBufferFactory dataBufferFactory) {
-        super(delegate, ObjectUtils.getIdentityHexString(delegate), handshakeInfo, dataBufferFactory);
-        this.dataBufferFactory = dataBufferFactory;
+    public VertxWebSocketSession(WebSocketBase delegate, HandshakeInfo handshakeInfo, BufferConverter bufferConverter) {
+        super(delegate, ObjectUtils.getIdentityHexString(delegate), handshakeInfo,
+            bufferConverter.getDataBufferFactory());
+        this.bufferConverter = bufferConverter;
     }
 
     @Override
@@ -40,11 +38,11 @@ public class VertxWebSocketSession extends AbstractWebSocketSession<WebSocketBas
                     })
                     .binaryMessageHandler(payload -> {
                         logger.debug("{}Received binary '{}' from a web socket read stream", getLogPrefix(), payload);
-                        sink.next(binaryMessageAdapter(payload));
+                        sink.next(binaryMessage(payload));
                     })
                     .pongHandler(payload -> {
                         logger.debug("{}Received pong '{}' from a web socket read stream", getLogPrefix(), payload);
-                        sink.next(pongMessageAdapter(payload));
+                        sink.next(pongMessage(payload));
                     })
                     .exceptionHandler(throwable -> {
                         logger.debug("{}Received exception '{}' from a web socket read stream", getLogPrefix(), throwable);
@@ -66,7 +64,7 @@ public class VertxWebSocketSession extends AbstractWebSocketSession<WebSocketBas
     public Mono<Void> send(Publisher<WebSocketMessage> messages) {
         return Mono.create(sink -> {
             logger.debug("{}Subscribing to messages publisher", getLogPrefix());
-            messages.subscribe(new PublisherToWebSocketConnector(getDelegate(), sink));
+            messages.subscribe(new PublisherToWebSocketConnector(getDelegate(), sink, bufferConverter));
         });
     }
 
@@ -81,17 +79,13 @@ public class VertxWebSocketSession extends AbstractWebSocketSession<WebSocketBas
             .close((short) status.getCode(), status.getReason()));
     }
 
-    private WebSocketMessage binaryMessageAdapter(Buffer payload) {
-        ByteBuf byteBuf = payload.getByteBuf();
-        DataBuffer dataBuffer = dataBufferFactory.wrap(byteBuf);
-
-        return new WebSocketMessage(WebSocketMessage.Type.BINARY, dataBuffer);
+    private WebSocketMessage binaryMessage(Buffer payloadBuffer) {
+        DataBuffer payload = bufferConverter.toDataBuffer(payloadBuffer);
+        return new WebSocketMessage(WebSocketMessage.Type.BINARY, payload);
     }
 
-    private WebSocketMessage pongMessageAdapter(Buffer payload) {
-        ByteBuf byteBuf = payload.getByteBuf();
-        DataBuffer dataBuffer = dataBufferFactory.wrap(byteBuf);
-
-        return new WebSocketMessage(WebSocketMessage.Type.PONG, dataBuffer);
+    private WebSocketMessage pongMessage(Buffer payloadBuffer) {
+        DataBuffer payload = bufferConverter.toDataBuffer(payloadBuffer);
+        return new WebSocketMessage(WebSocketMessage.Type.PONG, payload);
     }
 }

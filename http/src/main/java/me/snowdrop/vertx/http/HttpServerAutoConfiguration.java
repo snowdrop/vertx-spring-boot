@@ -2,7 +2,6 @@ package me.snowdrop.vertx.http;
 
 import java.util.Set;
 
-import io.netty.buffer.ByteBufAllocator;
 import io.vertx.core.Vertx;
 import me.snowdrop.vertx.http.properties.HttpServerOptionsCustomizer;
 import me.snowdrop.vertx.http.properties.HttpServerProperties;
@@ -15,7 +14,6 @@ import org.springframework.boot.web.reactive.server.ReactiveWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.ReactiveHttpInputMessage;
 import org.springframework.web.reactive.socket.server.WebSocketService;
 import org.springframework.web.reactive.socket.server.support.HandshakeWebSocketService;
@@ -29,12 +27,11 @@ import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAd
 @EnableConfigurationProperties(HttpServerProperties.class)
 public class HttpServerAutoConfiguration {
 
-    private final NettyDataBufferFactory dataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
+    private final BufferConverter bufferConverter = new BufferConverter();
 
     @Bean
-    public VertxReactiveWebServerFactory vertxReactiveWebServerFactory(Vertx vertx,
-        HttpServerProperties httpServerProperties) {
-        return new VertxReactiveWebServerFactory(vertx, httpServerProperties, dataBufferFactory);
+    public VertxReactiveWebServerFactory vertxReactiveWebServerFactory(Vertx vertx, HttpServerProperties properties) {
+        return new VertxReactiveWebServerFactory(vertx, properties, bufferConverter);
     }
 
     @Bean
@@ -45,7 +42,7 @@ public class HttpServerAutoConfiguration {
 
     @Bean
     public WebSocketService webSocketService() {
-        VertxRequestUpgradeStrategy requestUpgradeStrategy = new VertxRequestUpgradeStrategy(dataBufferFactory);
+        VertxRequestUpgradeStrategy requestUpgradeStrategy = new VertxRequestUpgradeStrategy(bufferConverter);
         return new HandshakeWebSocketService(requestUpgradeStrategy);
     }
 

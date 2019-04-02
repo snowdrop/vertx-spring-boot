@@ -6,7 +6,6 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.ServerWebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.server.reactive.AbstractServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.lang.Nullable;
@@ -20,10 +19,10 @@ public class VertxRequestUpgradeStrategy implements RequestUpgradeStrategy {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VertxRequestUpgradeStrategy.class);
 
-    private final NettyDataBufferFactory dataBufferFactory;
+    private final BufferConverter bufferConverter;
 
-    public VertxRequestUpgradeStrategy(NettyDataBufferFactory dataBufferFactory) {
-        this.dataBufferFactory = dataBufferFactory;
+    public VertxRequestUpgradeStrategy(BufferConverter bufferConverter) {
+        this.bufferConverter = bufferConverter;
     }
 
     @Override
@@ -37,7 +36,7 @@ public class VertxRequestUpgradeStrategy implements RequestUpgradeStrategy {
 
         ServerWebSocket webSocket = vertxRequest.upgrade();
         VertxWebSocketSession session =
-            new VertxWebSocketSession(webSocket, handshakeInfoFactory.get(), dataBufferFactory);
+            new VertxWebSocketSession(webSocket, handshakeInfoFactory.get(), bufferConverter);
 
         return handler.handle(session);
     }

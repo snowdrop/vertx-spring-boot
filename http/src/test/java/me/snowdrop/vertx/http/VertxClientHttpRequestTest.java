@@ -4,7 +4,6 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 
-import io.netty.buffer.ByteBufAllocator;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientRequest;
 import org.junit.Before;
@@ -14,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpMethod;
 import reactor.core.publisher.Flux;
@@ -32,14 +30,14 @@ public class VertxClientHttpRequestTest {
     @Mock
     private HttpClientRequest mockHttpClientRequest;
 
-    private NettyDataBufferFactory nettyDataBufferFactory;
+    private BufferConverter bufferConverter;
 
     private VertxClientHttpRequest request;
 
     @Before
     public void setUp() {
-        nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
-        request = new VertxClientHttpRequest(mockHttpClientRequest, nettyDataBufferFactory);
+        bufferConverter = new BufferConverter();
+        request = new VertxClientHttpRequest(mockHttpClientRequest, bufferConverter);
     }
 
     @Test
@@ -65,7 +63,7 @@ public class VertxClientHttpRequestTest {
     public void shouldGetBufferFactory() {
         DataBufferFactory dataBufferFactory = request.bufferFactory();
 
-        assertThat(dataBufferFactory).isEqualTo(nettyDataBufferFactory);
+        assertThat(dataBufferFactory).isEqualTo(bufferConverter.getDataBufferFactory());
     }
 
     @Test
@@ -79,9 +77,9 @@ public class VertxClientHttpRequestTest {
         StepVerifier.create(result)
             .expectSubscription()
             .then(() -> source.assertMinRequested(1))
-            .then(() -> source.next(nettyDataBufferFactory.wrap(firstChunk.getByteBuf())))
+            .then(() -> source.next(bufferConverter.toDataBuffer(firstChunk)))
             .then(() -> source.assertMinRequested(1))
-            .then(() -> source.next(nettyDataBufferFactory.wrap(secondChunk.getByteBuf())))
+            .then(() -> source.next(bufferConverter.toDataBuffer(secondChunk)))
             .then(() -> source.assertMinRequested(1))
             .then(source::complete)
             .verifyComplete();
@@ -102,9 +100,9 @@ public class VertxClientHttpRequestTest {
         StepVerifier.create(result)
             .expectSubscription()
             .then(() -> source.assertMinRequested(1))
-            .then(() -> source.next(nettyDataBufferFactory.wrap(firstChunk.getByteBuf())))
+            .then(() -> source.next(bufferConverter.toDataBuffer(firstChunk)))
             .then(() -> source.assertMinRequested(1))
-            .then(() -> source.next(nettyDataBufferFactory.wrap(secondChunk.getByteBuf())))
+            .then(() -> source.next(bufferConverter.toDataBuffer(secondChunk)))
             .then(() -> source.assertMinRequested(1))
             .then(source::complete)
             .verifyComplete();

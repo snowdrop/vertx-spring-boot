@@ -7,15 +7,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.reactive.socket.WebSocketMessage;
 import reactor.core.publisher.MonoSink;
 
-import static me.snowdrop.vertx.http.Utils.dataBufferToBuffer;
-
 public class PublisherToWebSocketConnector
     extends AbstractPublisherToWriteStreamConnector<WebSocketBase, WebSocketMessage> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public PublisherToWebSocketConnector(WebSocketBase delegate, MonoSink endHook) {
+    private final BufferConverter bufferConverter;
+
+    public PublisherToWebSocketConnector(WebSocketBase delegate, MonoSink endHook, BufferConverter bufferConverter) {
         super(delegate, endHook);
+        this.bufferConverter = bufferConverter;
     }
 
     @Override
@@ -26,7 +27,7 @@ public class PublisherToWebSocketConnector
             String payload = message.getPayloadAsText();
             getDelegate().writeTextMessage(payload);
         } else {
-            Buffer buffer = dataBufferToBuffer(message.getPayload());
+            Buffer buffer = bufferConverter.toBuffer(message.getPayload());
 
             if (message.getType() == WebSocketMessage.Type.PING) {
                 getDelegate().writePing(buffer);

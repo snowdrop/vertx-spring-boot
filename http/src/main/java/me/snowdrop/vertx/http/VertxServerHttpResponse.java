@@ -3,16 +3,13 @@ package me.snowdrop.vertx.http;
 import java.nio.file.Path;
 
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ZeroCopyHttpOutputMessage;
 import org.springframework.http.server.reactive.AbstractServerHttpResponse;
 import reactor.core.publisher.Flux;
@@ -28,10 +25,13 @@ public class VertxServerHttpResponse extends AbstractServerHttpResponse implemen
 
     private final HttpServerResponse response;
 
-    public VertxServerHttpResponse(RoutingContext context, NettyDataBufferFactory dataBufferFactory) {
-        super(dataBufferFactory, initHeaders(context.response()));
+    private final BufferConverter bufferConverter;
+
+    public VertxServerHttpResponse(RoutingContext context, BufferConverter bufferConverter) {
+        super(bufferConverter.getDataBufferFactory(), initHeaders(context.response()));
         this.context = context;
         this.response = context.response();
+        this.bufferConverter = bufferConverter;
     }
 
     @SuppressWarnings("unchecked")
@@ -51,7 +51,7 @@ public class VertxServerHttpResponse extends AbstractServerHttpResponse implemen
     protected Mono<Void> writeWithInternal(Publisher<? extends DataBuffer> chunks) {
         return Mono.create(sink -> {
             logger.debug("Subscribing to body publisher");
-            chunks.subscribe(new PublisherToHttpBodyConnector(response, sink));
+            chunks.subscribe(new PublisherToHttpBodyConnector(response, sink, bufferConverter));
         });
     }
 
@@ -84,20 +84,11 @@ public class VertxServerHttpResponse extends AbstractServerHttpResponse implemen
             .toSingleValueMap() // Vert.x doesn't support multi-value cookies
             .values()
             .stream()
-            .map(this::cookieMapper)
+            .map(CookieConverter::toCookie)
             .forEach(context::addCookie);
     }
 
-    private Cookie cookieMapper(ResponseCookie responseCookie) {
-        return Cookie.cookie(responseCookie.getName(), responseCookie.getValue())
-            .setDomain(responseCookie.getDomain())
-            .setPath(responseCookie.getPath())
-            .setMaxAge(responseCookie.getMaxAge().getSeconds())
-            .setHttpOnly(responseCookie.isHttpOnly())
-            .setSecure(responseCookie.isSecure());
-    }
-
-    private static HttpHeaders initHeaders(HttpServerResponse response) {
+    private static HttpHeaders initHeaders(HttpServerResponse response) {// TODO refactor
         HttpHeaders headers = new HttpHeaders();
         response.headers()
             .forEach(e -> headers.add(e.getKey(), e.getValue()));
