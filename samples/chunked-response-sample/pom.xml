@@ -14,7 +14,7 @@
   <dependencies>
     <dependency>
       <groupId>me.snowdrop</groupId>
-      <artifactId>vertx-spring-boot-http-server</artifactId>
+      <artifactId>vertx-spring-boot-http</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

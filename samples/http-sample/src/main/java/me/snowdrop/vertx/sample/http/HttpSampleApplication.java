@@ -1,6 +1,6 @@
 package me.snowdrop.vertx.sample.http;
 
-import me.snowdrop.vertx.http.VertxReactiveWebServerFactory;
+import me.snowdrop.vertx.http.server.VertxReactiveWebServerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
