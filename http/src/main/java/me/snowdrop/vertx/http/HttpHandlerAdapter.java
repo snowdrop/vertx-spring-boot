@@ -6,13 +6,13 @@ import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.HttpHandler;
 
-public class VertxHttpHandlerAdapter implements Handler<RoutingContext> {
+public class HttpHandlerAdapter implements Handler<RoutingContext> {
 
     private final HttpHandler httpHandler;
 
     private final NettyDataBufferFactory dataBufferFactory;
 
-    public VertxHttpHandlerAdapter(HttpHandler httpHandler, NettyDataBufferFactory dataBufferFactory) {
+    public HttpHandlerAdapter(HttpHandler httpHandler, NettyDataBufferFactory dataBufferFactory) {
         this.httpHandler = httpHandler;
         this.dataBufferFactory = dataBufferFactory;
     }
