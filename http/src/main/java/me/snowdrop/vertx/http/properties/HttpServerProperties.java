@@ -18,416 +18,416 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * sslEngineOptions, crlPath or crlValues are required, please use HttpServerOptionsCustomizer.
  * If keyCertOptions or trustOptions either use {@link HttpServerOptionsCustomizer} or {@link ServerProperties}.
  */
-@ConfigurationProperties(prefix = VertxHttpServerProperties.PROPERTIES_PREFIX)
-public class VertxHttpServerProperties {
+@ConfigurationProperties(prefix = HttpServerProperties.PROPERTIES_PREFIX)
+public class HttpServerProperties {
 
     static final String PROPERTIES_PREFIX = "vertx.http.server";
 
-    private final HttpServerOptions httpServerOptions = new HttpServerOptions();
+    private final HttpServerOptions delegate = new HttpServerOptions();
 
     public HttpServerOptions getHttpServerOptions() {
-        return new HttpServerOptions(httpServerOptions);
+        return new HttpServerOptions(delegate);
     }
 
     // Vert.x NetServerOptions
 
     public int getPort() {
-        return httpServerOptions.getPort();
+        return delegate.getPort();
     }
 
     public void setPort(int port) {
-        httpServerOptions.setPort(port);
+        delegate.setPort(port);
     }
 
     public String getHost() {
-        return httpServerOptions.getHost();
+        return delegate.getHost();
     }
 
     public void setHost(String host) {
-        httpServerOptions.setHost(host);
+        delegate.setHost(host);
     }
 
     public int getAcceptBacklog() {
-        return httpServerOptions.getAcceptBacklog();
+        return delegate.getAcceptBacklog();
     }
 
     public void setAcceptBacklog(int acceptBacklog) {
-        httpServerOptions.setAcceptBacklog(acceptBacklog);
+        delegate.setAcceptBacklog(acceptBacklog);
     }
 
     public ClientAuth getClientAuth() {
-        return httpServerOptions.getClientAuth();
+        return delegate.getClientAuth();
     }
 
     public void setClientAuth(ClientAuth clientAuth) {
-        httpServerOptions.setClientAuth(clientAuth);
+        delegate.setClientAuth(clientAuth);
     }
 
     public boolean isSni() {
-        return httpServerOptions.isSni();
+        return delegate.isSni();
     }
 
     public void setSni(boolean sni) {
-        httpServerOptions.setSni(sni);
+        delegate.setSni(sni);
     }
 
     // Vert.x HttpServerOptions
 
     public boolean isCompressionSupported() {
-        return httpServerOptions.isCompressionSupported();
+        return delegate.isCompressionSupported();
     }
 
     public void setCompressionSupported(boolean compressionSupported) {
-        httpServerOptions.setCompressionSupported(compressionSupported);
+        delegate.setCompressionSupported(compressionSupported);
     }
 
     public int getCompressionLevel() {
-        return httpServerOptions.getCompressionLevel();
+        return delegate.getCompressionLevel();
     }
 
     public void setCompressionLevel(int compressionLevel) {
-        httpServerOptions.setCompressionLevel(compressionLevel);
+        delegate.setCompressionLevel(compressionLevel);
     }
 
     public boolean isAcceptUnmaskedFrames() {
-        return httpServerOptions.isAcceptUnmaskedFrames();
+        return delegate.isAcceptUnmaskedFrames();
     }
 
     public void setAcceptUnmaskedFrames(boolean acceptUnmaskedFrames) {
-        httpServerOptions.setAcceptUnmaskedFrames(acceptUnmaskedFrames);
+        delegate.setAcceptUnmaskedFrames(acceptUnmaskedFrames);
     }
 
     public int getMaxWebsocketFrameSize() {
-        return httpServerOptions.getMaxWebsocketFrameSize();
+        return delegate.getMaxWebsocketFrameSize();
     }
 
     public void setMaxWebsocketFrameSize(int maxWebsocketFrameSize) {
-        httpServerOptions.setMaxWebsocketFrameSize(maxWebsocketFrameSize);
+        delegate.setMaxWebsocketFrameSize(maxWebsocketFrameSize);
     }
 
     public int getMaxWebsocketMessageSize() {
-        return httpServerOptions.getMaxWebsocketMessageSize();
+        return delegate.getMaxWebsocketMessageSize();
     }
 
     public void setMaxWebsocketMessageSize(int maxWebsocketMessageSize) {
-        httpServerOptions.setMaxWebsocketMessageSize(maxWebsocketMessageSize);
+        delegate.setMaxWebsocketMessageSize(maxWebsocketMessageSize);
     }
 
     public String getWebsocketSubProtocols() {
-        return httpServerOptions.getWebsocketSubProtocols();
+        return delegate.getWebsocketSubProtocols();
     }
 
     public void setWebsocketSubProtocols(String subProtocols) {
-        httpServerOptions.setWebsocketSubProtocols(subProtocols);
+        delegate.setWebsocketSubProtocols(subProtocols);
     }
 
     public boolean isHandle100ContinueAutomatically() {
-        return httpServerOptions.isHandle100ContinueAutomatically();
+        return delegate.isHandle100ContinueAutomatically();
     }
 
     public void setHandle100ContinueAutomatically(boolean handle100ContinueAutomatically) {
-        httpServerOptions.setHandle100ContinueAutomatically(handle100ContinueAutomatically);
+        delegate.setHandle100ContinueAutomatically(handle100ContinueAutomatically);
     }
 
     public int getMaxChunkSize() {
-        return httpServerOptions.getMaxChunkSize();
+        return delegate.getMaxChunkSize();
     }
 
     public void setMaxChunkSize(int maxChunkSize) {
-        httpServerOptions.setMaxChunkSize(maxChunkSize);
+        delegate.setMaxChunkSize(maxChunkSize);
     }
 
     public int getMaxInitialLineLength() {
-        return httpServerOptions.getMaxInitialLineLength();
+        return delegate.getMaxInitialLineLength();
     }
 
     public void setMaxInitialLineLength(int maxInitialLineLength) {
-        httpServerOptions.setMaxInitialLineLength(maxInitialLineLength);
+        delegate.setMaxInitialLineLength(maxInitialLineLength);
     }
 
     public int getMaxHeaderSize() {
-        return httpServerOptions.getMaxHeaderSize();
+        return delegate.getMaxHeaderSize();
     }
 
     public void setMaxHeaderSize(int maxHeaderSize) {
-        httpServerOptions.setMaxHeaderSize(maxHeaderSize);
+        delegate.setMaxHeaderSize(maxHeaderSize);
     }
 
     public List<HttpVersion> getAlpnVersions() {
-        return httpServerOptions.getAlpnVersions();
+        return delegate.getAlpnVersions();
     }
 
     public void setAlpnVersions(List<HttpVersion> alpnVersions) {
-        httpServerOptions.setAlpnVersions(alpnVersions);
+        delegate.setAlpnVersions(alpnVersions);
     }
 
     public int getHttp2ConnectionWindowSize() {
-        return httpServerOptions.getHttp2ConnectionWindowSize();
+        return delegate.getHttp2ConnectionWindowSize();
     }
 
     public void setHttp2ConnectionWindowSize(int http2ConnectionWindowSize) {
-        httpServerOptions.setHttp2ConnectionWindowSize(http2ConnectionWindowSize);
+        delegate.setHttp2ConnectionWindowSize(http2ConnectionWindowSize);
     }
 
     public boolean isDecompressionSupported() {
-        return httpServerOptions.isDecompressionSupported();
+        return delegate.isDecompressionSupported();
     }
 
     public void setDecompressionSupported(boolean decompressionSupported) {
-        httpServerOptions.setDecompressionSupported(decompressionSupported);
+        delegate.setDecompressionSupported(decompressionSupported);
     }
 
     public int getDecoderInitialBufferSize() {
-        return httpServerOptions.getDecoderInitialBufferSize();
+        return delegate.getDecoderInitialBufferSize();
     }
 
     public void setDecoderInitialBufferSize(int decoderInitialBufferSize) {
-        httpServerOptions.setDecoderInitialBufferSize(decoderInitialBufferSize);
+        delegate.setDecoderInitialBufferSize(decoderInitialBufferSize);
     }
 
     public boolean isPerFrameWebsocketCompressionSupported() {
-        return httpServerOptions.perFrameWebsocketCompressionSupported();
+        return delegate.perFrameWebsocketCompressionSupported();
     }
 
     public void setPerFrameWebsocketCompressionSupported(boolean perFrameWebsocketCompressionSupported) {
-        httpServerOptions.setPerFrameWebsocketCompressionSupported(perFrameWebsocketCompressionSupported);
+        delegate.setPerFrameWebsocketCompressionSupported(perFrameWebsocketCompressionSupported);
     }
 
     public boolean isPerMessageWebsocketCompressionSupported() {
-        return httpServerOptions.perMessageWebsocketCompressionSupported();
+        return delegate.perMessageWebsocketCompressionSupported();
     }
 
     public void setPerMessageWebsocketCompressionSupported(boolean perMessageWebsocketCompressionSupported) {
-        httpServerOptions.setPerMessageWebsocketCompressionSupported(perMessageWebsocketCompressionSupported);
+        delegate.setPerMessageWebsocketCompressionSupported(perMessageWebsocketCompressionSupported);
     }
 
     public int getWebsocketCompressionLevel() {
-        return httpServerOptions.websocketCompressionLevel();
+        return delegate.websocketCompressionLevel();
     }
 
     public void setWebsocketCompressionLevel(int websocketCompressionLevel) {
-        httpServerOptions.setWebsocketCompressionLevel(websocketCompressionLevel);
+        delegate.setWebsocketCompressionLevel(websocketCompressionLevel);
     }
 
     public boolean isWebsocketAllowServerNoContext() {
-        return httpServerOptions.getWebsocketAllowServerNoContext();
+        return delegate.getWebsocketAllowServerNoContext();
     }
 
     public void setWebsocketAllowServerNoContext(boolean allowServerNoContext) {
-        httpServerOptions.setWebsocketAllowServerNoContext(allowServerNoContext);
+        delegate.setWebsocketAllowServerNoContext(allowServerNoContext);
     }
 
     public boolean isWebsocketPreferredClientNoContext() {
-        return httpServerOptions.getWebsocketPreferredClientNoContext();
+        return delegate.getWebsocketPreferredClientNoContext();
     }
 
     public void setWebsocketPreferredClientNoContext(boolean preferredClientNoContext) {
-        httpServerOptions.setWebsocketPreferredClientNoContext(preferredClientNoContext);
+        delegate.setWebsocketPreferredClientNoContext(preferredClientNoContext);
     }
 
     public long getHeaderTableSize() {
-        return httpServerOptions.getInitialSettings().getHeaderTableSize();
+        return delegate.getInitialSettings().getHeaderTableSize();
     }
 
     public void setHeaderTableSize(long headerTableSize) {
-        httpServerOptions.getInitialSettings().setHeaderTableSize(headerTableSize);
+        delegate.getInitialSettings().setHeaderTableSize(headerTableSize);
     }
 
     public boolean isPushEnabled() {
-        return httpServerOptions.getInitialSettings().isPushEnabled();
+        return delegate.getInitialSettings().isPushEnabled();
     }
 
     public void setPushEnabled(boolean pushEnabled) {
-        httpServerOptions.getInitialSettings().setPushEnabled(pushEnabled);
+        delegate.getInitialSettings().setPushEnabled(pushEnabled);
     }
 
     public long getMaxConcurrentStreams() {
-        return httpServerOptions.getInitialSettings().getMaxConcurrentStreams();
+        return delegate.getInitialSettings().getMaxConcurrentStreams();
     }
 
     public void getMaxConcurrentStreams(long maxConcurrentStreams) {
-        httpServerOptions.getInitialSettings().setMaxConcurrentStreams(maxConcurrentStreams);
+        delegate.getInitialSettings().setMaxConcurrentStreams(maxConcurrentStreams);
     }
 
     public int getInitialWindowSize() {
-        return httpServerOptions.getInitialSettings().getInitialWindowSize();
+        return delegate.getInitialSettings().getInitialWindowSize();
     }
 
     public void getMaxConcurrentStreams(int initialWindowSize) {
-        httpServerOptions.getInitialSettings().setInitialWindowSize(initialWindowSize);
+        delegate.getInitialSettings().setInitialWindowSize(initialWindowSize);
     }
 
     public int getMaxFrameSize() {
-        return httpServerOptions.getInitialSettings().getMaxFrameSize();
+        return delegate.getInitialSettings().getMaxFrameSize();
     }
 
     public void setMaxFrameSize(int maxFrameSize) {
-        httpServerOptions.getInitialSettings().setMaxFrameSize(maxFrameSize);
+        delegate.getInitialSettings().setMaxFrameSize(maxFrameSize);
     }
 
     public long getMaxHeaderListSize() {
-        return httpServerOptions.getInitialSettings().getMaxHeaderListSize();
+        return delegate.getInitialSettings().getMaxHeaderListSize();
     }
 
     public void setMaxHeaderListSize(long maxHeaderListSize) {
-        httpServerOptions.getInitialSettings().setMaxHeaderListSize(maxHeaderListSize);
+        delegate.getInitialSettings().setMaxHeaderListSize(maxHeaderListSize);
     }
 
     public Map<Integer, Long> getHttp2ExtraSettings() {
-        return httpServerOptions.getInitialSettings().getExtraSettings();
+        return delegate.getInitialSettings().getExtraSettings();
     }
 
     public void setHttp2ExtraSettings(Map<Integer, Long> http2ExtraSettings) {
-        httpServerOptions.getInitialSettings().setExtraSettings(http2ExtraSettings);
+        delegate.getInitialSettings().setExtraSettings(http2ExtraSettings);
     }
 
     // Vert.x TCPSSLOptions
 
     public boolean isTcpNoDelay() {
-        return httpServerOptions.isTcpNoDelay();
+        return delegate.isTcpNoDelay();
     }
 
     public void setTcpNoDelay(boolean tcpNoDelay) {
-        httpServerOptions.setTcpNoDelay(tcpNoDelay);
+        delegate.setTcpNoDelay(tcpNoDelay);
     }
 
     public boolean isTcpKeepAlive() {
-        return httpServerOptions.isTcpKeepAlive();
+        return delegate.isTcpKeepAlive();
     }
 
     public void setTcpKeepAlive(boolean tcpKeepAlive) {
-        httpServerOptions.setTcpKeepAlive(tcpKeepAlive);
+        delegate.setTcpKeepAlive(tcpKeepAlive);
     }
 
     public int getSoLinger() {
-        return httpServerOptions.getSoLinger();
+        return delegate.getSoLinger();
     }
 
     public void setSoLinger(int soLinger) {
-        httpServerOptions.setSoLinger(soLinger);
+        delegate.setSoLinger(soLinger);
     }
 
     public int getIdleTimeout() {
-        return httpServerOptions.getIdleTimeout();
+        return delegate.getIdleTimeout();
     }
 
     public void setIdleTimeout(int idleTimeout) {
-        httpServerOptions.setIdleTimeout(idleTimeout);
+        delegate.setIdleTimeout(idleTimeout);
     }
 
     public TimeUnit getIdleTimeoutUnit() {
-        return httpServerOptions.getIdleTimeoutUnit();
+        return delegate.getIdleTimeoutUnit();
     }
 
     public void setIdleTimeoutUnit(TimeUnit idleTimeoutUnit) {
-        httpServerOptions.setIdleTimeoutUnit(idleTimeoutUnit);
+        delegate.setIdleTimeoutUnit(idleTimeoutUnit);
     }
 
     public boolean isSsl() {
-        return httpServerOptions.isSsl();
+        return delegate.isSsl();
     }
 
     public void setSsl(boolean ssl) {
-        httpServerOptions.setSsl(ssl);
+        delegate.setSsl(ssl);
     }
 
     public Set<String> getEnabledCipherSuites() {
-        return httpServerOptions.getEnabledCipherSuites();
+        return delegate.getEnabledCipherSuites();
     }
 
     public void setEnabledCipherSuites(Set<String> enabledCipherSuites) {
         if (enabledCipherSuites != null) {
-            enabledCipherSuites.forEach(httpServerOptions::addEnabledCipherSuite);
+            enabledCipherSuites.forEach(delegate::addEnabledCipherSuite);
         }
     }
 
     public boolean isUseAlpn() {
-        return httpServerOptions.isUseAlpn();
+        return delegate.isUseAlpn();
     }
 
     public void setUseAlpn(boolean useAlpn) {
-        httpServerOptions.setUseAlpn(useAlpn);
+        delegate.setUseAlpn(useAlpn);
     }
 
     public Set<String> getEnabledSecureTransportProtocols() {
-        return httpServerOptions.getEnabledSecureTransportProtocols();
+        return delegate.getEnabledSecureTransportProtocols();
     }
 
     public void setEnabledSecureTransportProtocols(Set<String> enabledSecureTransportProtocols) {
-        httpServerOptions.setEnabledSecureTransportProtocols(enabledSecureTransportProtocols);
+        delegate.setEnabledSecureTransportProtocols(enabledSecureTransportProtocols);
     }
 
     public boolean isTcpFastOpen() {
-        return httpServerOptions.isTcpFastOpen();
+        return delegate.isTcpFastOpen();
     }
 
     public void setTcpFastOpen(boolean tcpFastOpen) {
-        httpServerOptions.setTcpFastOpen(tcpFastOpen);
+        delegate.setTcpFastOpen(tcpFastOpen);
     }
 
     public boolean isTcpCork() {
-        return httpServerOptions.isTcpCork();
+        return delegate.isTcpCork();
     }
 
     public void setTcpCork(boolean tcpCork) {
-        httpServerOptions.setTcpCork(tcpCork);
+        delegate.setTcpCork(tcpCork);
     }
 
     public boolean isTcpQuickAck() {
-        return httpServerOptions.isTcpQuickAck();
+        return delegate.isTcpQuickAck();
     }
 
     public void setTcpQuickAck(boolean tcpQuickAck) {
-        httpServerOptions.setTcpQuickAck(tcpQuickAck);
+        delegate.setTcpQuickAck(tcpQuickAck);
     }
 
     // NetworkOptions
 
     public int getSendBufferSize() {
-        return httpServerOptions.getSendBufferSize();
+        return delegate.getSendBufferSize();
     }
 
     public void setSendBufferSize(int sendBufferSize) {
-        httpServerOptions.setSendBufferSize(sendBufferSize);
+        delegate.setSendBufferSize(sendBufferSize);
     }
 
     public int getReceiveBufferSize() {
-        return httpServerOptions.getReceiveBufferSize();
+        return delegate.getReceiveBufferSize();
     }
 
     public void setReceiveBufferSize(int receiveBufferSize) {
-        httpServerOptions.setReceiveBufferSize(receiveBufferSize);
+        delegate.setReceiveBufferSize(receiveBufferSize);
     }
 
     public int getTrafficClass() {
-        return httpServerOptions.getTrafficClass();
+        return delegate.getTrafficClass();
     }
 
     public void setTrafficClass(int trafficClass) {
-        httpServerOptions.setTrafficClass(trafficClass);
+        delegate.setTrafficClass(trafficClass);
     }
 
     public boolean isReuseAddress() {
-        return httpServerOptions.isReuseAddress();
+        return delegate.isReuseAddress();
     }
 
     public void setReuseAddress(boolean reuseAddress) {
-        httpServerOptions.setReuseAddress(reuseAddress);
+        delegate.setReuseAddress(reuseAddress);
     }
 
     public boolean getLogActivity() {
-        return httpServerOptions.getLogActivity();
+        return delegate.getLogActivity();
     }
 
     public void setLogActivity(boolean logActivity) {
-        httpServerOptions.setLogActivity(logActivity);
+        delegate.setLogActivity(logActivity);
     }
 
     public boolean isReusePort() {
-        return httpServerOptions.isReusePort();
+        return delegate.isReusePort();
     }
 
     public void setReusePort(boolean reusePort) {
-        httpServerOptions.setReusePort(reusePort);
+        delegate.setReusePort(reusePort);
     }
 }
