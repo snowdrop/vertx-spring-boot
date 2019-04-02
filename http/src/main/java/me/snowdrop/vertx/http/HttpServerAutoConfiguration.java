@@ -27,7 +27,7 @@ import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAd
 @ConditionalOnClass(ReactiveHttpInputMessage.class)
 @ConditionalOnMissingBean(ReactiveWebServerFactory.class)
 @EnableConfigurationProperties(HttpServerProperties.class)
-public class VertxHttpServerAutoConfiguration {
+public class HttpServerAutoConfiguration {
 
     private final NettyDataBufferFactory dataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
 
