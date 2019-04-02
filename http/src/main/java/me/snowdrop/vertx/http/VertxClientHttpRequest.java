@@ -51,7 +51,7 @@ public class VertxClientHttpRequest extends AbstractClientHttpRequest {
     public Mono<Void> writeWith(Publisher<? extends DataBuffer> chunks) {
         Mono<Void> writeCompletion = Mono.create(sink -> {
             logger.debug("Subscribing to body publisher");
-            chunks.subscribe(new HttpWriteStreamSubscriber(request, sink));
+            chunks.subscribe(new PublisherToHttpBodyConnector(request, sink));
         });
 
         Mono<Void> endCompletion = Mono.create(sink -> {

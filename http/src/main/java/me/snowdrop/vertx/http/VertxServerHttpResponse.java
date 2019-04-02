@@ -51,7 +51,7 @@ public class VertxServerHttpResponse extends AbstractServerHttpResponse implemen
     protected Mono<Void> writeWithInternal(Publisher<? extends DataBuffer> chunks) {
         return Mono.create(sink -> {
             logger.debug("Subscribing to body publisher");
-            chunks.subscribe(new HttpWriteStreamSubscriber(response, sink));
+            chunks.subscribe(new PublisherToHttpBodyConnector(response, sink));
         });
     }
 

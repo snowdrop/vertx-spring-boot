@@ -9,11 +9,12 @@ import reactor.core.publisher.MonoSink;
 
 import static me.snowdrop.vertx.http.Utils.dataBufferToBuffer;
 
-public class HttpWriteStreamSubscriber extends AbstractWriteStreamSubscriber<WriteStream<Buffer>, DataBuffer> {
+public class PublisherToHttpBodyConnector
+    extends AbstractPublisherToWriteStreamConnector<WriteStream<Buffer>, DataBuffer> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public HttpWriteStreamSubscriber(WriteStream<Buffer> delegate, MonoSink endHook) {
+    public PublisherToHttpBodyConnector(WriteStream<Buffer> delegate, MonoSink endHook) {
         super(delegate, endHook);
     }
 

@@ -66,7 +66,7 @@ public class VertxWebSocketSession extends AbstractWebSocketSession<WebSocketBas
     public Mono<Void> send(Publisher<WebSocketMessage> messages) {
         return Mono.create(sink -> {
             logger.debug("{}Subscribing to messages publisher", getLogPrefix());
-            messages.subscribe(new WebSocketSubscriber(getDelegate(), sink));
+            messages.subscribe(new PublisherToWebSocketConnector(getDelegate(), sink));
         });
     }
 

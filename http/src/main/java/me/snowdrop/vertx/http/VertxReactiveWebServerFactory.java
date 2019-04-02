@@ -33,7 +33,7 @@ public class VertxReactiveWebServerFactory extends AbstractReactiveWebServerFact
     public WebServer getWebServer(HttpHandler httpHandler) {
         HttpServerOptions httpServerOptions =
             customizeHttpServerOptions(httpServerProperties.getHttpServerOptions());
-        VertxHttpHandlerAdapter handler = new VertxHttpHandlerAdapter(httpHandler, dataBufferFactory);
+        HttpHandlerAdapter handler = new HttpHandlerAdapter(httpHandler, dataBufferFactory);
 
         return new VertxWebServer(vertx, httpServerOptions, handler);
     }

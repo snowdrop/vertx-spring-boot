@@ -19,7 +19,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
-public class HttpWriteStreamSubscriberTest {
+public class PublisherToHttpBodyConnectorTest {
 
     @Mock
     private WriteStream<Buffer> mockWriteStream;
@@ -32,7 +32,7 @@ public class HttpWriteStreamSubscriberTest {
     @SuppressWarnings("unchecked")
     @Test
     public void shouldRegisterHandlersInConstructor() {
-        new HttpWriteStreamSubscriber(mockWriteStream, mockMonoSink);
+        new PublisherToHttpBodyConnector(mockWriteStream, mockMonoSink);
 
         verify(mockWriteStream).drainHandler(any(Handler.class));
         verify(mockWriteStream).exceptionHandler(any(Handler.class));
@@ -40,14 +40,14 @@ public class HttpWriteStreamSubscriberTest {
 
     @Test
     public void shouldGetDelegate() {
-        HttpWriteStreamSubscriber subscriber = new HttpWriteStreamSubscriber(mockWriteStream, mockMonoSink);
+        PublisherToHttpBodyConnector subscriber = new PublisherToHttpBodyConnector(mockWriteStream, mockMonoSink);
 
         assertThat(subscriber.getDelegate()).isEqualTo(mockWriteStream);
     }
 
     @Test
     public void shouldRequestOnSubscribe() {
-        HttpWriteStreamSubscriber subscriber = new HttpWriteStreamSubscriber(mockWriteStream, mockMonoSink);
+        PublisherToHttpBodyConnector subscriber = new PublisherToHttpBodyConnector(mockWriteStream, mockMonoSink);
         TestPublisher<DataBuffer> publisher = TestPublisher.create();
 
         publisher.subscribe(subscriber);
@@ -57,7 +57,7 @@ public class HttpWriteStreamSubscriberTest {
 
     @Test
     public void shouldWriteAndRequestOnNext() {
-        HttpWriteStreamSubscriber subscriber = new HttpWriteStreamSubscriber(mockWriteStream, mockMonoSink);
+        PublisherToHttpBodyConnector subscriber = new PublisherToHttpBodyConnector(mockWriteStream, mockMonoSink);
         TestPublisher<DataBuffer> publisher = TestPublisher.create();
         publisher.subscribe(subscriber);
 
@@ -71,7 +71,7 @@ public class HttpWriteStreamSubscriberTest {
     public void shouldNotRequestIfFull() {
         given(mockWriteStream.writeQueueFull()).willReturn(true);
 
-        HttpWriteStreamSubscriber subscriber = new HttpWriteStreamSubscriber(mockWriteStream, mockMonoSink);
+        PublisherToHttpBodyConnector subscriber = new PublisherToHttpBodyConnector(mockWriteStream, mockMonoSink);
         TestPublisher<DataBuffer> publisher = TestPublisher.create();
         publisher.subscribe(subscriber);
 
@@ -80,7 +80,7 @@ public class HttpWriteStreamSubscriberTest {
 
     @Test
     public void shouldHandleComplete() {
-        HttpWriteStreamSubscriber subscriber = new HttpWriteStreamSubscriber(mockWriteStream, mockMonoSink);
+        PublisherToHttpBodyConnector subscriber = new PublisherToHttpBodyConnector(mockWriteStream, mockMonoSink);
         TestPublisher<DataBuffer> publisher = TestPublisher.create();
         publisher.subscribe(subscriber);
 
@@ -91,7 +91,7 @@ public class HttpWriteStreamSubscriberTest {
 
     @Test
     public void shouldHandleCancel() {
-        HttpWriteStreamSubscriber subscriber = new HttpWriteStreamSubscriber(mockWriteStream, mockMonoSink);
+        PublisherToHttpBodyConnector subscriber = new PublisherToHttpBodyConnector(mockWriteStream, mockMonoSink);
         TestPublisher<DataBuffer> publisher = TestPublisher.create();
         publisher.subscribe(subscriber);
 
@@ -102,7 +102,7 @@ public class HttpWriteStreamSubscriberTest {
 
     @Test
     public void shouldHandleError() {
-        HttpWriteStreamSubscriber subscriber = new HttpWriteStreamSubscriber(mockWriteStream, mockMonoSink);
+        PublisherToHttpBodyConnector subscriber = new PublisherToHttpBodyConnector(mockWriteStream, mockMonoSink);
         TestPublisher<DataBuffer> publisher = TestPublisher.create();
         publisher.subscribe(subscriber);
 
@@ -117,7 +117,7 @@ public class HttpWriteStreamSubscriberTest {
         TestWriteStream<Buffer> writeStream = new TestWriteStream<>();
         TestPublisher<DataBuffer> publisher = TestPublisher.create();
 
-        HttpWriteStreamSubscriber subscriber = new HttpWriteStreamSubscriber(writeStream, mockMonoSink);
+        PublisherToHttpBodyConnector subscriber = new PublisherToHttpBodyConnector(writeStream, mockMonoSink);
 
         writeStream.setWriteQueueMaxSize(2);
 

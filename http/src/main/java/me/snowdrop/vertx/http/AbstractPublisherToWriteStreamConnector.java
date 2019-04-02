@@ -8,7 +8,7 @@ import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.BaseSubscriber;
 import reactor.core.publisher.MonoSink;
 
-public abstract class AbstractWriteStreamSubscriber<T extends WriteStream<?>, U> extends BaseSubscriber<U> {
+public abstract class AbstractPublisherToWriteStreamConnector<T extends WriteStream<?>, U> extends BaseSubscriber<U> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -18,7 +18,7 @@ public abstract class AbstractWriteStreamSubscriber<T extends WriteStream<?>, U>
 
     private final String logPrefix;
 
-    public AbstractWriteStreamSubscriber(T delegate, MonoSink endHook) {
+    public AbstractPublisherToWriteStreamConnector(T delegate, MonoSink endHook) {
         this.delegate = delegate;
         this.endHook = endHook;
         this.logPrefix = "[" + ObjectUtils.getIdentityHexString(delegate) + "] ";
