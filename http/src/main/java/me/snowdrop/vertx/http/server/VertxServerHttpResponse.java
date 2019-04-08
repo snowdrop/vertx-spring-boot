@@ -45,7 +45,7 @@ public class VertxServerHttpResponse extends AbstractServerHttpResponse implemen
 
     @Override
     public Mono<Void> writeWith(Path file, long position, long count) {
-        logger.debug("Sending file '{}'", file);
+        logger.debug("Sending file '{}' pos='{}' count='{}'", file, position, count);
         delegate.sendFile(file.toString(), position, count);
         return Mono.empty();
     }

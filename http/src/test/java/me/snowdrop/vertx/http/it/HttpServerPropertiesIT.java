@@ -1,11 +1,13 @@
-package me.snowdrop.vertx.http.server.properties;
+package me.snowdrop.vertx.http.it;
 
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpVersion;
+import me.snowdrop.vertx.http.server.properties.HttpServerProperties;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Category(FastTests.class)
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = {
     "vertx.http.server.port=1234",

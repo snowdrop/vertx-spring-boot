@@ -8,6 +8,7 @@ import io.vertx.core.http.HttpClientOptions;
 import me.snowdrop.vertx.http.client.VertxClientHttpConnector;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,6 +21,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.server.RouterFunction;
+import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -33,18 +35,19 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 import static org.springframework.web.reactive.function.server.ServerResponse.noContent;
 import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 
+@Category(FastTests.class)
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
     properties = {
-        "server.port=" + HttpIT.PORT,
+        "server.port=" + Ports.HTTP_IT,
         "server.compression.enabled=true",
         "logging.level.me.snowdrop=DEBUG"
     }
 )
 public class HttpIT {
 
-    static final int PORT = 8080;
+    private static final String BASE_URL = String.format("http://localhost:%d", Ports.HTTP_IT);
 
     @Autowired
     private Vertx vertx;
@@ -55,7 +58,7 @@ public class HttpIT {
     public void setUp() {
         client = WebClient.builder()
             .clientConnector(new VertxClientHttpConnector(vertx))
-            .baseUrl("http://localhost:" + PORT)
+            .baseUrl(BASE_URL)
             .build();
     }
 
@@ -105,7 +108,7 @@ public class HttpIT {
             .setTryUseCompression(true);
         WebClient clientWithCompression = WebClient.builder()
             .clientConnector(new VertxClientHttpConnector(vertx, options))
-            .baseUrl("http://localhost:" + PORT)
+            .baseUrl(BASE_URL)
             .build();
 
         Flux<String> bodyFlux = clientWithCompression.post()
@@ -171,38 +174,44 @@ public class HttpIT {
     static class Routers {
 
         @Bean
-        public RouterFunction<ServerResponse> testRouter() {
-            return route()
-                .GET("/noop", request -> noContent().build())
-                .POST("/upper", request -> {
-                    Flux<String> body = request.bodyToFlux(String.class)
-                        .map(String::toUpperCase);
-
-                    return ok().body(body, String.class);
-                })
-                .GET("/cookie", request -> {
-                    String text = request.cookies()
-                        .getFirst("text")
-                        .getValue()
-                        .toUpperCase();
-                    ResponseCookie cookie = ResponseCookie.from("text", text).build();
-
-                    return noContent().cookie(cookie).build();
-                })
-                .GET("/header", request -> {
-                    String text = request.headers()
-                        .header("text")
-                        .get(0)
-                        .toUpperCase();
-
-                    return noContent().header("text", text).build();
-                })
-                .build();
+        public RouterFunction<ServerResponse> staticRouter() {
+            return resources("/**", new ClassPathResource("static"));
         }
 
         @Bean
-        public RouterFunction<ServerResponse> staticRouter() {
-            return resources("/**", new ClassPathResource("static"));
+        public RouterFunction<ServerResponse> testRouter() {
+            return route()
+                .GET("/noop", request -> noContent().build())
+                .GET("/cookie", this::cookieHandler)
+                .GET("/header", this::headerHandler)
+                .POST("/upper", this::upperHandler)
+                .build();
+        }
+
+        private Mono<ServerResponse> cookieHandler(ServerRequest request) {
+            String text = request.cookies()
+                .getFirst("text")
+                .getValue()
+                .toUpperCase();
+            ResponseCookie cookie = ResponseCookie.from("text", text).build();
+
+            return noContent().cookie(cookie).build();
+        }
+
+        private Mono<ServerResponse> headerHandler(ServerRequest request) {
+            String text = request.headers()
+                .header("text")
+                .get(0)
+                .toUpperCase();
+
+            return noContent().header("text", text).build();
+        }
+
+        private Mono<ServerResponse> upperHandler(ServerRequest request) {
+            Flux<String> body = request.bodyToFlux(String.class)
+                .map(String::toUpperCase);
+
+            return ok().body(body, String.class);
         }
     }
 }

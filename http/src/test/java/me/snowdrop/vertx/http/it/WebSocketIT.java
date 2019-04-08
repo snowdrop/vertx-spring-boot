@@ -13,6 +13,7 @@ import io.vertx.core.http.HttpClientOptions;
 import me.snowdrop.vertx.http.client.VertxWebSocketClient;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,20 +34,19 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 
+@Category(FastTests.class)
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
     properties = {
-        "server.port=" + WebSocketIT.PORT,
+        "server.port=" + Ports.WEB_SOCKET_IT,
         "vertx.http.server.maxWebsocketFrameSize=5",
         "logging.level.me.snowdrop=DEBUG"
     }
 )
 public class WebSocketIT {
 
-    static final int PORT = 8082;
-
-    private static final String BASE_URL = String.format("ws://localhost:%d", PORT);
+    private static final String BASE_URL = String.format("ws://localhost:%d", Ports.WEB_SOCKET_IT);
 
     @Autowired
     private Vertx vertx;

@@ -3,9 +3,9 @@ package me.snowdrop.vertx.http.server;
 import java.util.Set;
 
 import io.vertx.core.Vertx;
-import me.snowdrop.vertx.http.utils.BufferConverter;
 import me.snowdrop.vertx.http.server.properties.HttpServerOptionsCustomizer;
 import me.snowdrop.vertx.http.server.properties.HttpServerProperties;
+import me.snowdrop.vertx.http.utils.BufferConverter;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

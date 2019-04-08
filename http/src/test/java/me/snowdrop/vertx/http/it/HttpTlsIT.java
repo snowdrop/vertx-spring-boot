@@ -11,6 +11,7 @@ import io.vertx.core.net.JksOptions;
 import me.snowdrop.vertx.http.client.VertxClientHttpConnector;
 import me.snowdrop.vertx.http.server.properties.HttpServerOptionsCustomizer;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,17 +29,16 @@ import reactor.test.StepVerifier;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 import static org.springframework.web.reactive.function.server.ServerResponse.noContent;
 
+@Category(FastTests.class)
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
     properties = {
-        "server.port=" + HttpTlsIT.PORT,
+        "server.port=" + Ports.HTTP_TLS_IT,
         "logging.level.me.snowdrop=DEBUG"
     }
 )
 public class HttpTlsIT {
-
-    static final int PORT = 8081;
 
     private static final JksOptions SERVER_KEYSTORE = new JksOptions()
         .setPath("target/test-classes/tls/server-keystore.jks")
@@ -56,6 +56,8 @@ public class HttpTlsIT {
         .setPath("target/test-classes/tls/client-truststore.jks")
         .setPassword("wibble");
 
+    private static final String BASE_URL = String.format("https://localhost:%d", Ports.HTTP_TLS_IT);
+
     @Autowired
     private Vertx vertx;
 
@@ -67,7 +69,7 @@ public class HttpTlsIT {
             .setTrustOptions(CLIENT_TRUSTSTORE);
         WebClient client = WebClient.builder()
             .clientConnector(new VertxClientHttpConnector(vertx, options))
-            .baseUrl("https://localhost:" + PORT)
+            .baseUrl(BASE_URL)
             .build();
 
         Mono<HttpStatus> statusMono = client.get()
@@ -89,7 +91,7 @@ public class HttpTlsIT {
             .setTrustOptions(CLIENT_TRUSTSTORE);
         WebClient client = WebClient.builder()
             .clientConnector(new VertxClientHttpConnector(vertx, options))
-            .baseUrl("https://localhost:" + PORT)
+            .baseUrl(BASE_URL)
             .build();
 
         Mono<ClientResponse> responseMono = client.get()
