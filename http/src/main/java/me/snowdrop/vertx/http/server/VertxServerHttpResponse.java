@@ -4,9 +4,9 @@ import java.nio.file.Path;
 
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
+import me.snowdrop.vertx.http.common.PublisherToHttpBodyConnector;
 import me.snowdrop.vertx.http.utils.BufferConverter;
 import me.snowdrop.vertx.http.utils.CookieConverter;
-import me.snowdrop.vertx.http.common.PublisherToHttpBodyConnector;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,9 +45,18 @@ public class VertxServerHttpResponse extends AbstractServerHttpResponse implemen
 
     @Override
     public Mono<Void> writeWith(Path file, long position, long count) {
-        logger.debug("Sending file '{}' pos='{}' count='{}'", file, position, count);
-        delegate.sendFile(file.toString(), position, count);
-        return Mono.empty();
+        Mono<Void> writeCompletion = Mono.create(sink -> {
+            logger.debug("Sending file '{}' pos='{}' count='{}'", file, position, count);
+            delegate.sendFile(file.toString(), position, count, result -> {
+                if (result.succeeded()) {
+                    sink.success();
+                } else {
+                    sink.error(result.cause());
+                }
+            });
+        });
+
+        return doCommit(() -> writeCompletion);
     }
 
     @Override

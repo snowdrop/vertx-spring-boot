@@ -33,10 +33,7 @@ import static org.springframework.web.reactive.function.server.ServerResponse.no
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-    properties = {
-        "server.port=" + Ports.HTTP_TLS_IT,
-        "logging.level.me.snowdrop=DEBUG"
-    }
+    properties = "server.port=" + Ports.HTTP_TLS_IT
 )
 public class HttpTlsIT {
 

@@ -31,7 +31,7 @@ public class HttpBodyToFluxConnector {
                     sink.next(dataBuffer);
                 })
                 .exceptionHandler(throwable -> {
-                    logger.debug("{}Received exception '{}'", logPrefix, throwable);
+                    logger.debug("{}Received exception '{}'", logPrefix, throwable.toString());
                     sink.error(throwable);
                 })
                 .endHandler(v -> {

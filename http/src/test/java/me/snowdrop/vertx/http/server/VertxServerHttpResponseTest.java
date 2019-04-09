@@ -1,9 +1,12 @@
 package me.snowdrop.vertx.http.server;
 
-import java.io.File;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
@@ -27,7 +30,10 @@ import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -79,10 +85,16 @@ public class VertxServerHttpResponseTest {
 
     @Test
     public void shouldWriteFile() {
-        StepVerifier.create(response.writeWith(new File("/tmp/test").toPath(), 0, 0))
-            .expectComplete();
+        given(mockHttpServerResponse.sendFile(any(), anyLong(), anyLong(), any())).will(invocation -> {
+            Handler<AsyncResult<Void>> handler = invocation.getArgument(3);
+            handler.handle(Future.succeededFuture());
+            return mockHttpServerResponse;
+        });
 
-        verify(mockHttpServerResponse).sendFile("/tmp/test", 0, 0);
+        response.writeWith(Paths.get("/tmp/test"), 0, 0)
+            .block();
+
+        verify(mockHttpServerResponse).sendFile(eq("/tmp/test"), eq(0L), eq(0L), any());
     }
 
     @Test

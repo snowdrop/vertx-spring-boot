@@ -9,21 +9,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.reactive.function.client.WebClient;
 
-@Category(FastTests.class)
+@Category(SlowTests.class)
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-    properties = "server.port=" + Ports.HTTP_IT,
-    classes = AbstractHttpIT.Routers.class
+    properties = "server.port=" + Ports.HTTP_FILE_TRANSFER_IT,
+    classes = AbstractFileTransferIT.Routers.class
 )
-public class HttpIT extends AbstractHttpIT {
+public class HttpFileTransferIT extends AbstractFileTransferIT {
 
-    private static final String BASE_URL = String.format("http://localhost:%d", Ports.HTTP_IT);
+    private static final String BASE_URL = String.format("http://localhost:%d", Ports.HTTP_FILE_TRANSFER_IT);
 
     @Autowired
     private Vertx vertx;
 
-    @Override
     public WebClient getClient() {
         return WebClient.builder()
             .clientConnector(new VertxClientHttpConnector(vertx))

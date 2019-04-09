@@ -40,8 +40,7 @@ import static org.hamcrest.Matchers.equalTo;
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
     properties = {
         "server.port=" + Ports.WEB_SOCKET_IT,
-        "vertx.http.server.maxWebsocketFrameSize=5",
-        "logging.level.me.snowdrop=DEBUG"
+        "vertx.http.server.maxWebsocketFrameSize=5"
     }
 )
 public class WebSocketIT {
