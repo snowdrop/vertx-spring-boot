@@ -14,7 +14,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * Spring Boot properties integration for HttpServerOptions. All expect the following properties are integrated:
  * usePooledBuffers (deprecated), crlPaths, crlValues, keyCertOptions, trustOptions, sslEngineOptions.
- *
+ * <p>
  * sslEngineOptions, crlPath or crlValues are required, please use HttpServerOptionsCustomizer.
  * If keyCertOptions or trustOptions either use {@link HttpServerOptionsCustomizer} or {@link ServerProperties}.
  */
@@ -186,7 +186,7 @@ public class HttpServerProperties {
     }
 
     public boolean isPerFrameWebsocketCompressionSupported() {
-        return delegate.perFrameWebsocketCompressionSupported();
+        return delegate.getPerFrameWebsocketCompressionSupported();
     }
 
     public void setPerFrameWebsocketCompressionSupported(boolean perFrameWebsocketCompressionSupported) {
@@ -194,7 +194,7 @@ public class HttpServerProperties {
     }
 
     public boolean isPerMessageWebsocketCompressionSupported() {
-        return delegate.perMessageWebsocketCompressionSupported();
+        return delegate.getPerMessageWebsocketCompressionSupported();
     }
 
     public void setPerMessageWebsocketCompressionSupported(boolean perMessageWebsocketCompressionSupported) {
@@ -202,7 +202,7 @@ public class HttpServerProperties {
     }
 
     public int getWebsocketCompressionLevel() {
-        return delegate.websocketCompressionLevel();
+        return delegate.getWebsocketCompressionLevel();
     }
 
     public void setWebsocketCompressionLevel(int websocketCompressionLevel) {

@@ -14,7 +14,7 @@
     <rest-assured.version>3.3.0</rest-assured.version>
     <smallrye-reactive.version>1.0.0</smallrye-reactive.version>
     <spring-boot.version>2.1.2.RELEASE</spring-boot.version>
-    <vertx.version>3.6.2</vertx.version>
+    <vertx.version>3.7.0</vertx.version>
 
     <maven-failsafe-plugin.version>2.22.1</maven-failsafe-plugin.version>
 
