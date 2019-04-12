@@ -27,7 +27,6 @@ import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.WebSocketSession;
 import org.springframework.web.reactive.socket.client.WebSocketClient;
 import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
@@ -200,20 +199,14 @@ public class WebSocketIT {
 
     @Test
     public void clientShouldCloseSocket() {
-        Mono<Void> completionMono = client.execute(URI.create(BASE_URL + "/echo"), WebSocketSession::close);
-
-        StepVerifier.create(completionMono)
-            .expectComplete()
-            .verify(Duration.ofSeconds(2));
+        client.execute(URI.create(BASE_URL + "/echo"), WebSocketSession::close)
+            .block(Duration.ofSeconds(2));
     }
 
     @Test
     public void serverShouldCloseSocket() {
-        Mono<Void> completionMono = client.execute(URI.create(BASE_URL + "/close"), session -> Mono.empty());
-
-        StepVerifier.create(completionMono)
-            .expectComplete()
-            .verify(Duration.ofSeconds(2));
+        client.execute(URI.create(BASE_URL + "/close"), session -> Mono.empty())
+            .block(Duration.ofSeconds(2));
     }
 
     @Test

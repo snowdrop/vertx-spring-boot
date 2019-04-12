@@ -18,9 +18,9 @@ import org.springframework.web.reactive.function.client.WebClient;
     properties = {
         "server.port=" + Ports.HTTP_2_IT
     },
-    classes = AbstractHttpIT.Routers.class
+    classes = BaseHttpIT.Routers.class
 )
-public class Http2IT extends AbstractHttpIT {
+public class Http2IT extends BaseHttpIT {
 
     private static final String BASE_URL = String.format("http://localhost:%d", Ports.HTTP_2_IT);
 

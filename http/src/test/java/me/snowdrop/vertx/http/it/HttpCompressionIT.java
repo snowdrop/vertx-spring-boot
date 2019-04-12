@@ -20,9 +20,9 @@ import static org.springframework.http.HttpHeaders.ACCEPT_ENCODING;
         "server.port=" + Ports.HTTP_COMPRESSION_IT,
         "server.compression.enabled=true"
     },
-    classes = AbstractHttpIT.Routers.class
+    classes = BaseHttpIT.Routers.class
 )
-public class HttpCompressionIT extends AbstractHttpIT {
+public class HttpCompressionIT extends BaseHttpIT {
 
     private static final String BASE_URL = String.format("http://localhost:%d", Ports.HTTP_COMPRESSION_IT);
 

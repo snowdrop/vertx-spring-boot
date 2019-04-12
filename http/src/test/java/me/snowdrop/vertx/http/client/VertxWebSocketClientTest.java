@@ -18,7 +18,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpHeaders;
 import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -103,30 +102,21 @@ public class VertxWebSocketClientTest {
 
     @Test
     public void shouldInitSession() {
-        Mono<Void> completionMono = webSocketClient.execute(TEST_URI,
-            session -> session instanceof VertxWebSocketSession ? Mono.empty()
-                : Mono.error(new AssertionError("Wrong session type: " + session.getClass())));
-
-        StepVerifier.create(completionMono)
-            .expectComplete()
-            .verify(Duration.ofSeconds(2));
+        webSocketClient.execute(TEST_URI, session -> session instanceof VertxWebSocketSession
+            ? Mono.empty()
+            : Mono.error(new AssertionError("Wrong session type: " + session.getClass()))
+        ).block(Duration.ofSeconds(2));
     }
 
     @Test
     public void shouldCompleteSuccessfully() {
-        Mono<Void> completionMono = webSocketClient.execute(TEST_URI, session -> Mono.empty());
-
-        StepVerifier.create(completionMono)
-            .expectComplete()
-            .verify(Duration.ofSeconds(2));
+        webSocketClient.execute(TEST_URI, session -> Mono.empty())
+            .block(Duration.ofSeconds(2));
     }
 
-    @Test
+    @Test(expected = RuntimeException.class)
     public void shouldCompleteWithError() {
-        Mono<Void> completionMono = webSocketClient.execute(TEST_URI, session -> Mono.error(RuntimeException::new));
-
-        StepVerifier.create(completionMono)
-            .expectError(RuntimeException.class)
-            .verify(Duration.ofSeconds(2));
+        webSocketClient.execute(TEST_URI, session -> Mono.error(RuntimeException::new))
+            .block(Duration.ofSeconds(2));
     }
 }

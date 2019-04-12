@@ -36,7 +36,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 import static org.springframework.web.reactive.function.server.ServerResponse.noContent;
 import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 
-public abstract class AbstractFileTransferIT {
+public abstract class BaseFileTransferIT {
 
     private static final Path ORIGINAL_FILE = Paths.get("target/original-file");
 

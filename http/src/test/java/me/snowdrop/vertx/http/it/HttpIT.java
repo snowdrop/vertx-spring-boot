@@ -14,9 +14,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
     properties = "server.port=" + Ports.HTTP_IT,
-    classes = AbstractHttpIT.Routers.class
+    classes = BaseHttpIT.Routers.class
 )
-public class HttpIT extends AbstractHttpIT {
+public class HttpIT extends BaseHttpIT {
 
     private static final String BASE_URL = String.format("http://localhost:%d", Ports.HTTP_IT);
 

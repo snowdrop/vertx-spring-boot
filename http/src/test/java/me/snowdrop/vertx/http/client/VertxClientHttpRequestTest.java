@@ -115,11 +115,7 @@ public class VertxClientHttpRequestTest {
 
     @Test
     public void shouldSetComplete() {
-        Mono<Void> result = request.setComplete();
-
-        StepVerifier.create(result)
-            .expectSubscription()
-            .verifyComplete();
+        request.setComplete().block();
 
         verify(mockHttpClientRequest).end();
     }

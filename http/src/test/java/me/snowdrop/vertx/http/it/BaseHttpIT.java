@@ -25,7 +25,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 import static org.springframework.web.reactive.function.server.ServerResponse.noContent;
 import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 
-public abstract class AbstractHttpIT {
+public abstract class BaseHttpIT {
 
     protected abstract WebClient getClient();
 

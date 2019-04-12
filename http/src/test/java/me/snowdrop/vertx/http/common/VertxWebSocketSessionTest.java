@@ -179,11 +179,7 @@ public class VertxWebSocketSessionTest {
             return mockServerWebSocket;
         });
 
-        Mono<Void> result = session.close(new CloseStatus(1000, "test"));
-
-        StepVerifier.create(result)
-            .expectSubscription()
-            .verifyComplete();
+        session.close(new CloseStatus(1000, "test")).block();
 
         verify(mockServerWebSocket).close((short) 1000, "test");
     }

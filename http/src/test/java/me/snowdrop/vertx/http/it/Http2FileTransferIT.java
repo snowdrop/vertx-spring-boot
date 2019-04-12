@@ -16,9 +16,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
     properties = "server.port=" + Ports.HTTP_2_FILE_TRANSFER_IT,
-    classes = AbstractFileTransferIT.Routers.class
+    classes = BaseFileTransferIT.Routers.class
 )
-public class Http2FileTransferIT extends AbstractFileTransferIT {
+public class Http2FileTransferIT extends BaseFileTransferIT {
 
     private static final String BASE_URL = String.format("http://localhost:%d", Ports.HTTP_2_FILE_TRANSFER_IT);
 
