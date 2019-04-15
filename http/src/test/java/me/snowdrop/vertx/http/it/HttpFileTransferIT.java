@@ -1,32 +1,161 @@
 package me.snowdrop.vertx.http.it;
 
-import io.vertx.core.Vertx;
-import me.snowdrop.vertx.http.client.VertxClientHttpConnector;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.reactive.function.client.WebClient;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Duration;
+import java.util.Random;
 
-@Category(SlowTests.class)
-@RunWith(SpringRunner.class)
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-    properties = "server.port=" + Ports.HTTP_FILE_TRANSFER_IT,
-    classes = BaseFileTransferIT.Routers.class
-)
-public class HttpFileTransferIT extends BaseFileTransferIT {
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.codec.multipart.Part;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.server.RouterFunction;
+import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 
-    private static final String BASE_URL = String.format("http://localhost:%d", Ports.HTTP_FILE_TRANSFER_IT);
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.web.reactive.function.BodyInserters.fromMultipartData;
+import static org.springframework.web.reactive.function.server.RouterFunctions.route;
+import static org.springframework.web.reactive.function.server.ServerResponse.noContent;
+import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 
-    @Autowired
-    private Vertx vertx;
+public class HttpFileTransferIT extends TestBase {
 
-    public WebClient getClient() {
-        return WebClient.builder()
-            .clientConnector(new VertxClientHttpConnector(vertx))
-            .baseUrl(BASE_URL)
-            .build();
+    private static final Path ORIGINAL_FILE = Paths.get("target/original-file");
+
+    private static final Path EXPECTED_FILE = Paths.get("target/expected-file");
+
+    private static final int FILE_SIZE = Integer.MAX_VALUE;
+
+    @Before
+    public void setUp() throws IOException {
+        Files.deleteIfExists(ORIGINAL_FILE);
+        Files.deleteIfExists(EXPECTED_FILE);
+        createTestFile();
+    }
+
+    @After
+    public void tearDown() throws IOException {
+        Files.deleteIfExists(ORIGINAL_FILE);
+        Files.deleteIfExists(EXPECTED_FILE);
+        stopServer();
+    }
+
+    @Test
+    public void shouldUploadLargeFile() throws IOException {
+        startServer(UploadRouter.class);
+
+        HttpStatus status = getWebClient()
+            .post()
+            .header("path", EXPECTED_FILE.toString())
+            .body(fromMultipartData("file", new UrlResource(ORIGINAL_FILE.toUri())))
+            .exchange()
+            .map(ClientResponse::statusCode)
+            .block(Duration.ofMinutes(5));
+
+        assertThat(status).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(Files.size(EXPECTED_FILE)).isEqualTo(Files.size(ORIGINAL_FILE));
+    }
+
+    @Test
+    public void shouldDownloadLargeFile() throws IOException {
+        startServer(DownloadRouter.class);
+
+        Flux<DataBuffer> input = getWebClient()
+            .get()
+            .header("path", ORIGINAL_FILE.toAbsolutePath().toString())
+            .retrieve()
+            .bodyToFlux(DataBuffer.class);
+
+        writeToFile(input, EXPECTED_FILE).blockLast(Duration.ofMinutes(5));
+
+        assertThat(Files.size(EXPECTED_FILE)).isEqualTo(Files.size(ORIGINAL_FILE));
+    }
+
+    private void createTestFile() throws IOException {
+        Random random = new Random();
+        RandomAccessFile file = new RandomAccessFile(ORIGINAL_FILE.toFile(), "rw");
+        file.setLength(FILE_SIZE);
+
+        int stepSize = 1024 * 1024 * 10;
+        int counter = 0;
+        while (counter < FILE_SIZE) {
+            if (FILE_SIZE - counter < stepSize) {
+                stepSize = FILE_SIZE - counter; // Step is too big for the leftover bytes
+            }
+            byte[] bytes = new byte[stepSize];
+            random.nextBytes(bytes);
+            file.write(bytes);
+            counter += stepSize;
+        }
+
+        file.close();
+    }
+
+    private static Flux<DataBuffer> writeToFile(Flux<DataBuffer> input, Path path) {
+        FileOutputStream output;
+        try {
+            output = new FileOutputStream(path.toFile());
+        } catch (FileNotFoundException e) {
+            return Flux.error(e);
+        }
+
+        return DataBufferUtils.write(input, output)
+            .doOnTerminate(() -> {
+                try {
+                    output.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+    }
+
+    @Configuration
+    static class DownloadRouter {
+        @Bean
+        public RouterFunction<ServerResponse> downloadRouter() {
+            return route()
+                .GET("/", request -> {
+                    String path = request.headers()
+                        .header("path")
+                        .get(0);
+
+                    return ok().body(BodyInserters.fromResource(new FileSystemResource(path)));
+                })
+                .build();
+        }
+    }
+
+    @Configuration
+    static class UploadRouter {
+        @Bean
+        public RouterFunction<ServerResponse> uploadRouter() {
+            return route()
+                .POST("/", request -> {
+                    String path = request.headers()
+                        .header("path")
+                        .get(0);
+                    Flux<DataBuffer> input = request.bodyToFlux(Part.class)
+                        .flatMap(Part::content);
+
+                    return writeToFile(input, Paths.get(path))
+                        .then(noContent().build());
+                })
+                .build();
+        }
     }
 }

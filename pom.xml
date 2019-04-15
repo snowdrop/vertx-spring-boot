@@ -11,6 +11,7 @@
 
   <properties>
     <awaitility.version>3.1.6</awaitility.version>
+    <nio-multipart-parser.version>1.1.0</nio-multipart-parser.version>
     <rest-assured.version>3.3.0</rest-assured.version>
     <smallrye-reactive.version>1.0.0</smallrye-reactive.version>
     <spring-boot.version>2.1.2.RELEASE</spring-boot.version>
@@ -56,6 +57,11 @@
         <artifactId>awaitility</artifactId>
         <version>${awaitility.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.synchronoss.cloud</groupId>
+        <artifactId>nio-multipart-parser</artifactId>
+        <version>${nio-multipart-parser.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -74,20 +80,6 @@
         </plugin>
       </plugins>
     </pluginManagement>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>integration-test</goal>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
   </build>
 
   <modules>
