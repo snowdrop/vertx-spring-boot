@@ -23,7 +23,6 @@ public abstract class AbstractPublisherToWriteStreamConnector<T extends WriteStr
         this.endHook = endHook;
         this.logPrefix = "[" + ObjectUtils.getIdentityHexString(delegate) + "] ";
 
-        delegate.drainHandler(event -> requestIfNotFull());
         delegate.exceptionHandler(this::delegateExceptionHandler);
     }
 
@@ -35,6 +34,7 @@ public abstract class AbstractPublisherToWriteStreamConnector<T extends WriteStr
     protected void hookOnSubscribe(Subscription subscription) {
         logger.debug("{}{} subscribed", logPrefix, delegate);
         requestIfNotFull();
+        delegate.drainHandler(event -> requestIfNotFull());
     }
 
     @Override

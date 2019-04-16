@@ -40,7 +40,6 @@ public class PublisherToWebSocketConnectorTest {
     @SuppressWarnings("unchecked")
     @Test
     public void shouldRegisterHandlersInConstructor() {
-        verify(mockServerWebSocket).drainHandler(any(Handler.class));
         verify(mockServerWebSocket).exceptionHandler(any(Handler.class));
     }
 
@@ -49,13 +48,15 @@ public class PublisherToWebSocketConnectorTest {
         assertThat(connector.getDelegate()).isEqualTo(mockServerWebSocket);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
-    public void shouldRequestOnSubscribe() {
+    public void shouldHandleOnSubscribe() {
         TestPublisher<WebSocketMessage> publisher = TestPublisher.create();
 
         publisher.subscribe(connector);
 
         publisher.assertMinRequested(1);
+        verify(mockServerWebSocket).drainHandler(any(Handler.class));
     }
 
     @Test

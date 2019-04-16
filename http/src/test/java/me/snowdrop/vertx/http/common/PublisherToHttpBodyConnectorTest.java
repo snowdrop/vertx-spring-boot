@@ -39,7 +39,6 @@ public class PublisherToHttpBodyConnectorTest {
     @SuppressWarnings("unchecked")
     @Test
     public void shouldRegisterHandlersInConstructor() {
-        verify(mockWriteStream).drainHandler(any(Handler.class));
         verify(mockWriteStream).exceptionHandler(any(Handler.class));
     }
 
@@ -48,13 +47,15 @@ public class PublisherToHttpBodyConnectorTest {
         assertThat(connector.getDelegate()).isEqualTo(mockWriteStream);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
-    public void shouldRequestOnSubscribe() {
+    public void shouldHandleOnSubscribe() {
         TestPublisher<DataBuffer> publisher = TestPublisher.create();
 
         publisher.subscribe(connector);
 
         publisher.assertMinRequested(1);
+        verify(mockWriteStream).drainHandler(any(Handler.class));
     }
 
     @Test
