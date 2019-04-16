@@ -6,9 +6,9 @@ import java.net.URI;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.ext.web.RoutingContext;
+import me.snowdrop.vertx.http.common.HttpBodyToFluxConnector;
 import me.snowdrop.vertx.http.utils.BufferConverter;
 import me.snowdrop.vertx.http.utils.CookieConverter;
-import me.snowdrop.vertx.http.common.HttpBodyToFluxConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -57,7 +57,10 @@ public class VertxServerHttpRequest extends AbstractServerHttpRequest {
     @Override
     public InetSocketAddress getRemoteAddress() {
         SocketAddress address = delegate.remoteAddress();
-        return InetSocketAddress.createUnresolved(address.host(), address.port());
+        if (address == null) {
+            return null;
+        }
+        return new InetSocketAddress(address.host(), address.port());
     }
 
     @Override

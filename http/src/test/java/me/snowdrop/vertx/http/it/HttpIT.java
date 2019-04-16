@@ -3,6 +3,7 @@ package me.snowdrop.vertx.http.it;
 import java.time.Duration;
 import java.util.Properties;
 
+import io.restassured.path.json.JsonPath;
 import io.restassured.path.xml.XmlPath;
 import io.vertx.core.http.HttpClientOptions;
 import org.junit.After;
@@ -140,6 +141,22 @@ public class HttpIT extends TestBase {
             .block(Duration.ofSeconds(2));
 
         assertThat(text).isEqualTo("TEST");
+    }
+
+    @Test
+    public void shouldGetActuatorHealth() {
+        startServer();
+
+        JsonPath json = getWebClient()
+            .get()
+            .uri("/actuator/health")
+            .retrieve()
+            .bodyToMono(String.class)
+            .map(JsonPath::new)
+            .blockOptional(Duration.ofSeconds(2))
+            .orElseThrow(() -> new AssertionError("Did not receive a response"));
+
+        assertThat(json.getString("status")).isEqualTo("UP");
     }
 
     @Configuration

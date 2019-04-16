@@ -92,11 +92,16 @@ public class VertxServerHttpRequestTest {
     }
 
     @Test
+    public void shouldGetNullRemoteAddress() {
+        assertThat(vertxServerHttpRequest.getRemoteAddress()).isNull();
+    }
+
+    @Test
     public void shouldGetRemoteAddress() {
         SocketAddress original = SocketAddress.inetSocketAddress(8080, "localhost");
         given(mockHttpServerRequest.remoteAddress()).willReturn(original);
 
-        InetSocketAddress expected = InetSocketAddress.createUnresolved("localhost", 8080);
+        InetSocketAddress expected = new InetSocketAddress("localhost", 8080);
         assertThat(vertxServerHttpRequest.getRemoteAddress()).isEqualTo(expected);
     }
 
