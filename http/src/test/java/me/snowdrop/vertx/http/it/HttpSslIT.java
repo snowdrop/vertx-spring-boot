@@ -1,6 +1,8 @@
 package me.snowdrop.vertx.http.it;
 
 import java.time.Duration;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.net.ssl.SSLHandshakeException;
@@ -61,39 +63,64 @@ public class HttpSslIT extends TestBase {
 
     @Test
     public void testSecureRequest() {
-        Properties serverProperties = new Properties();
-        serverProperties.setProperty("vertx.http.server.ssl", "true");
-        serverProperties.setProperty("vertx.http.server.client-auth", ClientAuth.REQUIRED.name());
-        serverProperties.setProperty("server.ssl.key-store-type", "JKS");
-        serverProperties.setProperty("server.ssl.key-store", SERVER_KEYSTORE.getPath());
-        serverProperties.setProperty("server.ssl.key-store-password", SERVER_KEYSTORE.getPassword());
-        serverProperties.setProperty("server.ssl.trust-store-type", "JKS");
-        serverProperties.setProperty("server.ssl.trust-store", SERVER_TRUSTSTORE.getPath());
-        serverProperties.setProperty("server.ssl.trust-store-password", SERVER_TRUSTSTORE.getPassword());
-
-        startServer(serverProperties, NoopRouter.class);
-
-        HttpClientOptions clientOptions = new HttpClientOptions()
-            .setSsl(true)
-            .setKeyStoreOptions(CLIENT_KEYSTORE)
-            .setTrustOptions(CLIENT_TRUSTSTORE);
-
-        HttpStatus status = getWebClient(clientOptions)
-            .get()
-            .exchange()
-            .map(ClientResponse::statusCode)
-            .block(Duration.ofSeconds(2));
-
-        assertThat(status).isEqualTo(status);
+        testSecureRequest(false);
     }
 
     @Test
     public void testSecureRequestWithAlpn() {
         assumeTrue("Neither OpenSSL nor Java 9 or higher is in a classpath", isOpenSsl() || isJava9());
+        testSecureRequest(true);
+    }
 
+    @Test
+    public void testUntrustedClient() {
+        testUntrustedClient(false);
+    }
+
+    @Test
+    public void testUntrustedClientWithAlpn() {
+        assumeTrue("Neither OpenSSL nor Java 9 or higher is in a classpath", isOpenSsl() || isJava9());
+        testUntrustedClient(true);
+    }
+
+    @Test
+    public void testDefaultEngine() {
+        testEngine(false, Engine.NONE);
+    }
+
+    @Test
+    public void testDefaultEngineWithAlpn() {
+        assumeTrue("Neither OpenSSL nor Java 9 or higher is in a classpath", isOpenSsl() || isJava9());
+        testEngine(true, Engine.NONE);
+    }
+
+    @Test
+    public void testOpenSslEngine() {
+        assumeTrue("OpenSSL is not in a classpath", isOpenSsl());
+        testEngine(false, Engine.OPENSSL);
+    }
+
+    @Test
+    public void testOpenSslEngineWithAlpn() {
+        assumeTrue("OpenSSL is not in a classpath", isOpenSsl());
+        testEngine(true, Engine.OPENSSL);
+    }
+
+    @Test
+    public void testJdkEngine() {
+        testEngine(false, Engine.JDK);
+    }
+
+    @Test
+    public void testJdkEngineWithAlpn() {
+        assumeTrue("Java 9 or higher is not in a classpath", isJava9());
+        testEngine(true, Engine.JDK);
+    }
+
+    private void testSecureRequest(boolean useAlpn) {
         Properties serverProperties = new Properties();
         serverProperties.setProperty("vertx.http.server.ssl", "true");
-        serverProperties.setProperty("vertx.http.server.useAlpn", "true");
+        serverProperties.setProperty("vertx.http.server.useAlpn", Boolean.toString(useAlpn));
         serverProperties.setProperty("vertx.http.server.client-auth", ClientAuth.REQUIRED.name());
         serverProperties.setProperty("server.ssl.key-store-type", "JKS");
         serverProperties.setProperty("server.ssl.key-store", SERVER_KEYSTORE.getPath());
@@ -102,12 +129,12 @@ public class HttpSslIT extends TestBase {
         serverProperties.setProperty("server.ssl.trust-store", SERVER_TRUSTSTORE.getPath());
         serverProperties.setProperty("server.ssl.trust-store-password", SERVER_TRUSTSTORE.getPassword());
 
-        startServer(serverProperties, NoopRouter.class);
+        startServer(serverProperties, useAlpn ? NoopHttp11Router.class : NoopHttp2Router.class);
 
         HttpClientOptions clientOptions = new HttpClientOptions()
             .setSsl(true)
-            .setUseAlpn(true)
-            .setProtocolVersion(HttpVersion.HTTP_2)
+            .setUseAlpn(useAlpn)
+            .setProtocolVersion(useAlpn ? HttpVersion.HTTP_2 : HttpVersion.HTTP_1_1)
             .setKeyStoreOptions(CLIENT_KEYSTORE)
             .setTrustOptions(CLIENT_TRUSTSTORE);
 
@@ -120,19 +147,21 @@ public class HttpSslIT extends TestBase {
         assertThat(status).isEqualTo(status);
     }
 
-    @Test
-    public void testUntrustedClient() {
+    private void testUntrustedClient(boolean useAlpn) {
         Properties serverProperties = new Properties();
         serverProperties.setProperty("vertx.http.server.ssl", "true");
+        serverProperties.setProperty("vertx.http.server.useAlpn", Boolean.toString(useAlpn));
         serverProperties.setProperty("vertx.http.server.client-auth", ClientAuth.REQUIRED.name());
         serverProperties.setProperty("server.ssl.key-store-type", "JKS");
         serverProperties.setProperty("server.ssl.key-store", SERVER_KEYSTORE.getPath());
         serverProperties.setProperty("server.ssl.key-store-password", SERVER_KEYSTORE.getPassword());
 
-        startServer(serverProperties, NoopRouter.class);
+        startServer(serverProperties, useAlpn ? NoopHttp2Router.class : NoopHttp11Router.class);
 
         HttpClientOptions options = new HttpClientOptions()
             .setSsl(true)
+            .setUseAlpn(useAlpn)
+            .setProtocolVersion(useAlpn ? HttpVersion.HTTP_2 : HttpVersion.HTTP_1_1)
             .setKeyStoreOptions(CLIENT_KEYSTORE)
             .setTrustOptions(CLIENT_TRUSTSTORE);
 
@@ -147,162 +176,33 @@ public class HttpSslIT extends TestBase {
         }
     }
 
-    @Test
-    public void testUntrustedClientWithAlpn() {
-        assumeTrue("Neither OpenSSL nor Java 9 or higher is in a classpath", isOpenSsl() || isJava9());
-
+    private void testEngine(boolean useAlpn, Engine engine) {
         Properties serverProperties = new Properties();
         serverProperties.setProperty("vertx.http.server.ssl", "true");
-        serverProperties.setProperty("vertx.http.server.useAlpn", "true");
-        serverProperties.setProperty("vertx.http.server.client-auth", ClientAuth.REQUIRED.name());
-        serverProperties.setProperty("server.ssl.key-store-type", "JKS");
-        serverProperties.setProperty("server.ssl.key-store", SERVER_KEYSTORE.getPath());
-        serverProperties.setProperty("server.ssl.key-store-password", SERVER_KEYSTORE.getPassword());
+        serverProperties.setProperty("vertx.http.server.useAlpn", Boolean.toString(useAlpn));
 
-        startServer(serverProperties, NoopRouter.class);
-
-        HttpClientOptions options = new HttpClientOptions()
+        HttpClientOptions clientOptions = new HttpClientOptions()
             .setSsl(true)
-            .setUseAlpn(true)
-            .setProtocolVersion(HttpVersion.HTTP_2)
-            .setKeyStoreOptions(CLIENT_KEYSTORE)
-            .setTrustOptions(CLIENT_TRUSTSTORE);
+            .setUseAlpn(useAlpn)
+            .setTrustAll(true)
+            .setProtocolVersion(useAlpn ? HttpVersion.HTTP_2 : HttpVersion.HTTP_1_1);
 
-        try {
-            getWebClient(options)
-                .get()
-                .exchange()
-                .block(Duration.ofSeconds(2));
-            fail("SSLHandshakeException expected");
-        } catch (RuntimeException e) {
-            assertThat(e.getCause()).isInstanceOf(SSLHandshakeException.class);
+        List<Class> classes = new LinkedList<>();
+        classes.add(KeyCertCustomizer.class);
+        classes.add(useAlpn ? NoopHttp2Router.class : NoopHttp11Router.class);
+
+        switch (engine) {
+            case JDK:
+                classes.add(JdkSslEngineOptionsCustomizer.class);
+                clientOptions.setSslEngineOptions(new JdkSSLEngineOptions());
+                break;
+            case OPENSSL:
+                classes.add(OpenSslEngineOptionsCustomizer.class);
+                clientOptions.setSslEngineOptions(new OpenSSLEngineOptions());
         }
-    }
 
-    @Test
-    public void testDefaultEngine() {
-        Properties serverProperties = new Properties();
-        serverProperties.setProperty("vertx.http.server.ssl", "true");
-        startServer(serverProperties, KeyCertCustomizer.class, NoopHttp11Router.class);
+        startServer(serverProperties, classes.toArray(new Class[]{}));
 
-        HttpClientOptions clientOptions = new HttpClientOptions()
-            .setSsl(true)
-            .setTrustAll(true);
-        HttpStatus status = getWebClient(clientOptions)
-            .get()
-            .exchange()
-            .map(ClientResponse::statusCode)
-            .block(Duration.ofSeconds(2));
-
-        assertThat(status).isEqualTo(HttpStatus.NO_CONTENT);
-    }
-
-    @Test
-    public void testDefaultEngineWithAlpn() {
-        assumeTrue("Neither OpenSSL nor Java 9 or higher is in a classpath", isOpenSsl() || isJava9());
-
-        Properties serverProperties = new Properties();
-        serverProperties.setProperty("vertx.http.server.ssl", "true");
-        serverProperties.setProperty("vertx.http.server.useAlpn", "true");
-        startServer(serverProperties, KeyCertCustomizer.class, NoopHttp2Router.class);
-
-        HttpClientOptions clientOptions = new HttpClientOptions()
-            .setSsl(true)
-            .setUseAlpn(true)
-            .setTrustAll(true)
-            .setProtocolVersion(HttpVersion.HTTP_2);
-        HttpStatus status = getWebClient(clientOptions)
-            .get()
-            .exchange()
-            .map(ClientResponse::statusCode)
-            .block(Duration.ofSeconds(2));
-
-        assertThat(status).isEqualTo(HttpStatus.NO_CONTENT);
-    }
-
-    @Test
-    public void testOpenSslEngine() {
-        assumeTrue("OpenSSL is not in a classpath", isOpenSsl());
-
-        Properties serverProperties = new Properties();
-        serverProperties.setProperty("vertx.http.server.ssl", "true");
-        startServer(serverProperties, KeyCertCustomizer.class, OpenSslEngineOptionsCustomizer.class,
-            NoopHttp11Router.class);
-
-        HttpClientOptions clientOptions = new HttpClientOptions()
-            .setSslEngineOptions(new OpenSSLEngineOptions())
-            .setSsl(true)
-            .setTrustAll(true);
-        HttpStatus status = getWebClient(clientOptions)
-            .get()
-            .exchange()
-            .map(ClientResponse::statusCode)
-            .block(Duration.ofSeconds(2));
-
-        assertThat(status).isEqualTo(HttpStatus.NO_CONTENT);
-    }
-
-    @Test
-    public void testOpenSslEngineWithAlpn() {
-        assumeTrue("OpenSSL is not in a classpath", isOpenSsl());
-
-        Properties serverProperties = new Properties();
-        serverProperties.setProperty("vertx.http.server.ssl", "true");
-        serverProperties.setProperty("vertx.http.server.useAlpn", "true");
-        startServer(serverProperties, KeyCertCustomizer.class, OpenSslEngineOptionsCustomizer.class,
-            NoopHttp2Router.class);
-
-        HttpClientOptions clientOptions = new HttpClientOptions()
-            .setSslEngineOptions(new OpenSSLEngineOptions())
-            .setSsl(true)
-            .setUseAlpn(true)
-            .setTrustAll(true)
-            .setProtocolVersion(HttpVersion.HTTP_2);
-        HttpStatus status = getWebClient(clientOptions)
-            .get()
-            .exchange()
-            .map(ClientResponse::statusCode)
-            .block(Duration.ofSeconds(2));
-
-        assertThat(status).isEqualTo(HttpStatus.NO_CONTENT);
-    }
-
-    @Test
-    public void testJdkEngine() {
-        Properties serverProperties = new Properties();
-        serverProperties.setProperty("vertx.http.server.ssl", "true");
-        startServer(serverProperties, KeyCertCustomizer.class, JdkSslEngineOptionsCustomizer.class,
-            NoopHttp11Router.class);
-
-        HttpClientOptions clientOptions = new HttpClientOptions()
-            .setSslEngineOptions(new JdkSSLEngineOptions())
-            .setSsl(true)
-            .setTrustAll(true);
-        HttpStatus status = getWebClient(clientOptions)
-            .get()
-            .exchange()
-            .map(ClientResponse::statusCode)
-            .block(Duration.ofSeconds(2));
-
-        assertThat(status).isEqualTo(HttpStatus.NO_CONTENT);
-    }
-
-    @Test
-    public void testJdkEngineWithAlpn() {
-        assumeTrue("Java 9 or higher is not in a classpath", isJava9());
-
-        Properties serverProperties = new Properties();
-        serverProperties.setProperty("vertx.http.server.ssl", "true");
-        serverProperties.setProperty("vertx.http.server.useAlpn", "true");
-        startServer(serverProperties, KeyCertCustomizer.class, JdkSslEngineOptionsCustomizer.class,
-            NoopHttp2Router.class);
-
-        HttpClientOptions clientOptions = new HttpClientOptions()
-            .setSslEngineOptions(new JdkSSLEngineOptions())
-            .setSsl(true)
-            .setUseAlpn(true)
-            .setTrustAll(true)
-            .setProtocolVersion(HttpVersion.HTTP_2);
         HttpStatus status = getWebClient(clientOptions)
             .get()
             .exchange()
@@ -328,6 +228,12 @@ public class HttpSslIT extends TestBase {
         } catch (Throwable ignore) {
             return false;
         }
+    }
+
+    private enum Engine {
+        NONE,
+        JDK,
+        OPENSSL
     }
 
     @Configuration
@@ -408,16 +314,6 @@ public class HttpSslIT extends TestBase {
 
         private HttpServerRequest getHttpServerRequest(ServerRequest request) {
             return ((VertxServerHttpRequest) request.exchange().getRequest()).getNativeRequest();
-        }
-    }
-
-    @Configuration
-    static class NoopRouter {
-        @Bean
-        public RouterFunction<ServerResponse> noopRouter() {
-            return route()
-                .GET("/", request -> noContent().build())
-                .build();
         }
     }
 }
