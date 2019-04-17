@@ -48,12 +48,10 @@ public class TestBase {
     }
 
     protected void stopServer() {
-        if (context == null) {
-            throw new RuntimeException("Server is not running");
+        if (context != null) {
+            context.close();
+            context = null;
         }
-
-        context.close();
-        context = null;
     }
 
     protected <T> T getBean(Class<T> beanClass) {

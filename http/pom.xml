@@ -11,6 +11,10 @@
 
   <artifactId>vertx-spring-boot-http</artifactId>
 
+  <properties>
+    <it.skip.fileTransfer>false</it.skip.fileTransfer>
+  </properties>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -87,9 +91,9 @@
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-tcnative-boringssl-static</artifactId>
+      <version>${tcnative.version}</version>
       <scope>test</scope>
     </dependency>
-
     <!-- Vert.x classes cannot be mocked without this -->
     <dependency>
       <groupId>io.vertx</groupId>
@@ -128,10 +132,26 @@
             </goals>
             <phase>integration-test</phase>
             <configuration>
+              <skip>${it.skip.fileTransfer}</skip>
               <includes>
                 <include>me/snowdrop/vertx/http/it/HttpFileTransferIT.java</include>
                 <include>me/snowdrop/vertx/http/it/Http2FileTransferIT.java</include>
               </includes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>no-openssl</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <phase>integration-test</phase>
+            <configuration>
+              <includes>
+                <include>me/snowdrop/vertx/http/it/HttpSslIT.java</include>
+              </includes>
+              <classpathDependencyExcludes>
+                <classpathDependencyExclude>io.netty:netty-tcnative-boringssl-static</classpathDependencyExclude>
+              </classpathDependencyExcludes>
             </configuration>
           </execution>
         </executions>
