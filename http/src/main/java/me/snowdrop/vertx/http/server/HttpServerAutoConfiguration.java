@@ -28,10 +28,14 @@ import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAd
 @EnableConfigurationProperties(HttpServerProperties.class)
 public class HttpServerAutoConfiguration {
 
-    private final BufferConverter bufferConverter = new BufferConverter();
+    @Bean
+    public BufferConverter bufferConverter() {
+        return new BufferConverter();
+    }
 
     @Bean
-    public VertxReactiveWebServerFactory vertxReactiveWebServerFactory(Vertx vertx, HttpServerProperties properties) {
+    public VertxReactiveWebServerFactory vertxReactiveWebServerFactory(Vertx vertx, HttpServerProperties properties,
+        BufferConverter bufferConverter) {
         return new VertxReactiveWebServerFactory(vertx, properties, bufferConverter);
     }
 
@@ -42,7 +46,7 @@ public class HttpServerAutoConfiguration {
     }
 
     @Bean
-    public WebSocketService webSocketService() {
+    public WebSocketService webSocketService(BufferConverter bufferConverter) {
         VertxRequestUpgradeStrategy requestUpgradeStrategy = new VertxRequestUpgradeStrategy(bufferConverter);
         return new HandshakeWebSocketService(requestUpgradeStrategy);
     }
