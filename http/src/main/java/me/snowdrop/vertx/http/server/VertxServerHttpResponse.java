@@ -4,10 +4,11 @@ import java.nio.file.Path;
 
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
-import me.snowdrop.vertx.http.common.PublisherToHttpBodyConnector;
+import me.snowdrop.vertx.http.common.WriteStreamSubscriber;
 import me.snowdrop.vertx.http.utils.BufferConverter;
 import me.snowdrop.vertx.http.utils.CookieConverter;
 import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -63,7 +64,12 @@ public class VertxServerHttpResponse extends AbstractServerHttpResponse implemen
     protected Mono<Void> writeWithInternal(Publisher<? extends DataBuffer> chunks) {
         return Mono.create(sink -> {
             logger.debug("Subscribing to body publisher");
-            chunks.subscribe(new PublisherToHttpBodyConnector(delegate, sink, bufferConverter));
+            Subscriber<DataBuffer> subscriber = new WriteStreamSubscriber.Builder<HttpServerResponse, DataBuffer>()
+                .writeStream(delegate)
+                .endHook(sink)
+                .nextHandler((stream, value) -> stream.write(bufferConverter.toBuffer(value)))
+                .build();
+            chunks.subscribe(subscriber);
         });
     }
 

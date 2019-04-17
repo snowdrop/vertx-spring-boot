@@ -71,7 +71,6 @@ public class VertxServerHttpRequestTest {
     public void shouldGetBody() {
         Buffer firstBuffer = Buffer.buffer("chunk 1");
         Buffer secondBuffer = Buffer.buffer("chunk 2");
-        given(mockHttpServerRequest.pause()).willReturn(mockHttpServerRequest);
         given(mockHttpServerRequest.exceptionHandler(any())).willReturn(mockHttpServerRequest);
         given(mockHttpServerRequest.handler(any())).will(invocation -> {
             Handler<Buffer> handler = invocation.getArgument(0);

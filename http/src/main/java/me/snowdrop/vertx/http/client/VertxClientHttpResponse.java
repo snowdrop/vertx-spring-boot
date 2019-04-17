@@ -2,12 +2,11 @@ package me.snowdrop.vertx.http.client;
 
 import java.util.Collection;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientResponse;
+import me.snowdrop.vertx.http.common.ReadStreamFluxBuilder;
 import me.snowdrop.vertx.http.utils.BufferConverter;
 import me.snowdrop.vertx.http.utils.CookieConverter;
-import me.snowdrop.vertx.http.common.HttpBodyToFluxConnector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -19,15 +18,16 @@ import reactor.core.publisher.Flux;
 
 public class VertxClientHttpResponse implements ClientHttpResponse {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
     private final HttpClientResponse delegate;
 
-    private final HttpBodyToFluxConnector bodyToFluxConnector;
+    private final Flux<DataBuffer> bodyFlux;
 
     public VertxClientHttpResponse(HttpClientResponse delegate, BufferConverter bufferConverter) {
         this.delegate = delegate;
-        this.bodyToFluxConnector = new HttpBodyToFluxConnector(bufferConverter);
+        this.bodyFlux = new ReadStreamFluxBuilder<Buffer, DataBuffer>()
+            .readStream(delegate)
+            .dataConverter(bufferConverter::toDataBuffer)
+            .build();
     }
 
     @Override
@@ -42,8 +42,7 @@ public class VertxClientHttpResponse implements ClientHttpResponse {
 
     @Override
     public Flux<DataBuffer> getBody() {
-        logger.debug("Creating a response body read stream connector");
-        return bodyToFluxConnector.connect(delegate);
+        return bodyFlux;
     }
 
     @Override

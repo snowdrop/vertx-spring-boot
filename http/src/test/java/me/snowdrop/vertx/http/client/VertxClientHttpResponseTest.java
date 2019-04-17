@@ -64,7 +64,6 @@ public class VertxClientHttpResponseTest {
     public void shouldGetBodyChunks() {
         Buffer firstBuffer = Buffer.buffer("chunk 1");
         Buffer secondBuffer = Buffer.buffer("chunk 2");
-        given(mockHttpClientResponse.pause()).willReturn(mockHttpClientResponse);
         given(mockHttpClientResponse.exceptionHandler(any())).willReturn(mockHttpClientResponse);
         given(mockHttpClientResponse.handler(any())).will(invocation -> {
             Handler<Buffer> handler = invocation.getArgument(0);

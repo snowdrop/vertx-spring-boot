@@ -3,14 +3,13 @@ package me.snowdrop.vertx.http.server;
 import java.net.InetSocketAddress;
 import java.net.URI;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.ext.web.RoutingContext;
-import me.snowdrop.vertx.http.common.HttpBodyToFluxConnector;
+import me.snowdrop.vertx.http.common.ReadStreamFluxBuilder;
 import me.snowdrop.vertx.http.utils.BufferConverter;
 import me.snowdrop.vertx.http.utils.CookieConverter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
@@ -22,19 +21,20 @@ import reactor.core.publisher.Flux;
 
 public class VertxServerHttpRequest extends AbstractServerHttpRequest {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
     private final RoutingContext context;
 
     private final HttpServerRequest delegate;
 
-    private final HttpBodyToFluxConnector bodyToFluxConnector;
+    private final Flux<DataBuffer> bodyFlux;
 
     public VertxServerHttpRequest(RoutingContext context, BufferConverter bufferConverter) {
         super(initUri(context.request()), "", initHeaders(context.request()));
         this.context = context;
         this.delegate = context.request();
-        this.bodyToFluxConnector = new HttpBodyToFluxConnector(bufferConverter);
+        this.bodyFlux = new ReadStreamFluxBuilder<Buffer, DataBuffer>()
+            .readStream(delegate)
+            .dataConverter(bufferConverter::toDataBuffer)
+            .build();
     }
 
     @SuppressWarnings("unchecked")
@@ -50,8 +50,7 @@ public class VertxServerHttpRequest extends AbstractServerHttpRequest {
 
     @Override
     public Flux<DataBuffer> getBody() {
-        logger.debug("Creating a request body read stream connector");
-        return bodyToFluxConnector.connect(delegate);
+        return bodyFlux;
     }
 
     @Override

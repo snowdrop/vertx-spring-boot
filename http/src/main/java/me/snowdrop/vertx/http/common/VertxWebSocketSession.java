@@ -4,6 +4,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.WebSocketBase;
 import me.snowdrop.vertx.http.utils.BufferConverter;
 import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -65,7 +66,13 @@ public class VertxWebSocketSession extends AbstractWebSocketSession<WebSocketBas
     public Mono<Void> send(Publisher<WebSocketMessage> messages) {
         return Mono.create(sink -> {
             logger.debug("{}Subscribing to messages publisher", getLogPrefix());
-            messages.subscribe(new PublisherToWebSocketConnector(getDelegate(), sink, bufferConverter));
+            Subscriber<WebSocketMessage> subscriber =
+                new WriteStreamSubscriber.Builder<WebSocketBase, WebSocketMessage>()
+                    .writeStream(getDelegate())
+                    .nextHandler(this::messageHandler)
+                    .endHook(sink)
+                    .build();
+            messages.subscribe(subscriber);
         });
     }
 
@@ -78,6 +85,23 @@ public class VertxWebSocketSession extends AbstractWebSocketSession<WebSocketBas
                 sink.success();
             })
             .close((short) status.getCode(), status.getReason()));
+    }
+
+    private void messageHandler(WebSocketBase socket, WebSocketMessage message) {
+        if (message.getType() == WebSocketMessage.Type.TEXT) {
+            String payload = message.getPayloadAsText();
+            socket.writeTextMessage(payload);
+        } else {
+            Buffer buffer = bufferConverter.toBuffer(message.getPayload());
+
+            if (message.getType() == WebSocketMessage.Type.PING) {
+                socket.writePing(buffer);
+            } else if (message.getType() == WebSocketMessage.Type.PONG) {
+                socket.writePong(buffer);
+            } else {
+                socket.writeBinaryMessage(buffer);
+            }
+        }
     }
 
     private WebSocketMessage binaryMessage(Buffer payloadBuffer) {

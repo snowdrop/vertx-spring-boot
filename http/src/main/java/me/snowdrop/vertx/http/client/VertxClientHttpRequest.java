@@ -4,9 +4,10 @@ import java.net.URI;
 import java.util.Collection;
 
 import io.vertx.core.http.HttpClientRequest;
+import me.snowdrop.vertx.http.common.WriteStreamSubscriber;
 import me.snowdrop.vertx.http.utils.BufferConverter;
-import me.snowdrop.vertx.http.common.PublisherToHttpBodyConnector;
 import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -52,7 +53,12 @@ public class VertxClientHttpRequest extends AbstractClientHttpRequest {
     public Mono<Void> writeWith(Publisher<? extends DataBuffer> chunks) {
         Mono<Void> writeCompletion = Mono.create(sink -> {
             logger.debug("Subscribing to body publisher");
-            chunks.subscribe(new PublisherToHttpBodyConnector(delegate, sink, bufferConverter));
+            Subscriber<DataBuffer> subscriber = new WriteStreamSubscriber.Builder<HttpClientRequest, DataBuffer>()
+                .writeStream(delegate)
+                .endHook(sink)
+                .nextHandler((stream, value) -> stream.write(bufferConverter.toBuffer(value)))
+                .build();
+            chunks.subscribe(subscriber);
         });
 
         Mono<Void> endCompletion = Mono.create(sink -> {

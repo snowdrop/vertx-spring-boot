@@ -159,6 +159,25 @@ public class HttpIT extends TestBase {
         assertThat(json.getString("status")).isEqualTo("UP");
     }
 
+    @Test
+    public void shouldExtractBodyAfterRequestEnded() {
+        startServer(UpperBodyRouter.class);
+
+        ClientResponse response = getWebClient()
+            .post()
+            .syncBody("test")
+            .exchange()
+            .blockOptional(Duration.ofSeconds(2))
+            .orElseThrow(() -> new AssertionError("Did not receive a response"));
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK);
+
+        String body = response.bodyToMono(String.class)
+            .block(Duration.ofSeconds(2));
+
+        assertThat(body).isEqualTo("TEST");
+    }
+
     @Configuration
     static class StaticRouter {
         @Bean
