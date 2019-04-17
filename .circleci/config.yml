@@ -5,5 +5,5 @@ jobs:
       - image: circleci/openjdk:9-jdk
     steps:
       - checkout
-      - run: ./mvnw verify
+      - run: ./mvnw verify -Dit.http.skip.fileTransfer=true
 

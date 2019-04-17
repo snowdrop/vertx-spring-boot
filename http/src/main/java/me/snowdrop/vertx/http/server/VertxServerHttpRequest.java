@@ -83,7 +83,7 @@ public class VertxServerHttpRequest extends AbstractServerHttpRequest {
         return new SslInfoImpl(delegate.sslSession());
     }
 
-    private static URI initUri(HttpServerRequest request) { // TODO refactor
+    private static URI initUri(HttpServerRequest request) {
         return URI.create(request.absoluteURI());
     }
 
