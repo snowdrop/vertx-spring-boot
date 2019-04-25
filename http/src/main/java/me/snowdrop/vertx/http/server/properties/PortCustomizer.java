@@ -12,7 +12,7 @@ public class PortCustomizer implements HttpServerOptionsCustomizer {
 
     @Override
     public HttpServerOptions apply(HttpServerOptions options) {
-        if (port > 0) {
+        if (port >= 0) {
             options.setPort(port);
         }
 

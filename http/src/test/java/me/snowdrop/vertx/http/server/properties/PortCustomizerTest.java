@@ -26,7 +26,7 @@ public class PortCustomizerTest {
 
     @Test
     public void shouldIgnoreInvalidPort() {
-        PortCustomizer customizer = new PortCustomizer(0);
+        PortCustomizer customizer = new PortCustomizer(-1);
         customizer.apply(mockHttpServerOptions);
 
         verify(mockHttpServerOptions, times(0)).setPort(anyInt());
