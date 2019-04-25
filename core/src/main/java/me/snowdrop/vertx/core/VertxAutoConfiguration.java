@@ -11,14 +11,11 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(VertxProperties.class)
 public class VertxAutoConfiguration {
 
-    @Bean(destroyMethod = "") // Leave destruction to VertxDisposingBean
+    // Let the Vertx user to handle instance closing.
+    // This is done in particular for HTTP server which is closed by Spring Context after beans are destroyed.
+    // Allowing Vertx bean to be destroyed by the context would block HTTP server from call its close method.
+    @Bean(destroyMethod = "")
     public Vertx vertx(VertxProperties properties) {
         return Vertx.vertx(properties.toVertxOptions());
     }
-
-    @Bean // TODO find a better way to dispose a Vertx instance asynchronously
-    public VertxDisposingBean vertxDisposingBean(Vertx vertx) {
-        return new VertxDisposingBean(vertx);
-    }
-
 }

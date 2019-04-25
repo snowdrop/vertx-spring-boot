@@ -1,7 +1,6 @@
 package me.snowdrop.vertx.http.server;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.time.Duration;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -12,6 +11,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.CookieHandler;
 import org.springframework.boot.web.server.WebServer;
 import org.springframework.boot.web.server.WebServerException;
+import reactor.core.publisher.Mono;
 
 public class VertxWebServer implements WebServer {
 
@@ -40,22 +40,19 @@ public class VertxWebServer implements WebServer {
             .handler(CookieHandler.create())
             .handler(requestHandler);
 
-        CompletableFuture<Void> future = new CompletableFuture<>();
-        server = vertx.createHttpServer(httpServerOptions)
-            .requestHandler(router)
-            .listen(result -> {
-                if (result.succeeded()) {
-                    future.complete(null);
-                } else {
-                    future.completeExceptionally(result.cause());
-                }
-            });
+        server = vertx
+            .createHttpServer(httpServerOptions)
+            .requestHandler(router);
 
-        try {
-            future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new WebServerException(e.getMessage(), e);
-        }
+        Mono<Void> future = Mono.create(sink -> server.listen(result -> {
+            if (result.succeeded()) {
+                sink.success();
+            } else {
+                sink.error(result.cause());
+            }
+        }));
+
+        future.block(Duration.ofSeconds(5));
     }
 
     @Override
@@ -64,13 +61,25 @@ public class VertxWebServer implements WebServer {
             return;
         }
 
-        server.close(); // TODO make blocking
-        server = null;
+        Mono<Void> future = Mono.create(sink -> server.close(result -> {
+            if (result.succeeded()) {
+                sink.success();
+            } else {
+                sink.error(result.cause());
+            }
+        }));
+
+        future
+            .doOnTerminate(() -> server = null)
+            .block(Duration.ofSeconds(5));
     }
 
     @Override
     public int getPort() {
-        return httpServerOptions.getPort();
+        if (server != null) {
+            return server.actualPort();
+        }
+        return 0;
     }
 
 }
