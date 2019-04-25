@@ -11,7 +11,6 @@
 
   <properties>
     <awaitility.version>3.1.6</awaitility.version>
-    <nio-multipart-parser.version>1.1.0</nio-multipart-parser.version>
     <rest-assured.version>3.3.0</rest-assured.version>
     <smallrye-reactive.version>1.0.0</smallrye-reactive.version>
     <spring-boot.version>2.1.2.RELEASE</spring-boot.version>
@@ -59,9 +58,9 @@
         <version>${awaitility.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.synchronoss.cloud</groupId>
-        <artifactId>nio-multipart-parser</artifactId>
-        <version>${nio-multipart-parser.version}</version>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-tcnative-boringssl-static</artifactId>
+        <version>${tcnative.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
