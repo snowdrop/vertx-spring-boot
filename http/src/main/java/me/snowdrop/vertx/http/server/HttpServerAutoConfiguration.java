@@ -5,7 +5,6 @@ import java.util.Set;
 import io.vertx.core.Vertx;
 import me.snowdrop.vertx.http.server.properties.HttpServerOptionsCustomizer;
 import me.snowdrop.vertx.http.server.properties.HttpServerProperties;
-import me.snowdrop.vertx.http.utils.BufferConverter;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -29,14 +28,8 @@ import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAd
 public class HttpServerAutoConfiguration {
 
     @Bean
-    public BufferConverter bufferConverter() {
-        return new BufferConverter();
-    }
-
-    @Bean
-    public VertxReactiveWebServerFactory vertxReactiveWebServerFactory(Vertx vertx, HttpServerProperties properties,
-        BufferConverter bufferConverter) {
-        return new VertxReactiveWebServerFactory(vertx, properties, bufferConverter);
+    public VertxReactiveWebServerFactory vertxReactiveWebServerFactory(Vertx vertx, HttpServerProperties properties) {
+        return new VertxReactiveWebServerFactory(vertx, properties);
     }
 
     @Bean
@@ -46,8 +39,8 @@ public class HttpServerAutoConfiguration {
     }
 
     @Bean
-    public WebSocketService webSocketService(BufferConverter bufferConverter) {
-        VertxRequestUpgradeStrategy requestUpgradeStrategy = new VertxRequestUpgradeStrategy(bufferConverter);
+    public WebSocketService webSocketService() {
+        VertxRequestUpgradeStrategy requestUpgradeStrategy = new VertxRequestUpgradeStrategy();
         return new HandshakeWebSocketService(requestUpgradeStrategy);
     }
 

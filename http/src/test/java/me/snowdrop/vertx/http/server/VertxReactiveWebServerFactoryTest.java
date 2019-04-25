@@ -4,7 +4,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerOptions;
 import me.snowdrop.vertx.http.server.properties.HttpServerOptionsCustomizer;
 import me.snowdrop.vertx.http.server.properties.HttpServerProperties;
-import me.snowdrop.vertx.http.utils.BufferConverter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,8 +36,7 @@ public class VertxReactiveWebServerFactoryTest {
     public void setUp() {
         given(mockHttpServerProperties.getHttpServerOptions()).willReturn(mockHttpServerOptions);
 
-        BufferConverter bufferConverter = new BufferConverter();
-        webServerFactory = new VertxReactiveWebServerFactory(mockVertx, mockHttpServerProperties, bufferConverter);
+        webServerFactory = new VertxReactiveWebServerFactory(mockVertx, mockHttpServerProperties);
     }
 
     @Test

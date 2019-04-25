@@ -4,8 +4,8 @@ import java.util.function.Supplier;
 
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.ServerWebSocket;
-import me.snowdrop.vertx.http.utils.BufferConverter;
 import me.snowdrop.vertx.http.common.VertxWebSocketSession;
+import me.snowdrop.vertx.http.utils.BufferConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.server.reactive.AbstractServerHttpRequest;
@@ -23,8 +23,8 @@ public class VertxRequestUpgradeStrategy implements RequestUpgradeStrategy {
 
     private final BufferConverter bufferConverter;
 
-    public VertxRequestUpgradeStrategy(BufferConverter bufferConverter) {
-        this.bufferConverter = bufferConverter;
+    public VertxRequestUpgradeStrategy() {
+        this.bufferConverter = new BufferConverter();
     }
 
     @Override

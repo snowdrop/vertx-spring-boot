@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.HttpHandler;
 
-public class HttpHandlerAdapter implements Handler<RoutingContext> {
+public class VertxHttpHandlerAdapter implements Handler<RoutingContext> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -16,9 +16,9 @@ public class HttpHandlerAdapter implements Handler<RoutingContext> {
 
     private final BufferConverter bufferConverter;
 
-    public HttpHandlerAdapter(HttpHandler httpHandler, BufferConverter bufferConverter) {
+    public VertxHttpHandlerAdapter(HttpHandler httpHandler) {
         this.httpHandler = httpHandler;
-        this.bufferConverter = bufferConverter;
+        this.bufferConverter = new BufferConverter();
     }
 
     @Override

@@ -3,7 +3,6 @@ package me.snowdrop.vertx.http.server;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.ServerWebSocket;
 import me.snowdrop.vertx.http.common.VertxWebSocketSession;
-import me.snowdrop.vertx.http.utils.BufferConverter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -43,7 +42,7 @@ public class VertxRequestUpgradeStrategyTest {
         given(mockVertxServerHttpRequest.getNativeRequest()).willReturn(mockHttpServerRequest);
         given(mockHttpServerRequest.upgrade()).willReturn(mockServerWebSocket);
 
-        VertxRequestUpgradeStrategy strategy = new VertxRequestUpgradeStrategy(new BufferConverter());
+        VertxRequestUpgradeStrategy strategy = new VertxRequestUpgradeStrategy();
         strategy.upgrade(mockServerWebExchange, mockWebSocketHandler, null, () -> mockHandshakeInfo);
 
         verify(mockHttpServerRequest).upgrade();
