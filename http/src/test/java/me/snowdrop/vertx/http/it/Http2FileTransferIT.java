@@ -10,11 +10,12 @@ public class Http2FileTransferIT extends HttpFileTransferIT {
 
     @Override
     protected WebClient getWebClient(HttpClientOptions options) {
+        WebClient.Builder builder = getBean(WebClient.Builder.class);
         Vertx vertx = getBean(Vertx.class);
         options.setProtocolVersion(HttpVersion.HTTP_2)
             .setHttp2ClearTextUpgrade(false);
 
-        return WebClient.builder()
+        return builder
             .clientConnector(new VertxClientHttpConnector(vertx, options))
             .baseUrl(BASE_URL)
             .build();

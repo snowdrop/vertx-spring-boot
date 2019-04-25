@@ -63,9 +63,10 @@ public class TestBase {
     }
 
     protected WebClient getWebClient(HttpClientOptions options) {
+        WebClient.Builder builder = getBean(WebClient.Builder.class);
         Vertx vertx = getBean(Vertx.class);
 
-        return WebClient.builder()
+        return builder
             .clientConnector(new VertxClientHttpConnector(vertx, options))
             .baseUrl(options.isSsl() ? SSL_BASE_URL : BASE_URL)
             .build();
