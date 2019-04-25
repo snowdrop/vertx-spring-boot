@@ -112,6 +112,7 @@
             <id>http-core</id>
             <goals>
               <goal>integration-test</goal>
+              <goal>verify</goal>
             </goals>
             <phase>integration-test</phase>
             <configuration>
@@ -129,6 +130,7 @@
             <id>http-file-transfer</id>
             <goals>
               <goal>integration-test</goal>
+              <goal>verify</goal>
             </goals>
             <phase>integration-test</phase>
             <configuration>
@@ -143,6 +145,7 @@
             <id>no-openssl</id>
             <goals>
               <goal>integration-test</goal>
+              <goal>verify</goal>
             </goals>
             <phase>integration-test</phase>
             <configuration>
