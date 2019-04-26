@@ -5,7 +5,6 @@ import java.util.Properties;
 
 import io.restassured.path.json.JsonPath;
 import io.restassured.path.xml.XmlPath;
-import io.vertx.core.http.HttpClientOptions;
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
@@ -91,14 +90,12 @@ public class HttpIT extends TestBase {
 
     @Test
     public void shouldGetCompressedStaticContent() {
-        Properties serverProperties = new Properties();
-        serverProperties.setProperty("server.compression.enabled", "true");
-        startServer(serverProperties, StaticRouter.class);
+        Properties properties = new Properties();
+        properties.setProperty("server.compression.enabled", "true");
+        properties.setProperty("vertx.http.client.try-use-compression", "true");
+        startServer(properties, StaticRouter.class);
 
-        HttpClientOptions clientOptions = new HttpClientOptions()
-            .setTryUseCompression(true);
-
-        XmlPath xml = getWebClient(clientOptions)
+        XmlPath xml = getWebClient()
             .get()
             .uri("static/index.html")
             .header(ACCEPT_ENCODING, "gzip")

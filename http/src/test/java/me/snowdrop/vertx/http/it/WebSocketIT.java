@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.vertx.core.http.HttpClientOptions;
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
@@ -61,14 +60,13 @@ public class WebSocketIT extends TestBase {
     @Test
     public void shouldSendAndReceiveMultiFrameTextMessage() {
         Properties properties = new Properties();
+        properties.setProperty("vertx.http.client.maxWebsocketFrameSize", "5");
         properties.setProperty("vertx.http.server.maxWebsocketFrameSize", "5");
         startServer(properties, Handlers.class);
 
         AtomicReference<String> expectedMessage = new AtomicReference<>();
-        HttpClientOptions clientOptions = new HttpClientOptions()
-            .setMaxWebsocketFrameSize(5);
 
-        getWebSocketClient(clientOptions)
+        getWebSocketClient()
             .execute(URI.create(WS_BASE_URL + "/echo"), session -> {
                 WebSocketMessage originalMessage = session.textMessage("ping pong");
 
@@ -115,14 +113,13 @@ public class WebSocketIT extends TestBase {
     @Test
     public void shouldSendAndReceiveMultiFrameBinaryMessage() {
         Properties properties = new Properties();
+        properties.setProperty("vertx.http.client.maxWebsocketFrameSize", "5");
         properties.setProperty("vertx.http.server.maxWebsocketFrameSize", "5");
         startServer(properties, Handlers.class);
 
         AtomicReference<String> expectedMessage = new AtomicReference<>();
-        HttpClientOptions clientOptions = new HttpClientOptions()
-            .setMaxWebsocketFrameSize(5);
 
-        getWebSocketClient(clientOptions)
+        getWebSocketClient()
             .execute(URI.create(BASE_URL + "/echo"), session -> {
                 WebSocketMessage originalMessage =
                     session.binaryMessage(factory -> factory.wrap("ping pong".getBytes()));

@@ -2,9 +2,6 @@ package me.snowdrop.vertx.http.it;
 
 import java.util.Properties;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClientOptions;
-import me.snowdrop.vertx.http.client.VertxClientHttpConnector;
 import me.snowdrop.vertx.http.client.VertxWebSocketClient;
 import org.junit.Rule;
 import org.junit.rules.TestRule;
@@ -35,10 +32,13 @@ public class TestBase {
         startServer(new Properties(), sources);
     }
 
-    protected void startServer(Properties properties, Class<?>... sources) {
+    protected void startServer(Properties userProperties, Class<?>... sources) {
         if (context != null) {
             throw new RuntimeException("Server is already running");
         }
+
+        Properties properties = new Properties(defaultProperties());
+        properties.putAll(userProperties);
 
         context = new SpringApplicationBuilder(TestApplication.class)
             .sources(sources)
@@ -59,29 +59,21 @@ public class TestBase {
     }
 
     protected WebClient getWebClient() {
-        return getWebClient(new HttpClientOptions());
-    }
-
-    protected WebClient getWebClient(HttpClientOptions options) {
-        WebClient.Builder builder = getBean(WebClient.Builder.class);
-        Vertx vertx = getBean(Vertx.class);
-
-        return builder
-            .clientConnector(new VertxClientHttpConnector(vertx, options))
-            .baseUrl(options.isSsl() ? SSL_BASE_URL : BASE_URL)
+        return getBean(WebClient.Builder.class)
+            .baseUrl(isSsl() ? SSL_BASE_URL : BASE_URL)
             .build();
     }
 
-    protected WebSocketClient getWebSocketClient() {
-        Vertx vertx = getBean(Vertx.class);
-
-        return new VertxWebSocketClient(vertx);
+    protected Properties defaultProperties() {
+        return new Properties();
     }
 
-    protected WebSocketClient getWebSocketClient(HttpClientOptions options) {
-        Vertx vertx = getBean(Vertx.class);
+    protected boolean isSsl() {
+        return false;
+    }
 
-        return new VertxWebSocketClient(vertx, options);
+    protected WebSocketClient getWebSocketClient() {
+        return getBean(VertxWebSocketClient.class);
     }
 
     @SpringBootConfiguration

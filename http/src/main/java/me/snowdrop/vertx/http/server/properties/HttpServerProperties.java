@@ -15,7 +15,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * Spring Boot properties integration for HttpServerOptions. All expect the following properties are integrated:
  * usePooledBuffers (deprecated), crlPaths, crlValues, keyCertOptions, trustOptions, sslEngineOptions.
  * <p>
- * sslEngineOptions, crlPath or crlValues are required, please use HttpServerOptionsCustomizer.
+ * If sslEngineOptions, crlPath or crlValues are required, please use HttpServerOptionsCustomizer.
  * If keyCertOptions or trustOptions either use {@link HttpServerOptionsCustomizer} or {@link ServerProperties}.
  */
 @ConfigurationProperties(prefix = HttpServerProperties.PROPERTIES_PREFIX)
@@ -245,7 +245,7 @@ public class HttpServerProperties {
         return delegate.getInitialSettings().getMaxConcurrentStreams();
     }
 
-    public void getMaxConcurrentStreams(long maxConcurrentStreams) {
+    public void setMaxConcurrentStreams(long maxConcurrentStreams) {
         delegate.getInitialSettings().setMaxConcurrentStreams(maxConcurrentStreams);
     }
 
@@ -253,7 +253,7 @@ public class HttpServerProperties {
         return delegate.getInitialSettings().getInitialWindowSize();
     }
 
-    public void getMaxConcurrentStreams(int initialWindowSize) {
+    public void setInitialWindowSize(int initialWindowSize) {
         delegate.getInitialSettings().setInitialWindowSize(initialWindowSize);
     }
 

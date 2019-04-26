@@ -25,7 +25,7 @@ import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAd
 @ConditionalOnClass(ReactiveHttpInputMessage.class)
 @ConditionalOnMissingBean(ReactiveWebServerFactory.class)
 @EnableConfigurationProperties(HttpServerProperties.class)
-public class HttpServerAutoConfiguration {
+public class ServerAutoConfiguration {
 
     @Bean
     public VertxReactiveWebServerFactory vertxReactiveWebServerFactory(Vertx vertx, HttpServerProperties properties) {

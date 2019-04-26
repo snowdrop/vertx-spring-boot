@@ -1,23 +1,16 @@
 package me.snowdrop.vertx.http.it;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpVersion;
-import me.snowdrop.vertx.http.client.VertxClientHttpConnector;
-import org.springframework.web.reactive.function.client.WebClient;
+import java.util.Properties;
 
 public class Http2FileTransferIT extends HttpFileTransferIT {
 
     @Override
-    protected WebClient getWebClient(HttpClientOptions options) {
-        WebClient.Builder builder = getBean(WebClient.Builder.class);
-        Vertx vertx = getBean(Vertx.class);
-        options.setProtocolVersion(HttpVersion.HTTP_2)
-            .setHttp2ClearTextUpgrade(false);
+    protected Properties defaultProperties() {
+        Properties properties = super.defaultProperties();
+        properties.setProperty("vertx.http.client.protocol-version", "HTTP_2");
+        // Disable text upgrade to make compression work
+        properties.setProperty("vertx.http.client.http2-clear-text-upgrade", "false");
 
-        return builder
-            .clientConnector(new VertxClientHttpConnector(vertx, options))
-            .baseUrl(BASE_URL)
-            .build();
+        return properties;
     }
 }

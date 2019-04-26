@@ -8,13 +8,13 @@ import java.util.Properties;
 import javax.net.ssl.SSLHandshakeException;
 
 import io.vertx.core.http.ClientAuth;
-import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpVersion;
 import io.vertx.core.net.JdkSSLEngineOptions;
 import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.OpenSSLEngineOptions;
 import io.vertx.core.net.PemKeyCertOptions;
+import me.snowdrop.vertx.http.client.properties.HttpClientOptionsCustomizer;
 import me.snowdrop.vertx.http.server.VertxServerHttpRequest;
 import me.snowdrop.vertx.http.server.properties.HttpServerOptionsCustomizer;
 import org.junit.After;
@@ -117,28 +117,31 @@ public class HttpSslIT extends TestBase {
         testEngine(true, Engine.JDK);
     }
 
+    @Override
+    protected boolean isSsl() {
+        return true;
+    }
+
     private void testSecureRequest(boolean useAlpn) {
-        Properties serverProperties = new Properties();
-        serverProperties.setProperty("vertx.http.server.ssl", "true");
-        serverProperties.setProperty("vertx.http.server.useAlpn", Boolean.toString(useAlpn));
-        serverProperties.setProperty("vertx.http.server.client-auth", ClientAuth.REQUIRED.name());
-        serverProperties.setProperty("server.ssl.key-store-type", "JKS");
-        serverProperties.setProperty("server.ssl.key-store", SERVER_KEYSTORE.getPath());
-        serverProperties.setProperty("server.ssl.key-store-password", SERVER_KEYSTORE.getPassword());
-        serverProperties.setProperty("server.ssl.trust-store-type", "JKS");
-        serverProperties.setProperty("server.ssl.trust-store", SERVER_TRUSTSTORE.getPath());
-        serverProperties.setProperty("server.ssl.trust-store-password", SERVER_TRUSTSTORE.getPassword());
+        Properties properties = new Properties();
+        properties.setProperty("vertx.http.client.ssl", "true");
+        properties.setProperty("vertx.http.client.use-alpn", String.valueOf(useAlpn));
+        properties.setProperty("vertx.http.client.protocol-version",
+            useAlpn ? HttpVersion.HTTP_2.name() : HttpVersion.HTTP_1_1.name());
+        properties.setProperty("vertx.http.server.ssl", "true");
+        properties.setProperty("vertx.http.server.useAlpn", Boolean.toString(useAlpn));
+        properties.setProperty("vertx.http.server.client-auth", ClientAuth.REQUIRED.name());
+        properties.setProperty("server.ssl.key-store-type", "JKS");
+        properties.setProperty("server.ssl.key-store", SERVER_KEYSTORE.getPath());
+        properties.setProperty("server.ssl.key-store-password", SERVER_KEYSTORE.getPassword());
+        properties.setProperty("server.ssl.trust-store-type", "JKS");
+        properties.setProperty("server.ssl.trust-store", SERVER_TRUSTSTORE.getPath());
+        properties.setProperty("server.ssl.trust-store-password", SERVER_TRUSTSTORE.getPassword());
 
-        startServer(serverProperties, useAlpn ? NoopHttp11Router.class : NoopHttp2Router.class);
 
-        HttpClientOptions clientOptions = new HttpClientOptions()
-            .setSsl(true)
-            .setUseAlpn(useAlpn)
-            .setProtocolVersion(useAlpn ? HttpVersion.HTTP_2 : HttpVersion.HTTP_1_1)
-            .setKeyStoreOptions(CLIENT_KEYSTORE)
-            .setTrustOptions(CLIENT_TRUSTSTORE);
+        startServer(properties, ClientStoresCustomizer.class, useAlpn ? NoopHttp11Router.class : NoopHttp2Router.class);
 
-        HttpStatus status = getWebClient(clientOptions)
+        HttpStatus status = getWebClient()
             .get()
             .exchange()
             .map(ClientResponse::statusCode)
@@ -148,25 +151,22 @@ public class HttpSslIT extends TestBase {
     }
 
     private void testUntrustedClient(boolean useAlpn) {
-        Properties serverProperties = new Properties();
-        serverProperties.setProperty("vertx.http.server.ssl", "true");
-        serverProperties.setProperty("vertx.http.server.useAlpn", Boolean.toString(useAlpn));
-        serverProperties.setProperty("vertx.http.server.client-auth", ClientAuth.REQUIRED.name());
-        serverProperties.setProperty("server.ssl.key-store-type", "JKS");
-        serverProperties.setProperty("server.ssl.key-store", SERVER_KEYSTORE.getPath());
-        serverProperties.setProperty("server.ssl.key-store-password", SERVER_KEYSTORE.getPassword());
+        Properties properties = new Properties();
+        properties.setProperty("vertx.http.client.ssl", "true");
+        properties.setProperty("vertx.http.client.use-alpn", String.valueOf(useAlpn));
+        properties.setProperty("vertx.http.client.protocol-version",
+            useAlpn ? HttpVersion.HTTP_2.name() : HttpVersion.HTTP_1_1.name());
+        properties.setProperty("vertx.http.server.ssl", "true");
+        properties.setProperty("vertx.http.server.useAlpn", Boolean.toString(useAlpn));
+        properties.setProperty("vertx.http.server.client-auth", ClientAuth.REQUIRED.name());
+        properties.setProperty("server.ssl.key-store-type", "JKS");
+        properties.setProperty("server.ssl.key-store", SERVER_KEYSTORE.getPath());
+        properties.setProperty("server.ssl.key-store-password", SERVER_KEYSTORE.getPassword());
 
-        startServer(serverProperties, useAlpn ? NoopHttp2Router.class : NoopHttp11Router.class);
-
-        HttpClientOptions options = new HttpClientOptions()
-            .setSsl(true)
-            .setUseAlpn(useAlpn)
-            .setProtocolVersion(useAlpn ? HttpVersion.HTTP_2 : HttpVersion.HTTP_1_1)
-            .setKeyStoreOptions(CLIENT_KEYSTORE)
-            .setTrustOptions(CLIENT_TRUSTSTORE);
+        startServer(properties, ClientStoresCustomizer.class, useAlpn ? NoopHttp2Router.class : NoopHttp11Router.class);
 
         try {
-            getWebClient(options)
+            getWebClient()
                 .get()
                 .exchange()
                 .block(Duration.ofSeconds(2));
@@ -177,33 +177,30 @@ public class HttpSslIT extends TestBase {
     }
 
     private void testEngine(boolean useAlpn, Engine engine) {
-        Properties serverProperties = new Properties();
-        serverProperties.setProperty("vertx.http.server.ssl", "true");
-        serverProperties.setProperty("vertx.http.server.useAlpn", Boolean.toString(useAlpn));
-
-        HttpClientOptions clientOptions = new HttpClientOptions()
-            .setSsl(true)
-            .setUseAlpn(useAlpn)
-            .setTrustAll(true)
-            .setProtocolVersion(useAlpn ? HttpVersion.HTTP_2 : HttpVersion.HTTP_1_1);
+        Properties properties = new Properties();
+        properties.setProperty("vertx.http.client.ssl", "true");
+        properties.setProperty("vertx.http.client.use-alpn", String.valueOf(useAlpn));
+        properties.setProperty("vertx.http.client.trust-all", "true");
+        properties.setProperty("vertx.http.client.protocol-version",
+            useAlpn ? HttpVersion.HTTP_2.name() : HttpVersion.HTTP_1_1.name());
+        properties.setProperty("vertx.http.server.ssl", "true");
+        properties.setProperty("vertx.http.server.useAlpn", Boolean.toString(useAlpn));
 
         List<Class> classes = new LinkedList<>();
-        classes.add(KeyCertCustomizer.class);
+        classes.add(ServerKeyCertCustomizer.class);
         classes.add(useAlpn ? NoopHttp2Router.class : NoopHttp11Router.class);
 
         switch (engine) {
             case JDK:
-                classes.add(JdkSslEngineOptionsCustomizer.class);
-                clientOptions.setSslEngineOptions(new JdkSSLEngineOptions());
+                classes.add(JdkSslEngineOptionsCustomizers.class);
                 break;
             case OPENSSL:
-                classes.add(OpenSslEngineOptionsCustomizer.class);
-                clientOptions.setSslEngineOptions(new OpenSSLEngineOptions());
+                classes.add(OpenSslEngineOptionsCustomizers.class);
         }
 
-        startServer(serverProperties, classes.toArray(new Class[]{}));
+        startServer(properties, classes.toArray(new Class[]{}));
 
-        HttpStatus status = getWebClient(clientOptions)
+        HttpStatus status = getWebClient()
             .get()
             .exchange()
             .map(ClientResponse::statusCode)
@@ -237,9 +234,45 @@ public class HttpSslIT extends TestBase {
     }
 
     @Configuration
-    static class KeyCertCustomizer {
+    static class ClientStoresCustomizer {
         @Bean
-        public HttpServerOptionsCustomizer keyCertCustomizer() {
+        public HttpClientOptionsCustomizer clientStoresCustomizer() {
+            return options -> options
+                .setKeyStoreOptions(CLIENT_KEYSTORE)
+                .setTrustStoreOptions(CLIENT_TRUSTSTORE);
+        }
+    }
+
+    @Configuration
+    static class OpenSslEngineOptionsCustomizers {
+        @Bean
+        public HttpClientOptionsCustomizer clientOpenSslEngineOptionsCustomizer() {
+            return options -> options.setSslEngineOptions(new OpenSSLEngineOptions());
+        }
+
+        @Bean
+        public HttpServerOptionsCustomizer serverOpenSslEngineOptionsCustomizer() {
+            return options -> options.setSslEngineOptions(new OpenSSLEngineOptions());
+        }
+    }
+
+    @Configuration
+    static class JdkSslEngineOptionsCustomizers {
+        @Bean
+        public HttpClientOptionsCustomizer clientJdkSslEngineOptionsCustomizer() {
+            return options -> options.setSslEngineOptions(new JdkSSLEngineOptions());
+        }
+
+        @Bean
+        public HttpServerOptionsCustomizer serverJdkSslEngineOptionsCustomizer() {
+            return options -> options.setSslEngineOptions(new JdkSSLEngineOptions());
+        }
+    }
+
+    @Configuration
+    static class ServerKeyCertCustomizer {
+        @Bean
+        public HttpServerOptionsCustomizer serverKeyCertCustomizer() {
             return options -> {
                 PemKeyCertOptions cert = new PemKeyCertOptions()
                     .setKeyPath(KEY_PATH)
@@ -249,22 +282,6 @@ public class HttpSslIT extends TestBase {
 
                 return options;
             };
-        }
-    }
-
-    @Configuration
-    static class OpenSslEngineOptionsCustomizer {
-        @Bean
-        public HttpServerOptionsCustomizer openSslEngineOptionsCustomizer() {
-            return options -> options.setSslEngineOptions(new OpenSSLEngineOptions());
-        }
-    }
-
-    @Configuration
-    static class JdkSslEngineOptionsCustomizer {
-        @Bean
-        public HttpServerOptionsCustomizer jdkSslEngineOptionsCustomizer() {
-            return options -> options.setSslEngineOptions(new JdkSSLEngineOptions());
         }
     }
 
