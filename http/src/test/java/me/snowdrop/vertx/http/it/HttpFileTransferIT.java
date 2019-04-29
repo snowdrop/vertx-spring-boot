@@ -1,12 +1,12 @@
 package me.snowdrop.vertx.http.it;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.channels.AsynchronousFileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.Random;
 
@@ -107,10 +107,10 @@ public class HttpFileTransferIT extends TestBase {
     }
 
     private static Flux<DataBuffer> writeToFile(Flux<DataBuffer> input, Path path) {
-        FileOutputStream output;
+        AsynchronousFileChannel output;
         try {
-            output = new FileOutputStream(path.toFile());
-        } catch (FileNotFoundException e) {
+            output = AsynchronousFileChannel.open(path, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+        } catch (IOException e) {
             return Flux.error(e);
         }
 
