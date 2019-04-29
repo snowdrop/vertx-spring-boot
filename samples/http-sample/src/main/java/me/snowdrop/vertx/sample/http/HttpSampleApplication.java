@@ -1,6 +1,5 @@
 package me.snowdrop.vertx.sample.http;
 
-import me.snowdrop.vertx.http.server.VertxReactiveWebServerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +20,7 @@ public class HttpSampleApplication {
     }
 
     @Bean
-    public RouterFunction<ServerResponse> helloRouter(VertxReactiveWebServerFactory vertx) {
+    public RouterFunction<ServerResponse> helloRouter() {
         return route()
             .GET("/hello", this::helloHandler)
             .build();

@@ -25,9 +25,11 @@ public class DataHandler {
 
     private final WebClient client;
 
-    public DataHandler(ReactorEmailService emailService) {
+    public DataHandler(ReactorEmailService emailService, WebClient.Builder clientBuilder) {
         this.emailService = emailService;
-        client = WebClient.create("https://httpbin.org");
+        this.client = clientBuilder
+            .baseUrl("https://httpbin.org")
+            .build();
     }
 
     public Mono<ServerResponse> get(ServerRequest request) {
@@ -43,8 +45,12 @@ public class DataHandler {
             .uri("/stream/{count}", count)
             .retrieve()
             .bodyToFlux(String.class)
+            .log()
             // Delay to make a stream of data easily visible in the UI
-            .delayElements(Duration.ofMillis(200));
+            .delayElements(Duration.ofMillis(200))
+            // Only start requesting entries once there are two subscribers: mail sender and http body reader
+            .publish()
+            .autoConnect(2);
 
         // Send batches of 10 entries by email
         chunks.buffer(10)
