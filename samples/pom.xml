@@ -12,6 +12,17 @@
   <artifactId>samples</artifactId>
   <packaging>pom</packaging>
 
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
   <modules>
     <module>chunked-response-sample</module>
     <module>mail-sample</module>
