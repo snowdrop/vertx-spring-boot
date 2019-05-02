@@ -5,5 +5,9 @@ jobs:
       - image: circleci/openjdk:9-jdk
     steps:
       - checkout
-      - run: ./mvnw verify -Dit.http.skip.fileTransfer=true
+      - run:
+          name: Run integration tests
+          command: ./mvnw verify -Dit.http.skip.fileTransfer=true
+          environment:
+            MAVEN_OPTS: -Xms256m -Xmx2048m
 
