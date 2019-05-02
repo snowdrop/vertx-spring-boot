@@ -48,9 +48,7 @@ public class DataHandler {
             .log()
             // Delay to make a stream of data easily visible in the UI
             .delayElements(Duration.ofMillis(200))
-            // Only start requesting entries once there are two subscribers: mail sender and http body reader
-            .publish()
-            .autoConnect(2);
+            .share();
 
         // Send batches of 10 entries by email
         chunks.buffer(10)
