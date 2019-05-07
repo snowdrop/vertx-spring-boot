@@ -7,8 +7,8 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.http.impl.headers.VertxHttpHeaders;
-import me.snowdrop.vertx.http.utils.BufferConverter;
 import me.snowdrop.vertx.http.common.VertxWebSocketSession;
+import me.snowdrop.vertx.http.utils.BufferConverter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.Assert;
 import org.springframework.web.reactive.socket.HandshakeInfo;
@@ -54,7 +54,8 @@ public class VertxWebSocketClient implements WebSocketClient {
             socket -> handler.handle(initSession(uri, socket))
                 .doOnSuccess(callback::success)
                 .doOnError(callback::error)
-                .subscribe()
+                .subscribe(),
+            callback::error
         );
     }
 

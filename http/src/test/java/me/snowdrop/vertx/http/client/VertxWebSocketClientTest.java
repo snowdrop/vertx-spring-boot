@@ -42,13 +42,15 @@ public class VertxWebSocketClientTest {
     private VertxWebSocketClient webSocketClient;
 
     @Before
+    @SuppressWarnings("unchecked")
     public void setUp() {
         // Configure mock http client to invoke passed web socket handler
-        given(mockHttpClient.websocket(anyInt(), anyString(), anyString(), any(MultiMap.class), any())).will(answer -> {
-            Handler<WebSocket> handler = answer.getArgument(4);
-            handler.handle(mockWebSocket);
-            return mockHttpClient;
-        });
+        given(mockHttpClient.websocket(anyInt(), any(), anyString(), any(), any(Handler.class), any(Handler.class)))
+            .will(answer -> {
+                Handler<WebSocket> handler = answer.getArgument(4);
+                handler.handle(mockWebSocket);
+                return mockHttpClient;
+            });
 
         webSocketClient = new VertxWebSocketClient(mockHttpClient);
     }
@@ -64,26 +66,30 @@ public class VertxWebSocketClientTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldUseCorrectUri() {
         webSocketClient.execute(TEST_URI, session -> Mono.empty())
             .subscribe();
 
-        verify(mockHttpClient).websocket(
-            eq(TEST_URI.getPort()), eq(TEST_URI.getHost()), eq(TEST_URI.getPath()), any(MultiMap.class), any());
+        verify(mockHttpClient).websocket(eq(TEST_URI.getPort()), eq(TEST_URI.getHost()), eq(TEST_URI.getPath()),
+            any(MultiMap.class), any(Handler.class), any(Handler.class));
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldInitializeEmptyHeaders() {
         webSocketClient.execute(TEST_URI, session -> Mono.empty())
             .subscribe();
 
         ArgumentCaptor<VertxHttpHeaders> headersCaptor = ArgumentCaptor.forClass(VertxHttpHeaders.class);
-        verify(mockHttpClient).websocket(anyInt(), anyString(), anyString(), headersCaptor.capture(), any());
+        verify(mockHttpClient).websocket(anyInt(), anyString(), anyString(), headersCaptor.capture(),
+            any(Handler.class), any(Handler.class));
 
         assertThat(headersCaptor.getValue()).isEmpty();
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldAdaptHeaders() {
         HttpHeaders originalHeaders = new HttpHeaders();
         originalHeaders.put("key1", Arrays.asList("value1", "value2"));
@@ -93,7 +99,8 @@ public class VertxWebSocketClientTest {
             .subscribe();
 
         ArgumentCaptor<VertxHttpHeaders> headersCaptor = ArgumentCaptor.forClass(VertxHttpHeaders.class);
-        verify(mockHttpClient).websocket(anyInt(), anyString(), anyString(), headersCaptor.capture(), any());
+        verify(mockHttpClient).websocket(anyInt(), anyString(), anyString(), headersCaptor.capture(),
+            any(Handler.class), any(Handler.class));
 
         VertxHttpHeaders actualHeaders = headersCaptor.getValue();
         assertThat(actualHeaders.getAll("key1")).isEqualTo(originalHeaders.get("key1"));
