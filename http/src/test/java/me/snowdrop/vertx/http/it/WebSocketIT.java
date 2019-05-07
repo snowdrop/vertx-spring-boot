@@ -2,6 +2,7 @@ package me.snowdrop.vertx.http.it;
 
 import java.net.URI;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -9,10 +10,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.vertx.core.http.WebsocketRejectedException;
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.reactive.HandlerMapping;
 import org.springframework.web.reactive.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.reactive.socket.WebSocketHandler;
@@ -226,6 +230,30 @@ public class WebSocketIT extends TestBase {
             .until(() -> expectedMessages, contains("ping", "pong"));
     }
 
+    @Test
+    public void testAllowedCorsOrigin() {
+        startServer(Handlers.class);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.ORIGIN, "http://snowdrop.dev");
+
+        getWebSocketClient()
+            .execute(URI.create(WS_BASE_URL + "/sink"), headers, session -> Mono.empty())
+            .block(Duration.ofSeconds(2));
+    }
+
+    @Test(expected = WebsocketRejectedException.class)
+    public void testNotAllowedCorsOrigin() {
+        startServer(Handlers.class);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.ORIGIN, "http://example.com");
+
+        getWebSocketClient()
+            .execute(URI.create(WS_BASE_URL + "/sink"), headers, session -> Mono.empty())
+            .block(Duration.ofSeconds(2));
+    }
+
     @Configuration
     static class Handlers {
 
@@ -240,6 +268,11 @@ public class WebSocketIT extends TestBase {
             SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
             mapping.setUrlMap(map);
             mapping.setOrder(-1);
+
+            CorsConfiguration cors = new CorsConfiguration();
+            cors.addAllowedOrigin("http://snowdrop.dev");
+            mapping.setCorsConfigurations(Collections.singletonMap("/sink", cors));
+
             return mapping;
         }
 
