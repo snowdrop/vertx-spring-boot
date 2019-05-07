@@ -1,6 +1,5 @@
 package me.snowdrop.vertx.http.it;
 
-import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -22,13 +21,12 @@ import org.junit.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Fail.fail;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assume.assumeTrue;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 import static org.springframework.web.reactive.function.server.ServerResponse.noContent;
@@ -139,15 +137,13 @@ public class HttpSslIT extends TestBase {
         properties.setProperty("server.ssl.trust-store-password", SERVER_TRUSTSTORE.getPassword());
 
 
-        startServer(properties, ClientStoresCustomizer.class, useAlpn ? NoopHttp11Router.class : NoopHttp2Router.class);
+        startServer(properties, ClientStoresCustomizer.class, useAlpn ? NoopHttp2Router.class : NoopHttp11Router.class);
 
-        HttpStatus status = getWebClient()
+        getWebTestClient()
             .get()
             .exchange()
-            .map(ClientResponse::statusCode)
-            .block(Duration.ofSeconds(2));
-
-        assertThat(status).isEqualTo(status);
+            .expectStatus()
+            .isNoContent();
     }
 
     private void testUntrustedClient(boolean useAlpn) {
@@ -166,10 +162,9 @@ public class HttpSslIT extends TestBase {
         startServer(properties, ClientStoresCustomizer.class, useAlpn ? NoopHttp2Router.class : NoopHttp11Router.class);
 
         try {
-            getWebClient()
+            getWebTestClient()
                 .get()
-                .exchange()
-                .block(Duration.ofSeconds(2));
+                .exchange();
             fail("SSLHandshakeException expected");
         } catch (RuntimeException e) {
             assertThat(e.getCause()).isInstanceOf(SSLHandshakeException.class);
@@ -200,13 +195,11 @@ public class HttpSslIT extends TestBase {
 
         startServer(properties, classes.toArray(new Class[]{}));
 
-        HttpStatus status = getWebClient()
+        getWebTestClient()
             .get()
             .exchange()
-            .map(ClientResponse::statusCode)
-            .block(Duration.ofSeconds(2));
-
-        assertThat(status).isEqualTo(HttpStatus.NO_CONTENT);
+            .expectStatus()
+            .isNoContent();
     }
 
     private boolean isJava9() {

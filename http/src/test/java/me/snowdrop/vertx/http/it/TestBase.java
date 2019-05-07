@@ -2,6 +2,7 @@ package me.snowdrop.vertx.http.it;
 
 import java.util.Properties;
 
+import me.snowdrop.vertx.http.client.VertxClientHttpConnector;
 import me.snowdrop.vertx.http.client.VertxWebSocketClient;
 import org.junit.Rule;
 import org.junit.rules.TestRule;
@@ -12,6 +13,7 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.socket.client.WebSocketClient;
 
@@ -64,16 +66,24 @@ public class TestBase {
             .build();
     }
 
+    protected WebTestClient getWebTestClient() {
+        VertxClientHttpConnector connector = getBean(VertxClientHttpConnector.class);
+
+        return WebTestClient.bindToServer(connector)
+            .baseUrl(isSsl() ? SSL_BASE_URL : BASE_URL)
+            .build();
+    }
+
+    protected WebSocketClient getWebSocketClient() {
+        return getBean(VertxWebSocketClient.class);
+    }
+    
     protected Properties defaultProperties() {
         return new Properties();
     }
 
     protected boolean isSsl() {
         return false;
-    }
-
-    protected WebSocketClient getWebSocketClient() {
-        return getBean(VertxWebSocketClient.class);
     }
 
     @SpringBootConfiguration

@@ -3,8 +3,6 @@ package me.snowdrop.vertx.http.it;
 import java.time.Duration;
 import java.util.Properties;
 
-import io.restassured.path.json.JsonPath;
-import io.restassured.path.xml.XmlPath;
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,16 +21,12 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static io.restassured.path.xml.XmlPath.CompatibilityMode.HTML;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import static org.springframework.http.HttpHeaders.ACCEPT_ENCODING;
 import static org.springframework.web.reactive.function.server.RouterFunctions.resources;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
@@ -49,56 +44,46 @@ public class HttpIT extends TestBase {
     public void shouldGet404Response() {
         startServer();
 
-        HttpStatus status = getWebClient()
+        getWebTestClient()
             .get()
             .exchange()
-            .map(ClientResponse::statusCode)
-            .block(Duration.ofSeconds(2));
-
-        assertThat(status).isEqualTo(HttpStatus.NOT_FOUND);
+            .expectStatus()
+            .isNotFound();
     }
 
     @Test
     public void shouldGetEmptyResponse() {
         startServer(NoopRouter.class);
 
-        HttpStatus status = getWebClient()
+        getWebTestClient()
             .get()
             .exchange()
-            .map(ClientResponse::statusCode)
-            .block(Duration.ofSeconds(2));
-
-        assertThat(status).isEqualTo(HttpStatus.NO_CONTENT);
+            .expectStatus()
+            .isNoContent();
     }
 
     @Test
     public void shouldExchangeBodies() {
         startServer(UpperBodyRouter.class);
 
-        String body = getWebClient()
+        getWebTestClient()
             .post()
             .syncBody("test")
-            .retrieve()
-            .bodyToMono(String.class)
-            .block(Duration.ofSeconds(2));
-
-        assertThat(body).isEqualTo("TEST");
+            .exchange()
+            .expectBody(String.class)
+            .isEqualTo("TEST");
     }
 
     @Test
     public void shouldGetStaticContent() {
         startServer(StaticRouter.class);
 
-        XmlPath xml = getWebClient()
+        getWebTestClient()
             .get()
             .uri("static/index.html")
-            .retrieve()
-            .bodyToMono(String.class)
-            .map(body -> new XmlPath(HTML, body))
-            .blockOptional(Duration.ofSeconds(2))
-            .orElseThrow(() -> new AssertionError("Did not receive a response"));
-
-        assertThat(xml.getString("html.body.div")).isEqualTo("Test div");
+            .exchange()
+            .expectBody(String.class)
+            .isEqualTo("<html><body><div>Test div</div></body></html>\n");
     }
 
     @Test
@@ -108,33 +93,25 @@ public class HttpIT extends TestBase {
         properties.setProperty("vertx.http.client.try-use-compression", "true");
         startServer(properties, StaticRouter.class);
 
-        XmlPath xml = getWebClient()
+        getWebTestClient()
             .get()
             .uri("static/index.html")
             .header(ACCEPT_ENCODING, "gzip")
-            .retrieve()
-            .bodyToMono(String.class)
-            .map(body -> new XmlPath(HTML, body))
-            .blockOptional(Duration.ofSeconds(2))
-            .orElseThrow(() -> new AssertionError("Did not receive a response"));
-
-        assertThat(xml.getString("html.body.div")).isEqualTo("Test div");
+            .exchange()
+            .expectBody(String.class)
+            .isEqualTo("<html><body><div>Test div</div></body></html>\n");
     }
 
     @Test
     public void shouldExchangeHeaders() {
         startServer(UpperHeaderRouter.class);
 
-        String text = getWebClient()
+        getWebTestClient()
             .get()
             .header("text", "test")
             .exchange()
-            .map(ClientResponse::headers)
-            .map(headers -> headers.header("text"))
-            .map(values -> values.get(0))
-            .block(Duration.ofSeconds(2));
-
-        assertThat(text).isEqualTo("TEST");
+            .expectHeader()
+            .valueEquals("text", "TEST");
     }
 
     @Test
@@ -157,16 +134,12 @@ public class HttpIT extends TestBase {
     public void shouldGetActuatorHealth() {
         startServer();
 
-        JsonPath json = getWebClient()
+        getWebTestClient()
             .get()
             .uri("/actuator/health")
-            .retrieve()
-            .bodyToMono(String.class)
-            .map(JsonPath::new)
-            .blockOptional(Duration.ofSeconds(2))
-            .orElseThrow(() -> new AssertionError("Did not receive a response"));
-
-        assertThat(json.getString("status")).isEqualTo("UP");
+            .exchange()
+            .expectBody(String.class)
+            .isEqualTo("{\"status\":\"UP\"}");
     }
 
     @Test
@@ -201,43 +174,35 @@ public class HttpIT extends TestBase {
     private void testCors(Class<?>... sources) {
         startServer(sources);
 
-        WebClient client = getWebClient();
+        WebTestClient client = getWebTestClient();
 
-        ClientResponse.Headers headers = client
-            .options()
+        client.options()
             .header(HttpHeaders.ORIGIN, "http://snowdrop.dev")
             .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")
             .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "TEST")
             .exchange()
-            .map(ClientResponse::headers)
-            .blockOptional(Duration.ofSeconds(2))
-            .orElseThrow(() -> new AssertionError("Did not receive a response"));
+            .expectHeader()
+            .valueEquals(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://snowdrop.dev")
+            .expectHeader()
+            .valueEquals(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "POST")
+            .expectHeader()
+            .valueEquals(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, "TEST")
+            .expectHeader()
+            .valueEquals(HttpHeaders.ACCESS_CONTROL_MAX_AGE, "1000");
 
-        assertThat(headers.header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN)).containsOnly("http://snowdrop.dev");
-        assertThat(headers.header(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS)).containsOnly("POST");
-        assertThat(headers.header(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS)).containsOnly("TEST");
-        assertThat(headers.header(HttpHeaders.ACCESS_CONTROL_MAX_AGE)).containsOnly("1000");
-
-        String body = client.post()
+        client.post()
             .header(HttpHeaders.ORIGIN, "http://snowdrop.dev")
             .syncBody("test")
-            .retrieve()
-            .bodyToMono(String.class)
-            .blockOptional(Duration.ofSeconds(2))
-            .orElseThrow(() -> new AssertionError("Did not receive a response"));
+            .exchange()
+            .expectBody(String.class)
+            .isEqualTo("TEST");
 
-        assertThat(body).isEqualTo("TEST");
-
-        try {
-            client.post()
-                .header(HttpHeaders.ORIGIN, "http://example.com")
-                .syncBody("test")
-                .retrieve()
-                .bodyToMono(String.class)
-                .blockOptional(Duration.ofSeconds(2))
-                .orElseThrow(() -> new AssertionError("Did not receive a response"));
-            fail("Forbidden response expected");
-        } catch (WebClientResponseException.Forbidden ignored) {}
+        client.post()
+            .header(HttpHeaders.ORIGIN, "http://example.com")
+            .syncBody("test")
+            .exchange()
+            .expectStatus()
+            .isForbidden();
     }
 
     @Configuration
