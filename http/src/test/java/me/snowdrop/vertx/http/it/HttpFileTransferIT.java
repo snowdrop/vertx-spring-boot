@@ -20,6 +20,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.Part;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -29,6 +30,7 @@ import reactor.core.publisher.Flux;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.web.reactive.function.BodyInserters.fromMultipartData;
+import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 import static org.springframework.web.reactive.function.server.ServerResponse.noContent;
 import static org.springframework.web.reactive.function.server.ServerResponse.ok;
@@ -145,7 +147,7 @@ public class HttpFileTransferIT extends TestBase {
         @Bean
         public RouterFunction<ServerResponse> uploadRouter() {
             return route()
-                .POST("/", request -> {
+                .POST("/", accept(MediaType.MULTIPART_FORM_DATA), request -> {
                     String path = request.headers()
                         .header("path")
                         .get(0);

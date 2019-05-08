@@ -12,6 +12,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -38,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.http.HttpHeaders.ACCEPT_ENCODING;
+import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 import static org.springframework.web.reactive.function.server.RouterFunctions.resources;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 import static org.springframework.web.reactive.function.server.ServerResponse.noContent;
@@ -194,6 +197,18 @@ public class HttpIT extends TestBase {
     }
 
     @Test
+    public void testFormData() {
+        startServerWithoutSecurity(UpperFormRouter.class);
+
+        getWebTestClient()
+            .post()
+            .body(BodyInserters.fromFormData("text", "test"))
+            .exchange()
+            .expectBody(String.class)
+            .isEqualTo("TEST");
+    }
+
+    @Test
     public void testForwardedHeaders() {
         startServerWithoutSecurity(ForwardedHeadersRouter.class);
 
@@ -321,6 +336,23 @@ public class HttpIT extends TestBase {
                         .toUpperCase();
 
                     return noContent().header("text", text).build();
+                })
+                .build();
+        }
+    }
+
+    @Configuration
+    static class UpperFormRouter {
+        @Bean
+        public RouterFunction<ServerResponse> upperFormRouter() {
+            return route()
+                .POST("/", accept(MediaType.APPLICATION_FORM_URLENCODED), request -> {
+                    Mono<String> body = request.exchange().getFormData()
+                        .map(map -> map.get("text"))
+                        .map(list -> list.get(0))
+                        .map(String::toUpperCase);
+
+                    return ok().body(body, String.class);
                 })
                 .build();
         }
