@@ -137,7 +137,7 @@ public class HttpSslIT extends TestBase {
         properties.setProperty("server.ssl.trust-store-password", SERVER_TRUSTSTORE.getPassword());
 
 
-        startServer(properties, ClientStoresCustomizer.class, useAlpn ? NoopHttp2Router.class : NoopHttp11Router.class);
+        startServerWithoutSecurity(properties, ClientStoresCustomizer.class, useAlpn ? NoopHttp2Router.class : NoopHttp11Router.class);
 
         getWebTestClient()
             .get()
@@ -159,7 +159,7 @@ public class HttpSslIT extends TestBase {
         properties.setProperty("server.ssl.key-store", SERVER_KEYSTORE.getPath());
         properties.setProperty("server.ssl.key-store-password", SERVER_KEYSTORE.getPassword());
 
-        startServer(properties, ClientStoresCustomizer.class, useAlpn ? NoopHttp2Router.class : NoopHttp11Router.class);
+        startServerWithoutSecurity(properties, ClientStoresCustomizer.class, useAlpn ? NoopHttp2Router.class : NoopHttp11Router.class);
 
         try {
             getWebTestClient()
@@ -193,7 +193,7 @@ public class HttpSslIT extends TestBase {
                 classes.add(OpenSslEngineOptionsCustomizers.class);
         }
 
-        startServer(properties, classes.toArray(new Class[]{}));
+        startServerWithoutSecurity(properties, classes.toArray(new Class[]{}));
 
         getWebTestClient()
             .get()

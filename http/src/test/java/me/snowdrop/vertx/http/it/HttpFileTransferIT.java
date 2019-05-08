@@ -57,7 +57,7 @@ public class HttpFileTransferIT extends TestBase {
 
     @Test
     public void shouldUploadLargeFile() throws IOException {
-        startServer(UploadRouter.class);
+        startServerWithoutSecurity(UploadRouter.class);
 
         HttpStatus status = getWebClient()
             .post()
@@ -73,7 +73,7 @@ public class HttpFileTransferIT extends TestBase {
 
     @Test
     public void shouldDownloadLargeFile() throws IOException {
-        startServer(DownloadRouter.class);
+        startServerWithoutSecurity(DownloadRouter.class);
 
         Flux<DataBuffer> input = getWebClient()
             .get()

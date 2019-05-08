@@ -38,7 +38,7 @@ public class WebSocketIT extends TestBase {
 
     @Test
     public void shouldSendAndReceiveTextMessage() {
-        startServer(Handlers.class);
+        startServerWithoutSecurity(Handlers.class);
 
         AtomicReference<String> expectedMessage = new AtomicReference<>();
 
@@ -66,7 +66,7 @@ public class WebSocketIT extends TestBase {
         Properties properties = new Properties();
         properties.setProperty("vertx.http.client.maxWebsocketFrameSize", "5");
         properties.setProperty("vertx.http.server.maxWebsocketFrameSize", "5");
-        startServer(properties, Handlers.class);
+        startServerWithoutSecurity(properties, Handlers.class);
 
         AtomicReference<String> expectedMessage = new AtomicReference<>();
 
@@ -91,7 +91,7 @@ public class WebSocketIT extends TestBase {
 
     @Test
     public void shouldSendAndReceiveBinaryMessage() {
-        startServer(Handlers.class);
+        startServerWithoutSecurity(Handlers.class);
 
         AtomicReference<String> expectedMessage = new AtomicReference<>();
 
@@ -119,7 +119,7 @@ public class WebSocketIT extends TestBase {
         Properties properties = new Properties();
         properties.setProperty("vertx.http.client.maxWebsocketFrameSize", "5");
         properties.setProperty("vertx.http.server.maxWebsocketFrameSize", "5");
-        startServer(properties, Handlers.class);
+        startServerWithoutSecurity(properties, Handlers.class);
 
         AtomicReference<String> expectedMessage = new AtomicReference<>();
 
@@ -145,7 +145,7 @@ public class WebSocketIT extends TestBase {
 
     @Test
     public void shouldSendPingAndReceivePong() {
-        startServer(Handlers.class);
+        startServerWithoutSecurity(Handlers.class);
 
         AtomicReference<String> expectedMessage = new AtomicReference<>();
 
@@ -171,7 +171,7 @@ public class WebSocketIT extends TestBase {
 
     @Test
     public void shouldSendAndReceivePong() {
-        startServer(Handlers.class);
+        startServerWithoutSecurity(Handlers.class);
 
         AtomicReference<String> expectedMessage = new AtomicReference<>();
 
@@ -196,7 +196,7 @@ public class WebSocketIT extends TestBase {
 
     @Test
     public void clientShouldCloseSocket() {
-        startServer(Handlers.class);
+        startServerWithoutSecurity(Handlers.class);
 
         getWebSocketClient()
             .execute(URI.create(BASE_URL + "/echo"), WebSocketSession::close)
@@ -205,7 +205,7 @@ public class WebSocketIT extends TestBase {
 
     @Test
     public void serverShouldCloseSocket() {
-        startServer(Handlers.class);
+        startServerWithoutSecurity(Handlers.class);
 
         getWebSocketClient()
             .execute(URI.create(BASE_URL + "/close"), session -> Mono.empty())
@@ -214,7 +214,7 @@ public class WebSocketIT extends TestBase {
 
     @Test
     public void serverShouldSendFromTwoPublishers() {
-        startServer(Handlers.class);
+        startServerWithoutSecurity(Handlers.class);
 
         List<String> expectedMessages = new LinkedList<>();
 
@@ -232,7 +232,7 @@ public class WebSocketIT extends TestBase {
 
     @Test
     public void testAllowedCorsOrigin() {
-        startServer(Handlers.class);
+        startServerWithoutSecurity(Handlers.class);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.ORIGIN, "http://snowdrop.dev");
@@ -244,7 +244,7 @@ public class WebSocketIT extends TestBase {
 
     @Test(expected = WebsocketRejectedException.class)
     public void testNotAllowedCorsOrigin() {
-        startServer(Handlers.class);
+        startServerWithoutSecurity(Handlers.class);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.ORIGIN, "http://example.com");

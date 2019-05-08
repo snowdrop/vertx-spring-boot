@@ -1,5 +1,6 @@
 package me.snowdrop.vertx.http.it;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Properties;
 
@@ -12,8 +13,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.util.Base64Utils;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,10 +29,13 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.http.HttpHeaders.ACCEPT_ENCODING;
 import static org.springframework.web.reactive.function.server.RouterFunctions.resources;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
@@ -42,7 +51,7 @@ public class HttpIT extends TestBase {
 
     @Test
     public void shouldGet404Response() {
-        startServer();
+        startServerWithoutSecurity();
 
         getWebTestClient()
             .get()
@@ -53,7 +62,7 @@ public class HttpIT extends TestBase {
 
     @Test
     public void shouldGetEmptyResponse() {
-        startServer(NoopRouter.class);
+        startServerWithoutSecurity(NoopRouter.class);
 
         getWebTestClient()
             .get()
@@ -64,7 +73,7 @@ public class HttpIT extends TestBase {
 
     @Test
     public void shouldExchangeBodies() {
-        startServer(UpperBodyRouter.class);
+        startServerWithoutSecurity(UpperBodyRouter.class);
 
         getWebTestClient()
             .post()
@@ -76,7 +85,7 @@ public class HttpIT extends TestBase {
 
     @Test
     public void shouldGetStaticContent() {
-        startServer(StaticRouter.class);
+        startServerWithoutSecurity(StaticRouter.class);
 
         getWebTestClient()
             .get()
@@ -91,7 +100,7 @@ public class HttpIT extends TestBase {
         Properties properties = new Properties();
         properties.setProperty("server.compression.enabled", "true");
         properties.setProperty("vertx.http.client.try-use-compression", "true");
-        startServer(properties, StaticRouter.class);
+        startServerWithoutSecurity(properties, StaticRouter.class);
 
         getWebTestClient()
             .get()
@@ -104,7 +113,7 @@ public class HttpIT extends TestBase {
 
     @Test
     public void shouldExchangeHeaders() {
-        startServer(UpperHeaderRouter.class);
+        startServerWithoutSecurity(UpperHeaderRouter.class);
 
         getWebTestClient()
             .get()
@@ -116,7 +125,7 @@ public class HttpIT extends TestBase {
 
     @Test
     public void shouldExchangeCookies() {
-        startServer(UpperCookieRouter.class);
+        startServerWithoutSecurity(UpperCookieRouter.class);
 
         String text = getWebClient()
             .get()
@@ -132,7 +141,7 @@ public class HttpIT extends TestBase {
 
     @Test
     public void shouldGetActuatorHealth() {
-        startServer();
+        startServerWithoutSecurity();
 
         getWebTestClient()
             .get()
@@ -144,7 +153,7 @@ public class HttpIT extends TestBase {
 
     @Test
     public void shouldExtractBodyAfterRequestEnded() {
-        startServer(UpperBodyRouter.class);
+        startServerWithoutSecurity(UpperBodyRouter.class);
 
         ClientResponse response = getWebClient()
             .post()
@@ -162,6 +171,28 @@ public class HttpIT extends TestBase {
     }
 
     @Test
+    public void testBasicAuth() {
+        startServer(SessionController.class, AuthConfiguration.class);
+
+        getWebTestClient()
+            .get()
+            .exchange()
+            .expectStatus()
+            .isUnauthorized();
+
+        String authHash = Base64Utils.encodeToString("user:password".getBytes(StandardCharsets.UTF_8));
+
+        getWebTestClient()
+            .get()
+            .header(HttpHeaders.AUTHORIZATION, "Basic " + authHash)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectBody(String.class)
+            .value(not(isEmptyOrNullString()));
+    }
+
+    @Test
     public void testCorsAnnotation() {
         testCors(AnnotatedCorsController.class);
     }
@@ -172,7 +203,7 @@ public class HttpIT extends TestBase {
     }
 
     private void testCors(Class<?>... sources) {
-        startServer(sources);
+        startServerWithoutSecurity(sources);
 
         WebTestClient client = getWebTestClient();
 
@@ -297,6 +328,27 @@ public class HttpIT extends TestBase {
         @PostMapping
         public Mono<String> toUpper(@RequestBody String body) {
             return Mono.just(body.toUpperCase());
+        }
+    }
+
+    @RestController
+    static class SessionController {
+        @GetMapping
+        public Mono<String> getSessionId(WebSession session) {
+            return Mono.just(session.getId());
+        }
+    }
+
+    @Configuration
+    static class AuthConfiguration {
+        @Bean
+        public MapReactiveUserDetailsService userDetailsService() {
+            UserDetails user = User.withDefaultPasswordEncoder()
+                .username("user")
+                .password("password")
+                .roles("USER")
+                .build();
+            return new MapReactiveUserDetailsService(user);
         }
     }
 }

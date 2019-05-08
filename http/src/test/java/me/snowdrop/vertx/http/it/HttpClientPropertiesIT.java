@@ -29,7 +29,7 @@ public class HttpClientPropertiesIT extends TestBase {
         originalProperties.setProperty("vertx.http.client.http2-extra-settings.2", "20");
         originalProperties.setProperty("vertx.http.client.idle-timeout-unit", "HOURS");
         originalProperties.setProperty("vertx.http.client.enabled-cipher-suites", "cipher1,cipher2");
-        startServer(originalProperties);
+        startServerWithoutSecurity(originalProperties);
 
         HttpClientProperties expectedProperties = getBean(HttpClientProperties.class);
 

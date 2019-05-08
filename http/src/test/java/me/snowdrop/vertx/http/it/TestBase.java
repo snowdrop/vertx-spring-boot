@@ -1,5 +1,8 @@
 package me.snowdrop.vertx.http.it;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import me.snowdrop.vertx.http.client.VertxClientHttpConnector;
@@ -13,6 +16,10 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.socket.client.WebSocketClient;
@@ -30,10 +37,16 @@ public class TestBase {
 
     private ConfigurableApplicationContext context;
 
+    /**
+     * Start a server with default properties and provided set of configuration classes.
+     */
     protected void startServer(Class<?>... sources) {
         startServer(new Properties(), sources);
     }
 
+    /**
+     * Start a server with user properties merged with default properties and provided set of configuration classes.
+     */
     protected void startServer(Properties userProperties, Class<?>... sources) {
         if (context != null) {
             throw new RuntimeException("Server is already running");
@@ -49,6 +62,24 @@ public class TestBase {
             .run();
     }
 
+    /**
+     * Start a server with default properties, provided set of configuration classes and disabled spring security.
+     */
+    protected void startServerWithoutSecurity(Class<?>... sources) {
+        startServerWithoutSecurity(new Properties(), sources);
+    }
+
+    /**
+     * Start a server with user properties merged with default properties, provided set of configuration classes and
+     * disabled spring security.
+     */
+    protected void startServerWithoutSecurity(Properties userProperties, Class<?>... sources) {
+        List<Class<?>> sourcesList = new ArrayList<>(Arrays.asList(sources));
+        sourcesList.add(DisableSecurity.class);
+
+        startServer(userProperties, sourcesList.toArray(new Class[0]));
+    }
+
     protected void stopServer() {
         if (context != null) {
             context.close();
@@ -60,12 +91,18 @@ public class TestBase {
         return context.getBean(beanClass);
     }
 
+    /**
+     * Get a preconfigured WebClient. Base URL is set to BASE_URL or SSL_BASE_URL depending on isSsl() value.
+     */
     protected WebClient getWebClient() {
         return getBean(WebClient.Builder.class)
             .baseUrl(isSsl() ? SSL_BASE_URL : BASE_URL)
             .build();
     }
 
+    /**
+     * Get a preconfigured WebTestClient. Base URL is set to BASE_URL or SSL_BASE_URL depending on isSsl() value.
+     */
     protected WebTestClient getWebTestClient() {
         VertxClientHttpConnector connector = getBean(VertxClientHttpConnector.class);
 
@@ -74,16 +111,37 @@ public class TestBase {
             .build();
     }
 
+    /**
+     * Get a preconfigured WebSocketClient.
+     */
     protected WebSocketClient getWebSocketClient() {
         return getBean(VertxWebSocketClient.class);
     }
-    
+
+    /**
+     * Override this method to provide default set of properties e.g. set protocol version to HTTP_2.
+     */
     protected Properties defaultProperties() {
         return new Properties();
     }
 
+    /**
+     * Override this method in classes that require SSL.
+     */
     protected boolean isSsl() {
         return false;
+    }
+
+    @Configuration
+    static class DisableSecurity {
+        @Bean
+        public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+            return http
+                .csrf().disable()
+                .authorizeExchange().anyExchange().permitAll()
+                .and()
+                .build();
+        }
     }
 
     @SpringBootConfiguration
