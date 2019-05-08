@@ -30,6 +30,7 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import org.springframework.web.server.WebSession;
+import org.springframework.web.server.adapter.ForwardedHeaderTransformer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -193,6 +194,27 @@ public class HttpIT extends TestBase {
     }
 
     @Test
+    public void testForwardedHeaders() {
+        startServerWithoutSecurity(ForwardedHeadersRouter.class);
+
+        getWebTestClient()
+            .get()
+            .header("Forwarded", "host=127.0.0.1:1234;proto=http")
+            .exchange()
+            .expectBody(String.class)
+            .isEqualTo("http://127.0.0.1:1234/");
+
+        getWebTestClient()
+            .get()
+            .header("X-Forwarded-Host", "127.0.0.2")
+            .header("X-Forwarded-Port", "4321")
+            .header("X-Forwarded-Proto", "https")
+            .exchange()
+            .expectBody(String.class)
+            .isEqualTo("https://127.0.0.2:4321/");
+    }
+
+    @Test
     public void testCorsAnnotation() {
         testCors(AnnotatedCorsController.class);
     }
@@ -301,6 +323,21 @@ public class HttpIT extends TestBase {
                     return noContent().header("text", text).build();
                 })
                 .build();
+        }
+    }
+
+    @Configuration
+    static class ForwardedHeadersRouter {
+        @Bean
+        public RouterFunction<ServerResponse> forwardedHeadersRouter() {
+            return route()
+                .GET("/", request -> ok().syncBody(request.exchange().getRequest().getURI().toASCIIString()))
+                .build();
+        }
+
+        @Bean
+        public ForwardedHeaderTransformer forwardedHeaderTransformer() {
+            return new ForwardedHeaderTransformer();
         }
     }
 
