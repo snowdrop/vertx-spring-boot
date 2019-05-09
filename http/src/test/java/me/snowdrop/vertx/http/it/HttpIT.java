@@ -14,6 +14,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
@@ -21,6 +22,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.Base64Utils;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -248,6 +251,17 @@ public class HttpIT extends TestBase {
     }
 
     @Test
+    public void testExceptionHandler() {
+        startServerWithoutSecurity(ExceptionController.class);
+
+        getWebTestClient()
+            .get()
+            .exchange()
+            .expectStatus()
+            .isNoContent();
+    }
+
+    @Test
     public void testCorsAnnotation() {
         testCors(AnnotatedCorsController.class);
     }
@@ -399,6 +413,22 @@ public class HttpIT extends TestBase {
                 .map(s -> ServerSentEvent.<String>builder()
                     .data(s)
                     .build());
+        }
+    }
+
+    @RestController
+    static class ExceptionController implements WebFluxConfigurer {
+        @GetMapping
+        public Flux<String> exceptionController() {
+            throw new RuntimeException("test");
+        }
+
+        @ExceptionHandler
+        public ResponseEntity<String> runtimeExceptionHandler(RuntimeException e) {
+            if ("test".equals(e.getMessage())) {
+                return ResponseEntity.noContent().build();
+            }
+            throw e;
         }
     }
 
