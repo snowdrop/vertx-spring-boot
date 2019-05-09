@@ -14,6 +14,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -35,6 +36,7 @@ import org.springframework.web.server.WebSession;
 import org.springframework.web.server.adapter.ForwardedHeaderTransformer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
@@ -230,6 +232,22 @@ public class HttpIT extends TestBase {
     }
 
     @Test
+    public void testSse() {
+        startServerWithoutSecurity(SseController.class);
+
+        getWebTestClient()
+            .get()
+            .exchange()
+            .returnResult(String.class)
+            .consumeWith(result -> StepVerifier.create(result.getResponseBody())
+                .expectNext("first")
+                .expectNext("second")
+                .expectNext("third")
+                .verifyComplete()
+            );
+    }
+
+    @Test
     public void testCorsAnnotation() {
         testCors(AnnotatedCorsController.class);
     }
@@ -370,6 +388,17 @@ public class HttpIT extends TestBase {
         @Bean
         public ForwardedHeaderTransformer forwardedHeaderTransformer() {
             return new ForwardedHeaderTransformer();
+        }
+    }
+
+    @RestController
+    static class SseController {
+        @GetMapping
+        public Flux<ServerSentEvent<String>> sse() {
+            return Flux.just("first", "second", "third")
+                .map(s -> ServerSentEvent.<String>builder()
+                    .data(s)
+                    .build());
         }
     }
 
