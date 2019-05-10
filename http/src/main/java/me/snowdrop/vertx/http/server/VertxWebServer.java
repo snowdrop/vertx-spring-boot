@@ -9,11 +9,15 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.CookieHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.server.WebServer;
 import org.springframework.boot.web.server.WebServerException;
 import reactor.core.publisher.Mono;
 
 public class VertxWebServer implements WebServer {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Vertx vertx;
 
@@ -46,6 +50,7 @@ public class VertxWebServer implements WebServer {
 
         Mono<Void> future = Mono.create(sink -> server.listen(result -> {
             if (result.succeeded()) {
+                logger.info("Vert.x HTTP server started on port {}", getPort());
                 sink.success();
             } else {
                 sink.error(result.cause());
