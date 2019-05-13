@@ -3,12 +3,14 @@ package me.snowdrop.vertx.http.it;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -262,6 +264,30 @@ public class HttpIT extends TestBase {
     }
 
     @Test
+    public void testCache() {
+        startServerWithoutSecurity(CacheController.class);
+
+        getWebTestClient()
+            .get()
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectHeader()
+            .valueEquals(HttpHeaders.ETAG, "\"test\"")
+            .expectHeader()
+            .cacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES))
+            .expectBody(String.class)
+            .isEqualTo("test");
+
+        getWebTestClient()
+            .get()
+            .header(HttpHeaders.IF_NONE_MATCH, "\"test\"")
+            .exchange()
+            .expectStatus()
+            .isNotModified();
+    }
+
+    @Test
     public void testCorsAnnotation() {
         testCors(AnnotatedCorsController.class);
     }
@@ -429,6 +455,18 @@ public class HttpIT extends TestBase {
                 return ResponseEntity.noContent().build();
             }
             throw e;
+        }
+    }
+
+    @RestController
+    static class CacheController {
+        @GetMapping
+        public ResponseEntity<String> getString() {
+            return ResponseEntity
+                .ok()
+                .cacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES))
+                .eTag("test")
+                .body("test");
         }
     }
 
