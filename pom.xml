@@ -219,6 +219,7 @@
   <modules>
     <module>core</module>
     <module>http</module>
+    <module>http-actuator</module>
     <module>mail</module>
     <module>samples</module>
   </modules>

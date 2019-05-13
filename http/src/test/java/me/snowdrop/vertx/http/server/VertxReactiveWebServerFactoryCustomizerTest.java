@@ -38,11 +38,6 @@ public class VertxReactiveWebServerFactoryCustomizerTest {
     public void shouldCustomizeWebServerFactory() {
         customizer.customize(mockVertxReactiveWebServerFactory);
 
-        verify(mockVertxReactiveWebServerFactory).getPort();
-        verify(mockVertxReactiveWebServerFactory).getAddress();
-        verify(mockVertxReactiveWebServerFactory).getSsl();
-        verify(mockVertxReactiveWebServerFactory).getCompression();
-
         verify(mockVertxReactiveWebServerFactory).registerHttpServerOptionsCustomizer(any(PortCustomizer.class));
         verify(mockVertxReactiveWebServerFactory).registerHttpServerOptionsCustomizer(any(AddressCustomizer.class));
         verify(mockVertxReactiveWebServerFactory).registerHttpServerOptionsCustomizer(any(SslCustomizer.class));

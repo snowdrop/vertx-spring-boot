@@ -21,10 +21,10 @@ public class VertxReactiveWebServerFactoryCustomizer
 
     @Override
     public void customize(VertxReactiveWebServerFactory factory) {
-        factory.registerHttpServerOptionsCustomizer(new PortCustomizer(factory.getPort()));
-        factory.registerHttpServerOptionsCustomizer(new AddressCustomizer(factory.getAddress()));
-        factory.registerHttpServerOptionsCustomizer(new SslCustomizer(factory.getSsl()));
-        factory.registerHttpServerOptionsCustomizer(new CompressionCustomizer(factory.getCompression()));
+        factory.registerHttpServerOptionsCustomizer(new PortCustomizer(factory));
+        factory.registerHttpServerOptionsCustomizer(new AddressCustomizer(factory));
+        factory.registerHttpServerOptionsCustomizer(new SslCustomizer(factory));
+        factory.registerHttpServerOptionsCustomizer(new CompressionCustomizer(factory));
 
         if (userDefinedCustomizers != null) {
             userDefinedCustomizers.forEach(factory::registerHttpServerOptionsCustomizer);

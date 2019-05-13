@@ -5,8 +5,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.boot.web.server.AbstractConfigurableWebServerFactory;
 
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -14,11 +16,16 @@ import static org.mockito.Mockito.verify;
 public class PortCustomizerTest {
 
     @Mock
+    private AbstractConfigurableWebServerFactory mockFactory;
+
+    @Mock
     private HttpServerOptions mockHttpServerOptions;
 
     @Test
     public void shouldSetValidPort() {
-        PortCustomizer customizer = new PortCustomizer(1);
+        given(mockFactory.getPort()).willReturn(1);
+
+        PortCustomizer customizer = new PortCustomizer(mockFactory);
         customizer.apply(mockHttpServerOptions);
 
         verify(mockHttpServerOptions).setPort(1);
@@ -26,7 +33,9 @@ public class PortCustomizerTest {
 
     @Test
     public void shouldIgnoreInvalidPort() {
-        PortCustomizer customizer = new PortCustomizer(-1);
+        given(mockFactory.getPort()).willReturn(-1);
+
+        PortCustomizer customizer = new PortCustomizer(mockFactory);
         customizer.apply(mockHttpServerOptions);
 
         verify(mockHttpServerOptions, times(0)).setPort(anyInt());

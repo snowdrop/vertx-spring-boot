@@ -1,19 +1,20 @@
 package me.snowdrop.vertx.http.server.properties;
 
 import io.vertx.core.http.HttpServerOptions;
+import org.springframework.boot.web.server.AbstractConfigurableWebServerFactory;
 
 public class PortCustomizer implements HttpServerOptionsCustomizer {
 
-    private final int port;
+    private final AbstractConfigurableWebServerFactory factory;
 
-    public PortCustomizer(int port) {
-        this.port = port;
+    public PortCustomizer(AbstractConfigurableWebServerFactory factory) {
+        this.factory = factory;
     }
 
     @Override
     public HttpServerOptions apply(HttpServerOptions options) {
-        if (port >= 0) {
-            options.setPort(port);
+        if (factory.getPort() >= 0) {
+            options.setPort(factory.getPort());
         }
 
         return options;

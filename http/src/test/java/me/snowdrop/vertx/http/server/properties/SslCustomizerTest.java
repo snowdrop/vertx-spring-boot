@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.boot.web.server.AbstractConfigurableWebServerFactory;
 import org.springframework.boot.web.server.Ssl;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,6 +27,9 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 public class SslCustomizerTest {
 
     @Mock
+    private AbstractConfigurableWebServerFactory mockFactory;
+
+    @Mock
     private HttpServerOptions mockHttpServerOptions;
 
     @Mock
@@ -35,14 +39,16 @@ public class SslCustomizerTest {
 
     @Before
     public void setUp() {
-        customizer = new SslCustomizer(mockSsl);
+        given(mockFactory.getSsl()).willReturn(mockSsl);
+
+        customizer = new SslCustomizer(mockFactory);
     }
 
     @Test
     public void shouldIgnoreNullSsl() {
-        SslCustomizer anotherCustomizer = new SslCustomizer(null);
+        given(mockFactory.getSsl()).willReturn(null);
 
-        anotherCustomizer.apply(mockHttpServerOptions);
+        customizer.apply(mockHttpServerOptions);
 
         verifyZeroInteractions(mockHttpServerOptions);
     }

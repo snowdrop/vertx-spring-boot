@@ -10,21 +10,24 @@ import io.vertx.core.net.KeyCertOptions;
 import io.vertx.core.net.PfxOptions;
 import io.vertx.core.net.TrustOptions;
 import org.springframework.boot.context.properties.PropertyMapper;
+import org.springframework.boot.web.server.AbstractConfigurableWebServerFactory;
 import org.springframework.boot.web.server.Ssl;
 
 public class SslCustomizer implements HttpServerOptionsCustomizer {
 
-    private final Ssl ssl;
+    private final AbstractConfigurableWebServerFactory factory;
 
     private final PropertyMapper propertyMapper;
 
-    public SslCustomizer(Ssl ssl) {
-        this.ssl = ssl;
+    public SslCustomizer(AbstractConfigurableWebServerFactory factory) {
+        this.factory = factory;
         this.propertyMapper = PropertyMapper.get();
     }
 
     @Override
     public HttpServerOptions apply(HttpServerOptions options) {
+        Ssl ssl = factory.getSsl();
+
         if (ssl == null) {
             return options;
         }

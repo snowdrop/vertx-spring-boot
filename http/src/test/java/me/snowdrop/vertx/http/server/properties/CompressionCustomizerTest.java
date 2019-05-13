@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.boot.web.server.AbstractConfigurableWebServerFactory;
 import org.springframework.boot.web.server.Compression;
 
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -16,6 +17,9 @@ import static org.mockito.Mockito.verify;
 public class CompressionCustomizerTest {
 
     @Mock
+    private AbstractConfigurableWebServerFactory mockFactory;
+
+    @Mock
     private HttpServerOptions mockHttpServerOptions;
 
     @Mock
@@ -23,8 +27,10 @@ public class CompressionCustomizerTest {
 
     @Test
     public void shouldEnableCompression() {
+        given(mockFactory.getCompression()).willReturn(mockCompression);
         given(mockCompression.getEnabled()).willReturn(true);
-        CompressionCustomizer customizer = new CompressionCustomizer(mockCompression);
+
+        CompressionCustomizer customizer = new CompressionCustomizer(mockFactory);
 
         customizer.apply(mockHttpServerOptions);
 
@@ -33,7 +39,7 @@ public class CompressionCustomizerTest {
 
     @Test
     public void shouldIgnoreNullCompression() {
-        CompressionCustomizer customizer = new CompressionCustomizer(null);
+        CompressionCustomizer customizer = new CompressionCustomizer(mockFactory);
 
         customizer.apply(mockHttpServerOptions);
 

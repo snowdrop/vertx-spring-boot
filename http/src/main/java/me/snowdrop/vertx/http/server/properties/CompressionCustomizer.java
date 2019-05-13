@@ -1,23 +1,25 @@
 package me.snowdrop.vertx.http.server.properties;
 
 import io.vertx.core.http.HttpServerOptions;
+import org.springframework.boot.web.server.AbstractConfigurableWebServerFactory;
 import org.springframework.boot.web.server.Compression;
 
 public class CompressionCustomizer implements HttpServerOptionsCustomizer {
 
-    private final Compression compression;
+    private final AbstractConfigurableWebServerFactory factory;
 
-    public CompressionCustomizer(Compression compression) {
-        this.compression = compression;
+    public CompressionCustomizer(AbstractConfigurableWebServerFactory factory) {
+        this.factory = factory;
     }
 
     @Override
     public HttpServerOptions apply(HttpServerOptions options) {
-        if (compression == null) {
-            return options;
+        Compression compression = factory.getCompression();
+
+        if (compression != null) {
+            options.setCompressionSupported(compression.getEnabled());
         }
 
-        // Only enabled property is applicable for HttpServerOptions
-        return options.setCompressionSupported(compression.getEnabled());
+        return options;
     }
 }
