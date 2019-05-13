@@ -42,6 +42,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
+        <!-- see: https://discuss.circleci.com/t/the-forked-vm-terminated-without-properly-saying-goodbye-while-running-tests/26246/9 -->
+        <configuration>
+          <useSystemClassLoader>false</useSystemClassLoader>
+        </configuration>
         <executions>
           <execution>
             <goals>
