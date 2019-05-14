@@ -27,5 +27,6 @@
     <module>chunked-response-sample</module>
     <module>mail-sample</module>
     <module>http-sample</module>
+    <module>http-security-sample</module>
   </modules>
 </project>
