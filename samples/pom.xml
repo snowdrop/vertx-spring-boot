@@ -28,5 +28,6 @@
     <module>mail-sample</module>
     <module>http-sample</module>
     <module>http-security-sample</module>
+    <module>http-oauth-sample</module>
   </modules>
 </project>
