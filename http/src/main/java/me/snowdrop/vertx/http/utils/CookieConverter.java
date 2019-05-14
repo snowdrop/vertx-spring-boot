@@ -10,12 +10,17 @@ import org.springframework.http.ResponseCookie;
 public final class CookieConverter {
 
     public static Cookie toCookie(ResponseCookie responseCookie) {
-        return Cookie.cookie(responseCookie.getName(), responseCookie.getValue())
+        Cookie cookie = Cookie.cookie(responseCookie.getName(), responseCookie.getValue())
             .setDomain(responseCookie.getDomain())
             .setPath(responseCookie.getPath())
-            .setMaxAge(responseCookie.getMaxAge().getSeconds())
             .setHttpOnly(responseCookie.isHttpOnly())
             .setSecure(responseCookie.isSecure());
+
+        if (!responseCookie.getMaxAge().isNegative()) {
+            cookie.setMaxAge(responseCookie.getMaxAge().getSeconds());
+        }
+
+        return cookie;
     }
 
     public static HttpCookie toHttpCookie(Cookie cookie) {
