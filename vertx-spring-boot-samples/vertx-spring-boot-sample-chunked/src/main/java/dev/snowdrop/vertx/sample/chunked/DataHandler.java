@@ -3,8 +3,9 @@ package dev.snowdrop.vertx.sample.chunked;
 import java.time.Duration;
 import java.util.List;
 
-import dev.snowdrop.vertx.mail.ReactorEmailService;
-import dev.snowdrop.vertx.mail.axel.Email;
+import dev.snowdrop.vertx.mail.EmailService;
+import io.vertx.ext.mail.MailMessage;
+import io.vertx.ext.mail.MailResult;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -21,11 +22,11 @@ public class DataHandler {
 
     private static final String FROM_ADDRESS = "examples@snowdrop.dev";
 
-    private final ReactorEmailService emailService;
+    private final EmailService emailService;
 
     private final WebClient client;
 
-    public DataHandler(ReactorEmailService emailService, WebClient.Builder clientBuilder) {
+    public DataHandler(EmailService emailService, WebClient.Builder clientBuilder) {
         this.emailService = emailService;
         this.client = clientBuilder
             .baseUrl("https://httpbin.org")
@@ -60,17 +61,16 @@ public class DataHandler {
             .body(chunks, String.class);
     }
 
-    private Mono<Void> sendEmail(String address, List<String> entries) {
+    private Mono<MailResult> sendEmail(String address, List<String> entries) {
         System.out.println("Sending an email with " + entries.size() + " entries to " + address);
 
-        Email email = Email.create()
-            .from(FROM_ADDRESS)
-            .to(address)
-            .subject(String.format("%d entries from httpbin", entries.size()))
-            .text(String.join(", ", entries))
-            .build();
+        MailMessage message = new MailMessage()
+            .setFrom(FROM_ADDRESS)
+            .setTo(address)
+            .setSubject(String.format("%d entries from httpbin", entries.size()))
+            .setText(String.join(", ", entries));
 
-        return emailService.send(email);
+        return emailService.send(message);
     }
 
 }

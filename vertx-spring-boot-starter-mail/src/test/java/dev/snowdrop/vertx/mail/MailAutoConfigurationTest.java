@@ -1,19 +1,20 @@
 package dev.snowdrop.vertx.mail;
 
 import io.smallrye.reactive.converters.ReactiveTypeConverter;
-import io.vertx.ext.mail.MailClient;
-import dev.snowdrop.vertx.VertxAutoConfiguration;
+import io.vertx.axle.ext.mail.MailClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 import reactor.core.publisher.Mono;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@Import({ VertxAutoConfiguration.class, MailAutoConfiguration.class })
+@RunWith(SpringRunner.class)
+@SpringBootTest
 public class MailAutoConfigurationTest {
 
     @Autowired
@@ -23,7 +24,7 @@ public class MailAutoConfigurationTest {
     private ReactiveTypeConverter<Mono> monoConverter;
 
     @Autowired
-    private ReactorEmailService emailService;
+    private EmailService emailService;
 
     @Test
     public void shouldInjectBeans() {
@@ -32,4 +33,10 @@ public class MailAutoConfigurationTest {
         assertThat(emailService).isNotNull();
     }
 
+    @SpringBootApplication
+    public static class TestApplication {
+        public static void main(String[] args) {
+            SpringApplication.run(TestApplication.class, args);
+        }
+    }
 }

@@ -1,7 +1,7 @@
 package dev.snowdrop.vertx.sample.mail;
 
-import dev.snowdrop.vertx.mail.ReactorEmailService;
-import dev.snowdrop.vertx.mail.axel.Email;
+import dev.snowdrop.vertx.mail.EmailService;
+import io.vertx.ext.mail.MailMessage;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -13,27 +13,26 @@ import static org.springframework.web.reactive.function.server.ServerResponse.no
 @Component
 public class MailHandler {
 
-    private final ReactorEmailService emailService;
+    private final EmailService emailService;
 
-    public MailHandler(ReactorEmailService emailService) {
+    public MailHandler(EmailService emailService) {
         this.emailService = emailService;
     }
 
     public Mono<ServerResponse> send(ServerRequest request) {
         return request.formData()
-                .log()
-                .map(this::formToEmail)
-                .flatMap(emailService::send)
-                .flatMap(v -> noContent().build());
+            .log()
+            .map(this::formToMessage)
+            .flatMap(emailService::send)
+            .flatMap(result -> noContent().build());
     }
 
-    private Email formToEmail(MultiValueMap<String, String> form) {
-        return Email.create()
-                .from(form.getFirst("from"))
-                .to(form.getFirst("to"))
-                .subject(form.getFirst("subject"))
-                .text(form.getFirst("text"))
-                .build();
+    private MailMessage formToMessage(MultiValueMap<String, String> form) {
+        return new MailMessage()
+            .setFrom(form.getFirst("from"))
+            .setTo(form.getFirst("to"))
+            .setSubject(form.getFirst("subject"))
+            .setText(form.getFirst("text"));
     }
 
 }

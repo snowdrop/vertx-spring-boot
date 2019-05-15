@@ -11,6 +11,7 @@
 
   <properties>
     <awaitility.version>3.1.6</awaitility.version>
+    <smallrye-axle-mail-client.version>0.0.4</smallrye-axle-mail-client.version>
     <smallrye-reactive.version>1.0.0</smallrye-reactive.version>
     <spring-boot.version>2.1.2.RELEASE</spring-boot.version>
     <tcnative.version>2.0.17.Final</tcnative.version>
@@ -75,6 +76,11 @@
         <groupId>io.smallrye.reactive</groupId>
         <artifactId>smallrye-converter-reactor</artifactId>
         <version>${smallrye-reactive.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.smallrye.reactive</groupId>
+        <artifactId>smallrye-axle-mail-client</artifactId>
+        <version>${smallrye-axle-mail-client.version}</version>
       </dependency>
       <dependency>
         <groupId>org.awaitility</groupId>

@@ -27,16 +27,12 @@
       <artifactId>vertx-spring-boot-starter</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-mail-client</artifactId>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>smallrye-axle-mail-client</artifactId>
     </dependency>
     <dependency>
       <groupId>io.smallrye.reactive</groupId>
       <artifactId>smallrye-converter-reactor</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.projectreactor</groupId>
-      <artifactId>reactor-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
