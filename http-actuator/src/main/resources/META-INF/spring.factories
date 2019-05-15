@@ -1,2 +1,0 @@
-org.springframework.boot.actuate.autoconfigure.web.ManagementContextConfiguration=\
-me.snowdrop.vertx.http.server.actuator.VertxManagementChildContextConfiguration\

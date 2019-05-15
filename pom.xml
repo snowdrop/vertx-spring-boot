@@ -2,12 +2,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>me.snowdrop</groupId>
+  <groupId>dev.snowdrop</groupId>
   <artifactId>vertx-spring-boot-parent</artifactId>
   <packaging>pom</packaging>
   <version>0.0.1-SNAPSHOT</version>
 
-  <url>http://snowdrop.me</url>
+  <url>https://snowdrop.dev</url>
 
   <properties>
     <awaitility.version>3.1.6</awaitility.version>
@@ -217,10 +217,10 @@
   </profiles>
 
   <modules>
-    <module>core</module>
-    <module>http</module>
-    <module>http-actuator</module>
-    <module>mail</module>
-    <module>samples</module>
+    <module>vertx-spring-boot-samples</module>
+    <module>vertx-spring-boot-starter</module>
+    <module>vertx-spring-boot-starter-actuator</module>
+    <module>vertx-spring-boot-starter-http</module>
+    <module>vertx-spring-boot-starter-mail</module>
   </modules>
 </project>
