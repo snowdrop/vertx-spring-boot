@@ -1,17 +1,11 @@
 ## Vert.x Spring Boot
 
-Following features are available at the moment.
+Following starters are available at the moment.
 
-* Vertx core instance injection
+* [Vertx core starter](./vertx-spring-boot-starter)
 * Vert.x HTTP server and client integration to WebFlux framework
 * Vert.x WebSocket server and client integration to WebFlux framework
 * Vert.x mail client Reactor API adaptation
-
-## Building artifacts
-
-```
-> ./mvnw clean install
-```
 
 ## Samples
 
@@ -20,3 +14,10 @@ Following features are available at the moment.
 * [HTTP OAuth2](./vertx-spring-boot-samples/vertx-spring-boot-sample-http-oauth) - demonstrates authentication with GitHub.
 * [HTTP Security](./vertx-spring-boot-samples/vertx-spring-boot-sample-http-security) - demonstrates basic and form authentication.
 * [Mail](./vertx-spring-boot-samples/vertx-spring-boot-sample-mail) - demonstrates mail client usage.
+
+## Building the project from source
+
+```bash
+./mvnw clean install
+```
+
