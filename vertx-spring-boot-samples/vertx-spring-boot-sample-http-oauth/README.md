@@ -1,6 +1,6 @@
 ## Vert.x HTTP OAuth 2 example
 
-This example demonstrates how to GitHub authentication service in Vert.x WebFlux application.
+This example demonstrates how to use GitHub authentication service in Vert.x WebFlux application.
 
 > Because of Spring Security implementation details, Reactor Netty client is required aside to Vert.x integration.
 
