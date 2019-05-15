@@ -3,9 +3,8 @@
 Following starters are available at the moment.
 
 * [Vert.x core starter](./vertx-spring-boot-starter)
+* [Vert.x HTTP starter](./vertx-spring-boot-starter-http)
 * [Vert.x mail starter](./vertx-spring-boot-starter-mail)
-* Vert.x HTTP server and client integration to WebFlux framework
-* Vert.x WebSocket server and client integration to WebFlux framework
 
 ## Samples
 
