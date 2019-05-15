@@ -2,10 +2,10 @@
 
 Following starters are available at the moment.
 
-* [Vertx core starter](./vertx-spring-boot-starter)
+* [Vert.x core starter](./vertx-spring-boot-starter)
+* [Vert.x mail starter](./vertx-spring-boot-starter-mail)
 * Vert.x HTTP server and client integration to WebFlux framework
 * Vert.x WebSocket server and client integration to WebFlux framework
-* Vert.x mail client Reactor API adaptation
 
 ## Samples
 
