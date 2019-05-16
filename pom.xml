@@ -12,17 +12,16 @@
   <properties>
     <awaitility.version>3.1.6</awaitility.version>
     <smallrye-axle-mail-client.version>0.0.4</smallrye-axle-mail-client.version>
-    <smallrye-reactive.version>1.0.0</smallrye-reactive.version>
-    <spring-boot.version>2.1.2.RELEASE</spring-boot.version>
-    <tcnative.version>2.0.17.Final</tcnative.version>
+    <smallrye-converter-reactor.version>1.0.1</smallrye-converter-reactor.version>
+    <spring-boot.version>2.1.5.RELEASE</spring-boot.version>
     <vertx.version>3.7.0</vertx.version>
 
     <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
-    <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+    <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
     <maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
     <maven-failsafe-plugin.version>2.22.1</maven-failsafe-plugin.version>
     <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
-    <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
+    <maven-jar-plugin.version>3.1.2</maven-jar-plugin.version>
     <maven-javadoc-plugin.version>3.1.0</maven-javadoc-plugin.version>
     <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
     <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
@@ -75,7 +74,7 @@
       <dependency>
         <groupId>io.smallrye.reactive</groupId>
         <artifactId>smallrye-converter-reactor</artifactId>
-        <version>${smallrye-reactive.version}</version>
+        <version>${smallrye-converter-reactor.version}</version>
       </dependency>
       <dependency>
         <groupId>io.smallrye.reactive</groupId>
@@ -86,11 +85,6 @@
         <groupId>org.awaitility</groupId>
         <artifactId>awaitility</artifactId>
         <version>${awaitility.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.netty</groupId>
-        <artifactId>netty-tcnative-boringssl-static</artifactId>
-        <version>${tcnative.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
