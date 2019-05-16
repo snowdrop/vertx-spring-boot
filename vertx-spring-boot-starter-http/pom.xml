@@ -12,7 +12,7 @@
   <artifactId>vertx-spring-boot-starter-http</artifactId>
 
   <properties>
-    <it.http.skip.fileTransfer>false</it.http.skip.fileTransfer>
+    <it.http.skip.fileTransfer>true</it.http.skip.fileTransfer>
   </properties>
 
   <dependencyManagement>

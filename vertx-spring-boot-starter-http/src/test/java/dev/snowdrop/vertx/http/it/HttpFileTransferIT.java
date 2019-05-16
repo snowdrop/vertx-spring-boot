@@ -117,6 +117,7 @@ public class HttpFileTransferIT extends TestBase {
         }
 
         return DataBufferUtils.write(input, output)
+            .doOnNext(DataBufferUtils.releaseConsumer())
             .doOnTerminate(() -> {
                 try {
                     output.close();
