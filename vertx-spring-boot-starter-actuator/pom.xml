@@ -10,6 +10,7 @@
   </parent>
 
   <artifactId>vertx-spring-boot-starter-actuator</artifactId>
+  <name>Vert.x Spring Boot starter - actuator</name>
 
   <dependencyManagement>
     <dependencies>

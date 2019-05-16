@@ -7,7 +7,46 @@
   <packaging>pom</packaging>
   <version>0.0.1-SNAPSHOT</version>
 
+  <name>Vert.x Spring Boot - parent</name>
+  <description>Spring Boot starters of different Vert.x components</description>
   <url>https://snowdrop.dev</url>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <url>https://github.com/snowdrop</url>
+    <connection>scm:git:https://github.com/snowdrop/vertx-spring-boot.git</connection>
+    <developerConnection>scm:git:git:@github.com:snowdrop/vertx-spring-boot.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
+
+  <distributionManagement>
+    <repository>
+      <id>jboss-releases-repository</id>
+      <name>JBoss Releases Repository</name>
+      <url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</url>
+    </repository>
+    <snapshotRepository>
+      <id>jboss-snapshots-repository</id>
+      <name>JBoss Snapshots Repository</name>
+      <url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <developers>
+    <developer>
+      <id>gytis</id>
+      <name>Gytis Trikleris</name>
+      <organization>Red Hat Inc.</organization>
+      <organizationUrl>https://www.redhat.com</organizationUrl>
+    </developer>
+  </developers>
 
   <properties>
     <awaitility.version>3.1.6</awaitility.version>
@@ -34,26 +73,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
-
-  <scm>
-    <url>https://github.com/snowdrop</url>
-    <connection>scm:git:https://github.com/snowdrop/vertx-spring-boot.git</connection>
-    <developerConnection>scm:git:git:@github.com:snowdrop/vertx-spring-boot.git</developerConnection>
-    <tag>HEAD</tag>
-  </scm>
-
-  <distributionManagement>
-    <repository>
-      <id>jboss-releases-repository</id>
-      <name>JBoss Releases Repository</name>
-      <url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</url>
-    </repository>
-    <snapshotRepository>
-      <id>jboss-snapshots-repository</id>
-      <name>JBoss Snapshots Repository</name>
-      <url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
-    </snapshotRepository>
-  </distributionManagement>
 
   <dependencyManagement>
     <dependencies>

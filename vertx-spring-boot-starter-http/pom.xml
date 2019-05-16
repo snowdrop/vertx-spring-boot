@@ -10,6 +10,7 @@
   </parent>
 
   <artifactId>vertx-spring-boot-starter-http</artifactId>
+  <name>Vert.x Spring Boot starter - http</name>
 
   <properties>
     <it.http.skip.fileTransfer>true</it.http.skip.fileTransfer>

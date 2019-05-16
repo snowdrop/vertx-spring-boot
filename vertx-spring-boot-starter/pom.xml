@@ -10,6 +10,7 @@
   </parent>
 
   <artifactId>vertx-spring-boot-starter</artifactId>
+  <name>Vert.x Spring Boot starter - core</name>
 
   <dependencies>
     <dependency>

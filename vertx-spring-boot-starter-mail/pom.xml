@@ -10,6 +10,7 @@
   </parent>
 
   <artifactId>vertx-spring-boot-starter-mail</artifactId>
+  <name>Vert.x Spring Boot starter - mail</name>
 
   <dependencyManagement>
     <dependencies>
