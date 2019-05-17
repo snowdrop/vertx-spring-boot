@@ -6,65 +6,80 @@ import java.nio.channels.AsynchronousFileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.time.Duration;
-import java.util.Random;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.AsyncFile;
+import io.vertx.core.file.OpenOptions;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.codec.multipart.Part;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
+import static java.nio.file.StandardOpenOption.WRITE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.web.reactive.function.BodyInserters.fromMultipartData;
-import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
+import static org.springframework.web.reactive.function.BodyInserters.fromDataBuffers;
+import static org.springframework.web.reactive.function.BodyInserters.fromResource;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 import static org.springframework.web.reactive.function.server.ServerResponse.noContent;
 import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 
 public class HttpFileTransferIT extends TestBase {
 
-    private static final Path ORIGINAL_FILE = Paths.get("target/original-file");
+    private static final Path ORIGINAL_FILE = Paths.get("target/original-file").toAbsolutePath();
 
-    private static final Path EXPECTED_FILE = Paths.get("target/expected-file");
+    private static final Path EXPECTED_FILE = Paths.get("target/expected-file").toAbsolutePath();
 
-    private static final int FILE_SIZE = Integer.MAX_VALUE;
+    private static final long FILE_SIZE = Integer.MAX_VALUE;
+
+    @BeforeClass
+    public static void setUpClass() throws IOException {
+        Files.deleteIfExists(ORIGINAL_FILE);
+        createTestFile();
+    }
 
     @Before
     public void setUp() throws IOException {
-        Files.deleteIfExists(ORIGINAL_FILE);
         Files.deleteIfExists(EXPECTED_FILE);
-        createTestFile();
     }
 
     @After
     public void tearDown() throws IOException {
-        Files.deleteIfExists(ORIGINAL_FILE);
         Files.deleteIfExists(EXPECTED_FILE);
         stopServer();
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws IOException {
+        Files.deleteIfExists(ORIGINAL_FILE);
     }
 
     @Test
     public void shouldUploadLargeFile() throws IOException {
         startServerWithoutSecurity(UploadRouter.class);
 
+        Vertx vertx = getBean(Vertx.class);
+        Flux<DataBuffer> dataBuffers = readFile(vertx, ORIGINAL_FILE);
+
         HttpStatus status = getWebClient()
             .post()
-            .header("path", EXPECTED_FILE.toString())
-            .body(fromMultipartData("file", new UrlResource(ORIGINAL_FILE.toUri())))
+            .body(fromDataBuffers(dataBuffers))
             .exchange()
             .map(ClientResponse::statusCode)
             .block(Duration.ofMinutes(5));
@@ -77,54 +92,48 @@ public class HttpFileTransferIT extends TestBase {
     public void shouldDownloadLargeFile() throws IOException {
         startServerWithoutSecurity(DownloadRouter.class);
 
-        Flux<DataBuffer> input = getWebClient()
+        Flux<DataBuffer> buffers = getWebClient()
             .get()
-            .header("path", ORIGINAL_FILE.toAbsolutePath().toString())
             .retrieve()
             .bodyToFlux(DataBuffer.class);
 
-        writeToFile(input, EXPECTED_FILE).blockLast(Duration.ofMinutes(5));
+        writeToFile(buffers, EXPECTED_FILE)
+            .block(Duration.ofMinutes(5));
 
         assertThat(Files.size(EXPECTED_FILE)).isEqualTo(Files.size(ORIGINAL_FILE));
     }
 
-    private void createTestFile() throws IOException {
-        Random random = new Random();
+    private static void createTestFile() throws IOException {
         RandomAccessFile file = new RandomAccessFile(ORIGINAL_FILE.toFile(), "rw");
         file.setLength(FILE_SIZE);
-
-        int stepSize = 1024 * 1024 * 10;
-        int counter = 0;
-        while (counter < FILE_SIZE) {
-            if (FILE_SIZE - counter < stepSize) {
-                stepSize = FILE_SIZE - counter; // Step is too big for the leftover bytes
-            }
-            byte[] bytes = new byte[stepSize];
-            random.nextBytes(bytes);
-            file.write(bytes);
-            counter += stepSize;
-        }
-
         file.close();
     }
 
-    private static Flux<DataBuffer> writeToFile(Flux<DataBuffer> input, Path path) {
-        AsynchronousFileChannel output;
-        try {
-            output = AsynchronousFileChannel.open(path, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
-        } catch (IOException e) {
-            return Flux.error(e);
-        }
+    private static Flux<DataBuffer> readFile(Vertx vertx, Path path) {
+        AsyncFile file = vertx.fileSystem().openBlocking(path.toString(), new OpenOptions());
 
-        return DataBufferUtils.write(input, output)
-            .doOnNext(DataBufferUtils.releaseConsumer())
-            .doOnTerminate(() -> {
-                try {
-                    output.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+        Flux<Buffer> buffers = Flux.create(sink -> {
+            file.pause();
+            file.endHandler(v -> sink.complete());
+            file.exceptionHandler(sink::error);
+            file.handler(sink::next);
+            sink.onRequest(file::fetch);
+        });
+
+        DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
+
+        return Flux.from(buffers)
+            .map(Buffer::getBytes)
+            .map(dataBufferFactory::wrap);
+    }
+
+    private static Mono<Void> writeToFile(Flux<DataBuffer> input, Path path) {
+        try {
+            AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, CREATE_NEW, WRITE);
+            return DataBufferUtils.write(input, channel).then();
+        } catch (IOException e) {
+            return Mono.error(e);
+        }
     }
 
     @Configuration
@@ -132,13 +141,7 @@ public class HttpFileTransferIT extends TestBase {
         @Bean
         public RouterFunction<ServerResponse> downloadRouter() {
             return route()
-                .GET("/", request -> {
-                    String path = request.headers()
-                        .header("path")
-                        .get(0);
-
-                    return ok().body(BodyInserters.fromResource(new FileSystemResource(path)));
-                })
+                .GET("/", request -> ok().body(fromResource(new FileSystemResource(ORIGINAL_FILE))))
                 .build();
         }
     }
@@ -148,14 +151,10 @@ public class HttpFileTransferIT extends TestBase {
         @Bean
         public RouterFunction<ServerResponse> uploadRouter() {
             return route()
-                .POST("/", accept(MediaType.MULTIPART_FORM_DATA), request -> {
-                    String path = request.headers()
-                        .header("path")
-                        .get(0);
-                    Flux<DataBuffer> input = request.bodyToFlux(Part.class)
-                        .flatMap(Part::content);
+                .POST("/", request -> {
+                    Flux<DataBuffer> buffers = request.bodyToFlux(DataBuffer.class);
 
-                    return writeToFile(input, Paths.get(path))
+                    return writeToFile(buffers, EXPECTED_FILE)
                         .then(noContent().build());
                 })
                 .build();

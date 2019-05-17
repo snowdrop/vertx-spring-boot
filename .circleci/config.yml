@@ -7,7 +7,7 @@ jobs:
       - checkout
       - run:
           name: Run integration tests
-          command: ./mvnw verify -Dit.http.skip.fileTransfer=true -e
+          command: ./mvnw verify -e
           environment:
             MAVEN_OPTS: -Xms128m -Xmx1024m
 
