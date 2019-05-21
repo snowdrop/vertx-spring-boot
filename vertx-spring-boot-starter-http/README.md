@@ -45,8 +45,6 @@ public class MyConfiguration {
 #### HTTP Client
 
 To use WebFlux WebClient, inject its builder with preconfigured Vert.x connector and build a client yourself.
-
-> Do not use WebClient.create() or DefaultWebClientBuilder because they are dependent on Reactor Netty client.
  
 ```java
 @Component
@@ -55,6 +53,29 @@ public class MyComponent {
     
     public MyComponent(WebClient.Builder clientBuilder) {
         this.client = clientBuilder
+            .baseUrl("http://example.com")
+            .build();
+    }
+    
+    public Flux<String> getData() {
+        return client
+            .get()
+            .retrieve()
+            .bodyToFlux(String.class);
+    }
+}
+```
+
+Or inject a Vert.x HTTP connector and use it with a default WebClient builder.
+
+```java
+@Component
+public class MyComponent {
+    private final WebClient client;
+    
+    public MyComponent(VertxClientHttpConnector connector) {
+        this.client = WebClient.builder()
+            .clientConnector(connector)
             .baseUrl("http://example.com")
             .build();
     }
