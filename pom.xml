@@ -239,6 +239,7 @@
     <module>vertx-spring-boot-starter</module>
     <module>vertx-spring-boot-starter-actuator</module>
     <module>vertx-spring-boot-starter-http</module>
+    <module>vertx-spring-boot-starter-http-test</module>
     <module>vertx-spring-boot-starter-mail</module>
   </modules>
 </project>

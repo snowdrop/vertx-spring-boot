@@ -1,0 +1,2 @@
+org.springframework.test.context.ContextCustomizerFactory=\
+dev.snowdrop.vertx.http.test.VertxWebTestClientContextCustomizerFactory
