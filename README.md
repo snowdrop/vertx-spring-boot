@@ -4,6 +4,7 @@ Following starters are available at the moment.
 
 * [Vert.x core starter](./vertx-spring-boot-starter)
 * [Vert.x HTTP starter](./vertx-spring-boot-starter-http)
+* Vert.x HTTP Test starter
 * [Vert.x actuator starter](./vertx-spring-boot-starter-actuator)
 * [Vert.x mail starter](./vertx-spring-boot-starter-mail)
 
