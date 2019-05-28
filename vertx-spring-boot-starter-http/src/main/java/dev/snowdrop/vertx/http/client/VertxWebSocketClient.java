@@ -2,13 +2,14 @@ package dev.snowdrop.vertx.http.client;
 
 import java.net.URI;
 
+import dev.snowdrop.vertx.http.common.VertxWebSocketSession;
+import dev.snowdrop.vertx.http.utils.BufferConverter;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.http.impl.headers.VertxHttpHeaders;
-import dev.snowdrop.vertx.http.common.VertxWebSocketSession;
-import dev.snowdrop.vertx.http.utils.BufferConverter;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.Assert;
 import org.springframework.web.reactive.socket.HandshakeInfo;
@@ -17,22 +18,31 @@ import org.springframework.web.reactive.socket.client.WebSocketClient;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
 
-public class VertxWebSocketClient implements WebSocketClient {
+public class VertxWebSocketClient implements WebSocketClient, DisposableBean {
+
+    private final boolean internalClient;
 
     private final HttpClient httpClient;
 
     private final BufferConverter bufferConverter;
 
     public VertxWebSocketClient(Vertx vertx) {
-        this(vertx.createHttpClient());
+        Assert.notNull(vertx, "Vertx is required");
+        this.internalClient = true;
+        this.httpClient = vertx.createHttpClient();
+        this.bufferConverter = new BufferConverter();
     }
 
     public VertxWebSocketClient(Vertx vertx, HttpClientOptions options) {
-        this(vertx.createHttpClient(options));
+        Assert.notNull(vertx, "Vertx is required");
+        this.internalClient = true;
+        this.httpClient = vertx.createHttpClient(options);
+        this.bufferConverter = new BufferConverter();
     }
 
     public VertxWebSocketClient(HttpClient httpClient) {
         Assert.notNull(httpClient, "HttpClient is required");
+        this.internalClient = false;
         this.httpClient = httpClient;
         this.bufferConverter = new BufferConverter();
     }
@@ -47,6 +57,13 @@ public class VertxWebSocketClient implements WebSocketClient {
         VertxHttpHeaders vertxHeaders = convertHeaders(headers);
 
         return Mono.create(sink -> connect(uri, vertxHeaders, handler, sink));
+    }
+
+    @Override
+    public void destroy() {
+        if (internalClient) {
+            httpClient.close();
+        }
     }
 
     private void connect(URI uri, VertxHttpHeaders headers, WebSocketHandler handler, MonoSink<Void> callback) {

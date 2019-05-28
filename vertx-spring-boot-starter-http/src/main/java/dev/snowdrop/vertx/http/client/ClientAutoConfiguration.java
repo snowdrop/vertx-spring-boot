@@ -32,12 +32,12 @@ public class ClientAutoConfiguration {
         this.httpClientOptions = customizeHttpClientOptions(properties.getHttpClientOptions(), customizers);
     }
 
-    @Bean // TODO implement destroy method
+    @Bean
     public VertxClientHttpConnector vertxClientHttpConnector(Vertx vertx) {
         return new VertxClientHttpConnector(vertx, httpClientOptions);
     }
 
-    @Bean // TODO implement destroy method
+    @Bean
     public VertxWebSocketClient vertxWebSocketClient(Vertx vertx) {
         return new VertxWebSocketClient(vertx, httpClientOptions);
     }

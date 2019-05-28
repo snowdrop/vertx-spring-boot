@@ -7,6 +7,7 @@ import java.util.Arrays;
 import dev.snowdrop.vertx.http.common.VertxWebSocketSession;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.http.impl.headers.VertxHttpHeaders;
@@ -27,11 +28,15 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 @RunWith(MockitoJUnitRunner.class)
 public class VertxWebSocketClientTest {
 
     private static final URI TEST_URI = URI.create("ws://example.com:8080/test");
+
+    @Mock
+    private Vertx mockVertx;
 
     @Mock
     private HttpClient mockHttpClient;
@@ -125,5 +130,22 @@ public class VertxWebSocketClientTest {
     public void shouldCompleteWithError() {
         webSocketClient.execute(TEST_URI, session -> Mono.error(RuntimeException::new))
             .block(Duration.ofSeconds(2));
+    }
+
+    @Test
+    public void shouldDestroyInternalClient() {
+        given(mockVertx.createHttpClient()).willReturn(mockHttpClient);
+
+        webSocketClient = new VertxWebSocketClient(mockVertx);
+        webSocketClient.destroy();
+
+        verify(mockHttpClient).close();
+    }
+
+    @Test
+    public void shouldNotDestroyProvidedClient() {
+        webSocketClient.destroy();
+
+        verifyZeroInteractions(mockHttpClient);
     }
 }

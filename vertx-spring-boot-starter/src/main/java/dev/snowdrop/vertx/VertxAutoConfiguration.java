@@ -13,7 +13,7 @@ public class VertxAutoConfiguration {
 
     // Let the Vertx user to handle instance closing.
     // This is done in particular for HTTP server which is closed by Spring Context after beans are destroyed.
-    // Allowing Vertx bean to be destroyed by the context would block HTTP server from call its close method.
+    // Allowing Vertx bean to be destroyed by the context would block HTTP server from calling its close method.
     @Bean(destroyMethod = "")
     public Vertx vertx(VertxProperties properties) {
         return Vertx.vertx(properties.toVertxOptions());
