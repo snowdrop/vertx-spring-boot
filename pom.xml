@@ -49,9 +49,10 @@
 
   <properties>
     <awaitility.version>3.1.6</awaitility.version>
-    <smallrye-axle-mail-client.version>0.0.7</smallrye-axle-mail-client.version>
+    <smallrye-axle.version>0.0.7</smallrye-axle.version>
     <spring-boot.version>2.1.6.RELEASE</spring-boot.version>
     <vertx.version>3.7.1</vertx.version>
+    <vertx-amqp.version>3.7.1.1</vertx-amqp.version>
 
     <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -89,9 +90,24 @@
         <scope>import</scope>
       </dependency>
       <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-amqp-client</artifactId>
+        <version>${vertx-amqp.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.smallrye.reactive</groupId>
+        <artifactId>smallrye-axle-core</artifactId>
+        <version>${smallrye-axle.version}</version>
+      </dependency>
+      <dependency>
         <groupId>io.smallrye.reactive</groupId>
         <artifactId>smallrye-axle-mail-client</artifactId>
-        <version>${smallrye-axle-mail-client.version}</version>
+        <version>${smallrye-axle.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.smallrye.reactive</groupId>
+        <artifactId>smallrye-axle-amqp-client</artifactId>
+        <version>${smallrye-axle.version}</version>
       </dependency>
       <dependency>
         <groupId>org.awaitility</groupId>
@@ -235,5 +251,6 @@
     <module>vertx-spring-boot-starter-http</module>
     <module>vertx-spring-boot-starter-http-test</module>
     <module>vertx-spring-boot-starter-mail</module>
+    <module>vertx-spring-boot-starter-amqp</module>
   </modules>
 </project>
