@@ -31,7 +31,7 @@ public class VertxRequestUpgradeStrategy implements RequestUpgradeStrategy {
     public Mono<Void> upgrade(ServerWebExchange exchange, WebSocketHandler handler,
         @Nullable String subProtocol, Supplier<HandshakeInfo> handshakeInfoFactory) {
 
-        LOGGER.info("Upgrading request to web socket");
+        LOGGER.debug("Upgrading request to web socket");
 
         ServerHttpRequest request = exchange.getRequest();
         HttpServerRequest vertxRequest = ((AbstractServerHttpRequest) request).getNativeRequest();
