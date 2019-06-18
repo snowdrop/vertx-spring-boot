@@ -1,7 +1,8 @@
 package dev.snowdrop.vertx.mail;
 
-import java.util.Optional;
-
+import io.vertx.ext.mail.LoginOption;
+import io.vertx.ext.mail.MailConfig;
+import io.vertx.ext.mail.StartTLSOptions;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = MailProperties.PROPERTIES_PREFIX)
@@ -11,33 +12,7 @@ public class MailProperties {
 
     private boolean enabled = true;
 
-    private String host = "localhost"; // Setting to localhost because that's the default in MailConfig
-
-    private String username;
-
-    private String password;
-
-    private String keystore;
-
-    private String keystorePassword;
-
-    private String authMethods;
-
-    private String loginOption;
-
-    private String startTls;
-
-    private int port = 25;
-
-    private boolean ssl;
-
-    private boolean trustAll;
-
-    private boolean keepAlive = true;
-
-    private boolean esmtp = true;
-
-    private boolean allowRcptErrors = true;
+    private MailConfig delegate = new MailConfig();
 
     public boolean isEnabled() {
         return enabled;
@@ -48,114 +23,146 @@ public class MailProperties {
     }
 
     public String getHost() {
-        return host;
+        return delegate.getHostname();
     }
 
     public void setHost(String host) {
-        this.host = host;
-    }
-
-    public Optional<String> getUsername() {
-        return Optional.ofNullable(username);
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public Optional<String> getPassword() {
-        return Optional.ofNullable(password);
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Optional<String> getKeystore() {
-        return Optional.ofNullable(keystore);
-    }
-
-    public void setKeystore(String keystore) {
-        this.keystore = keystore;
-    }
-
-    public Optional<String> getKeystorePassword() {
-        return Optional.ofNullable(keystorePassword);
-    }
-
-    public void setKeystorePassword(String keystorePassword) {
-        this.keystorePassword = keystorePassword;
-    }
-
-    public Optional<String> getAuthMethods() {
-        return Optional.ofNullable(authMethods);
-    }
-
-    public void setAuthMethods(String authMethods) {
-        this.authMethods = authMethods;
-    }
-
-    public Optional<String> getLoginOption() {
-        return Optional.ofNullable(loginOption);
-    }
-
-    public void setLoginOption(String loginOption) {
-        this.loginOption = loginOption;
-    }
-
-    public Optional<String> getStartTls() {
-        return Optional.ofNullable(startTls);
-    }
-
-    public void setStartTls(String startTls) {
-        this.startTls = startTls;
+        delegate.setHostname(host);
     }
 
     public int getPort() {
-        return port;
+        return delegate.getPort();
     }
 
     public void setPort(int port) {
-        this.port = port;
+        delegate.setPort(port);
+    }
+
+    public String getStartTls() {
+        if (delegate.getStarttls() == null) {
+            return null;
+        }
+
+        return delegate.getStarttls().name();
+    }
+
+    public void setStartTls(String startTls) {
+        if (startTls != null) {
+            delegate.setStarttls(StartTLSOptions.valueOf(startTls.toUpperCase()));
+        }
+    }
+
+    public String getLoginOption() {
+        if (delegate.getLogin() == null) {
+            return null;
+        }
+
+        return delegate.getLogin().name();
+    }
+
+    public void setLoginOption(String loginOption) {
+        if (loginOption != null) {
+            delegate.setLogin(LoginOption.valueOf(loginOption.toUpperCase()));
+        }
+    }
+
+    public String getAuthMethods() {
+        return delegate.getAuthMethods();
+    }
+
+    public void setAuthMethods(String authMethods) {
+        delegate.setAuthMethods(authMethods);
+    }
+
+    public String getUsername() {
+        return delegate.getUsername();
+    }
+
+    public void setUsername(String username) {
+        delegate.setUsername(username);
+    }
+
+    public String getPassword() {
+        return delegate.getPassword();
+    }
+
+    public void setPassword(String password) {
+        delegate.setPassword(password);
     }
 
     public boolean isSsl() {
-        return ssl;
+        return delegate.isSsl();
     }
 
     public void setSsl(boolean ssl) {
-        this.ssl = ssl;
+        delegate.setSsl(ssl);
     }
 
     public boolean isTrustAll() {
-        return trustAll;
+        return delegate.isTrustAll();
     }
 
     public void setTrustAll(boolean trustAll) {
-        this.trustAll = trustAll;
+        delegate.setTrustAll(trustAll);
+    }
+
+    public String getKeystore() {
+        return delegate.getKeyStore();
+    }
+
+    public void setKeystore(String keystore) {
+        delegate.setKeyStore(keystore);
+    }
+
+    public String getKeystorePassword() {
+        return delegate.getKeyStorePassword();
+    }
+
+    public void setKeystorePassword(String keystorePassword) {
+        delegate.setKeyStorePassword(keystorePassword);
+    }
+
+    public String getOwnHostName() {
+        return delegate.getOwnHostname();
+    }
+
+    public void setOwnHostName(String ownHostName) {
+        delegate.setOwnHostname(ownHostName);
+    }
+
+    public int getMaxPoolSize() {
+        return delegate.getMaxPoolSize();
+    }
+
+    public void setMaxPoolSize(int maxPoolSize) {
+        delegate.setMaxPoolSize(maxPoolSize);
     }
 
     public boolean isKeepAlive() {
-        return keepAlive;
+        return delegate.isKeepAlive();
     }
 
     public void setKeepAlive(boolean keepAlive) {
-        this.keepAlive = keepAlive;
-    }
-
-    public boolean isEsmtp() {
-        return esmtp;
-    }
-
-    public void setEsmtp(boolean esmtp) {
-        this.esmtp = esmtp;
+        delegate.setKeepAlive(keepAlive);
     }
 
     public boolean isAllowRcptErrors() {
-        return allowRcptErrors;
+        return delegate.isAllowRcptErrors();
     }
 
     public void setAllowRcptErrors(boolean allowRcptErrors) {
-        this.allowRcptErrors = allowRcptErrors;
+        delegate.setAllowRcptErrors(allowRcptErrors);
+    }
+
+    public boolean isDisableEsmtp() {
+        return delegate.isDisableEsmtp();
+    }
+
+    public void setDisableEsmtp(boolean disableEsmtp) {
+        delegate.setDisableEsmtp(disableEsmtp);
+    }
+
+    MailConfig getMailConfig() {
+        return delegate;
     }
 }

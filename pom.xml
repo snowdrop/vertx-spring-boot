@@ -50,7 +50,6 @@
   <properties>
     <awaitility.version>3.1.6</awaitility.version>
     <smallrye-axle-mail-client.version>0.0.4</smallrye-axle-mail-client.version>
-    <smallrye-converter-reactor.version>1.0.1</smallrye-converter-reactor.version>
     <spring-boot.version>2.1.5.RELEASE</spring-boot.version>
     <vertx.version>3.7.0</vertx.version>
 
@@ -88,11 +87,6 @@
         <version>${vertx.version}</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>io.smallrye.reactive</groupId>
-        <artifactId>smallrye-converter-reactor</artifactId>
-        <version>${smallrye-converter-reactor.version}</version>
       </dependency>
       <dependency>
         <groupId>io.smallrye.reactive</groupId>

@@ -3,9 +3,10 @@ package dev.snowdrop.vertx.sample.chunked;
 import java.time.Duration;
 import java.util.List;
 
-import dev.snowdrop.vertx.mail.EmailService;
-import io.vertx.ext.mail.MailMessage;
-import io.vertx.ext.mail.MailResult;
+import dev.snowdrop.vertx.mail.MailClient;
+import dev.snowdrop.vertx.mail.MailMessage;
+import dev.snowdrop.vertx.mail.SimpleMailMessage;
+import dev.snowdrop.vertx.mail.MailResult;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -22,12 +23,12 @@ public class DataHandler {
 
     private static final String FROM_ADDRESS = "examples@snowdrop.dev";
 
-    private final EmailService emailService;
+    private final MailClient mailClient;
 
     private final WebClient client;
 
-    public DataHandler(EmailService emailService, WebClient.Builder clientBuilder) {
-        this.emailService = emailService;
+    public DataHandler(MailClient mailClient, WebClient.Builder clientBuilder) {
+        this.mailClient = mailClient;
         this.client = clientBuilder
             .baseUrl("https://httpbin.org")
             .build();
@@ -49,11 +50,13 @@ public class DataHandler {
             .log()
             // Delay to make a stream of data easily visible in the UI
             .delayElements(Duration.ofMillis(200))
-            .share();
+            .publish()
+            .refCount(2);
 
         // Send batches of 10 entries by email
         chunks.buffer(10)
-            .subscribe(entries -> this.sendEmail(email, entries));
+            .flatMap(entries -> this.sendEmail(email, entries))
+            .subscribe();
 
         // Return a stream of entries to the requester
         return ok()
@@ -64,13 +67,13 @@ public class DataHandler {
     private Mono<MailResult> sendEmail(String address, List<String> entries) {
         System.out.println("Sending an email with " + entries.size() + " entries to " + address);
 
-        MailMessage message = new MailMessage()
+        MailMessage message = new SimpleMailMessage()
             .setFrom(FROM_ADDRESS)
-            .setTo(address)
+            .addTo(address)
             .setSubject(String.format("%d entries from httpbin", entries.size()))
             .setText(String.join(", ", entries));
 
-        return emailService.send(message);
+        return mailClient.send(message);
     }
 
 }

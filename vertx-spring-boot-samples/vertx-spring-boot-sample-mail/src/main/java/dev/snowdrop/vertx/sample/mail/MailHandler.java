@@ -1,7 +1,8 @@
 package dev.snowdrop.vertx.sample.mail;
 
-import dev.snowdrop.vertx.mail.EmailService;
-import io.vertx.ext.mail.MailMessage;
+import dev.snowdrop.vertx.mail.MailClient;
+import dev.snowdrop.vertx.mail.MailMessage;
+import dev.snowdrop.vertx.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -13,24 +14,24 @@ import static org.springframework.web.reactive.function.server.ServerResponse.no
 @Component
 public class MailHandler {
 
-    private final EmailService emailService;
+    private final MailClient mailClient;
 
-    public MailHandler(EmailService emailService) {
-        this.emailService = emailService;
+    public MailHandler(MailClient mailClient) {
+        this.mailClient = mailClient;
     }
 
     public Mono<ServerResponse> send(ServerRequest request) {
         return request.formData()
             .log()
             .map(this::formToMessage)
-            .flatMap(emailService::send)
+            .flatMap(mailClient::send)
             .flatMap(result -> noContent().build());
     }
 
     private MailMessage formToMessage(MultiValueMap<String, String> form) {
-        return new MailMessage()
+        return new SimpleMailMessage()
             .setFrom(form.getFirst("from"))
-            .setTo(form.getFirst("to"))
+            .setTo(form.get("to"))
             .setSubject(form.getFirst("subject"))
             .setText(form.getFirst("text"));
     }
