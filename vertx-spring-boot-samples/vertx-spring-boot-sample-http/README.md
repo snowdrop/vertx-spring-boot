@@ -6,7 +6,7 @@ This example demonstrates the most basic hello world application with Vert.x Web
 
 Start the application in one terminal window.
 ```bash
-java -jar target/vertx-spring-boot-sample-http-0.0.1-SNAPSHOT.jar 
+java -jar target/vertx-spring-boot-sample-http.jar 
 ```
 
 And access it in another.

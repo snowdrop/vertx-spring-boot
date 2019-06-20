@@ -6,7 +6,7 @@ This example demonstrates how to use Spring security for basic and form authenti
 
 Start the application in a terminal.
 ```bash
-java -jar target/vertx-spring-boot-sample-http-security-0.0.1-SNAPSHOT.jar
+java -jar target/vertx-spring-boot-sample-http-security.jar
 ```
 
 Open http://localhost:8080 in your browser. You should be redirected to a login page. Use user:user credentials to authenticate.

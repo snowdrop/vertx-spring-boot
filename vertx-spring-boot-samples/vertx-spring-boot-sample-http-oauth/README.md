@@ -20,7 +20,7 @@ export GITHUB_CLIENT_SECRET={your client secret}
 
 And start the application.
 ```bash
-java -jar target/vertx-spring-boot-sample-http-oauth-0.0.1-SNAPSHOT.jar 
+java -jar target/vertx-spring-boot-sample-http-oauth.jar 
 ```
 
 Open http://localhost:8080 and you should be redirect to GitHub for authorization.
