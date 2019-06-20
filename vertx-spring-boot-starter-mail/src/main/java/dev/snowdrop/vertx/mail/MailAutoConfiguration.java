@@ -15,14 +15,17 @@ public class MailAutoConfiguration {
 
     @Bean
     public MailClient mailClient(Vertx vertx, MailProperties properties) {
-        return new MailClientImpl(getAxleVertx(vertx), getAxleMailClient(vertx, properties));
+        io.vertx.axle.core.Vertx axleVertx = new io.vertx.axle.core.Vertx(vertx);
+        io.vertx.axle.ext.mail.MailClient axleMailClient =
+            io.vertx.axle.ext.mail.MailClient.createNonShared(axleVertx, properties.getMailConfig());
+
+        return new VertxMailClient(axleMailClient, getMailMessageConverter(axleVertx), new MailResultConverter());
     }
 
-    private io.vertx.axle.core.Vertx getAxleVertx(Vertx vertx) {
-        return new io.vertx.axle.core.Vertx(vertx);
-    }
+    private MailMessageConverter getMailMessageConverter(io.vertx.axle.core.Vertx vertx) {
+        MultiMapConverter multiMapConverter = new MultiMapConverter();
+        MailAttachmentConverter mailAttachmentConverter = new MailAttachmentConverter(vertx, multiMapConverter);
 
-    private io.vertx.axle.ext.mail.MailClient getAxleMailClient(Vertx vertx, MailProperties properties) {
-        return io.vertx.axle.ext.mail.MailClient.createNonShared(getAxleVertx(vertx), properties.getMailConfig());
+        return new MailMessageConverter(mailAttachmentConverter, multiMapConverter);
     }
 }

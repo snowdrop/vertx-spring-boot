@@ -1,9 +1,8 @@
-package dev.snowdrop.vertx.mail.converter;
+package dev.snowdrop.vertx.mail;
 
 import java.io.File;
 import java.util.concurrent.CompletionStage;
 
-import dev.snowdrop.vertx.mail.MailAttachment;
 import io.vertx.axle.core.Vertx;
 import io.vertx.axle.core.file.AsyncFile;
 import io.vertx.core.buffer.Buffer;
@@ -14,18 +13,18 @@ import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-final class MailAttachmentConverter {
+class MailAttachmentConverter {
 
     private final Vertx vertx;
 
     private final MultiMapConverter multiMapConverter;
 
-    MailAttachmentConverter(Vertx vertx) {
+    MailAttachmentConverter(Vertx vertx, MultiMapConverter multiMapConverter) {
         this.vertx = vertx;
-        this.multiMapConverter = new MultiMapConverter();
+        this.multiMapConverter = multiMapConverter;
     }
 
-    public Mono<io.vertx.ext.mail.MailAttachment> toVertxMailAttachment(MailAttachment attachment) {
+    Mono<io.vertx.ext.mail.MailAttachment> toVertxMailAttachment(MailAttachment attachment) {
         io.vertx.ext.mail.MailAttachment delegateAttachment = new io.vertx.ext.mail.MailAttachment();
         delegateAttachment.setName(attachment.getName());
         delegateAttachment.setContentType(attachment.getContentType());

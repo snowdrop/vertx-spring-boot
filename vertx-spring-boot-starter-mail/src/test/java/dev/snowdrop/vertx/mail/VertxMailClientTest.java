@@ -33,7 +33,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MailClientImplTest {
+public class VertxMailClientTest {
 
     @Mock
     private io.vertx.axle.ext.mail.MailClient mockAxleMailClient;
@@ -52,7 +52,14 @@ public class MailClientImplTest {
         given(mockAxleMailClient.sendMail(any())).willReturn(CompletableFuture.completedFuture(vertxResult));
 
         vertx = Vertx.vertx();
-        mailClient = new MailClientImpl(vertx, mockAxleMailClient);
+
+        MultiMapConverter multiMapConverter = new MultiMapConverter();
+        MailAttachmentConverter mailAttachmentConverter = new MailAttachmentConverter(vertx, multiMapConverter);
+        MailMessageConverter mailMessageConverter =
+            new MailMessageConverter(mailAttachmentConverter, multiMapConverter);
+        MailResultConverter mailResultConverter = new MailResultConverter();
+
+        mailClient = new VertxMailClient(mockAxleMailClient, mailMessageConverter, mailResultConverter);
     }
 
     @Test

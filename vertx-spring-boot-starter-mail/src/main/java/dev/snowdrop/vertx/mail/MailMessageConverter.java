@@ -1,25 +1,23 @@
-package dev.snowdrop.vertx.mail.converter;
+package dev.snowdrop.vertx.mail;
 
 import java.util.List;
 
-import dev.snowdrop.vertx.mail.MailMessage;
-import io.vertx.axle.core.Vertx;
 import io.vertx.ext.mail.MailAttachment;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public final class MailMessageConverter {
+class MailMessageConverter {
 
     private final MailAttachmentConverter mailAttachmentConverter;
 
     private final MultiMapConverter multiMapConverter;
 
-    public MailMessageConverter(Vertx vertx) {
-        this.mailAttachmentConverter = new MailAttachmentConverter(vertx);
-        this.multiMapConverter = new MultiMapConverter();
+    MailMessageConverter(MailAttachmentConverter mailAttachmentConverter, MultiMapConverter multiMapConverter) {
+        this.mailAttachmentConverter = mailAttachmentConverter;
+        this.multiMapConverter = multiMapConverter;
     }
 
-    public Mono<io.vertx.ext.mail.MailMessage> toVertxMailMessage(MailMessage message) {
+    Mono<io.vertx.ext.mail.MailMessage> toVertxMailMessage(MailMessage message) {
         io.vertx.ext.mail.MailMessage delegateMessage = new io.vertx.ext.mail.MailMessage();
         delegateMessage.setBounceAddress(message.getBounceAddress());
         delegateMessage.setFrom(message.getFrom());

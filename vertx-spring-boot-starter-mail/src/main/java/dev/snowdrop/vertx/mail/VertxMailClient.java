@@ -1,11 +1,8 @@
 package dev.snowdrop.vertx.mail;
 
-import dev.snowdrop.vertx.mail.converter.MailMessageConverter;
-import dev.snowdrop.vertx.mail.converter.MailResultConverter;
-import io.vertx.axle.core.Vertx;
 import reactor.core.publisher.Mono;
 
-class MailClientImpl implements MailClient {
+class VertxMailClient implements MailClient {
 
     private final io.vertx.axle.ext.mail.MailClient delegate;
 
@@ -13,10 +10,11 @@ class MailClientImpl implements MailClient {
 
     private final MailResultConverter mailResultConverter;
 
-    MailClientImpl(Vertx vertx, io.vertx.axle.ext.mail.MailClient delegate) {
+    VertxMailClient(io.vertx.axle.ext.mail.MailClient delegate, MailMessageConverter mailMessageConverter,
+        MailResultConverter mailResultConverter) {
         this.delegate = delegate;
-        this.mailMessageConverter = new MailMessageConverter(vertx);
-        this.mailResultConverter = new MailResultConverter();
+        this.mailMessageConverter = mailMessageConverter;
+        this.mailResultConverter = mailResultConverter;
     }
 
     @Override

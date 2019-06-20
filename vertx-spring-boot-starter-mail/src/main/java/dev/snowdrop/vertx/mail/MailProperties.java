@@ -6,7 +6,7 @@ import io.vertx.ext.mail.StartTLSOptions;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = MailProperties.PROPERTIES_PREFIX)
-public class MailProperties {
+class MailProperties {
 
     static final String PROPERTIES_PREFIX = "vertx.mail";
 

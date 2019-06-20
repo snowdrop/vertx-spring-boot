@@ -2,13 +2,13 @@ package dev.snowdrop.vertx.mail;
 
 import java.util.List;
 
-public class SimpleMailResult implements MailResult {
+class SimpleMailResult implements MailResult {
 
     private final String messageId;
 
     private final List<String> recipients;
 
-    public SimpleMailResult(String messageId, List<String> recipients) {
+    SimpleMailResult(String messageId, List<String> recipients) {
         this.messageId = messageId;
         this.recipients = recipients;
     }
