@@ -6,6 +6,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -252,6 +253,44 @@ public class HttpIT extends TestBase {
             );
     }
 
+    /**
+     * TODO https://github.com/snowdrop/vertx-spring-boot/issues/1
+     *
+     * In this scenario only one client connection is allowed to be open at a single time. With a correct behaviour
+     * first step verifier's cancellation would allow second step verifier to successfully subscribe and receive SSE
+     * data. However, because of https://github.com/snowdrop/vertx-spring-boot/issues/1 client connection is maintained
+     * even after step verifier cancels.
+     */
+    @Ignore
+    @Test
+    public void testClientWithInfiniteSse() {
+        Properties properties = new Properties();
+        properties.setProperty("vertx.http.client.max-pool-size", "1");
+        startServerWithoutSecurity(properties, InfiniteSseController.class);
+
+        Flux<Long> firstFlux = getWebClient()
+            .get()
+            .retrieve()
+            .bodyToFlux(Long.class)
+            .log("first client");
+        Flux<Long> secondFlux = getWebClient()
+            .get()
+            .retrieve()
+            .bodyToFlux(Long.class)
+            .log("second client");
+
+        StepVerifier.create(firstFlux)
+            .expectNext(0L)
+            .expectNext(1L)
+            .thenCancel()
+            .verify();
+        StepVerifier.create(secondFlux)
+            .expectNext(0L)
+            .expectNext(1L)
+            .thenCancel()
+            .verify();
+    }
+
     @Test
     public void testExceptionHandler() {
         startServerWithoutSecurity(ExceptionController.class);
@@ -439,6 +478,15 @@ public class HttpIT extends TestBase {
                 .map(s -> ServerSentEvent.<String>builder()
                     .data(s)
                     .build());
+        }
+    }
+
+    @RestController
+    static class InfiniteSseController {
+        @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+        public Flux<Long> infiniteSse() {
+            return Flux.interval(Duration.ofSeconds(1))
+                .log(InfiniteSseController.class.getSimpleName());
         }
     }
 
