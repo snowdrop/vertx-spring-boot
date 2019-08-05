@@ -2,10 +2,7 @@ package dev.snowdrop.vertx.http.client;
 
 import java.util.Collection;
 
-import dev.snowdrop.vertx.http.common.ReadStreamFluxBuilder;
-import dev.snowdrop.vertx.http.utils.BufferConverter;
 import dev.snowdrop.vertx.http.utils.CookieConverter;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientResponse;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
@@ -20,14 +17,11 @@ public class VertxClientHttpResponse implements ClientHttpResponse {
 
     private final HttpClientResponse delegate;
 
-    private final Flux<DataBuffer> bodyFlux;
+    private final Flux<DataBuffer> body;
 
-    public VertxClientHttpResponse(HttpClientResponse delegate, BufferConverter bufferConverter) {
+    public VertxClientHttpResponse(HttpClientResponse delegate, Flux<DataBuffer> body) {
         this.delegate = delegate;
-        this.bodyFlux = new ReadStreamFluxBuilder<Buffer, DataBuffer>()
-            .readStream(delegate)
-            .dataConverter(bufferConverter::toDataBuffer)
-            .build();
+        this.body = body;
     }
 
     @Override
@@ -42,7 +36,7 @@ public class VertxClientHttpResponse implements ClientHttpResponse {
 
     @Override
     public Flux<DataBuffer> getBody() {
-        return bodyFlux;
+        return body;
     }
 
     @Override

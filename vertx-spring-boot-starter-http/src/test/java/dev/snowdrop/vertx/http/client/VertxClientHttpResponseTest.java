@@ -2,87 +2,59 @@ package dev.snowdrop.vertx.http.client;
 
 import java.util.Arrays;
 
-import dev.snowdrop.vertx.http.utils.BufferConverter;
-import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.impl.headers.VertxHttpHeaders;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import reactor.core.publisher.Flux;
-import reactor.test.StepVerifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 @RunWith(MockitoJUnitRunner.class)
 public class VertxClientHttpResponseTest {
 
     @Mock
-    private HttpClientResponse mockHttpClientResponse;
-
-    private BufferConverter bufferConverter;
-
-    private VertxClientHttpResponse vertxClientHttpResponse;
-
-    @Before
-    public void setUp() {
-        bufferConverter = new BufferConverter();
-        vertxClientHttpResponse = new VertxClientHttpResponse(mockHttpClientResponse, bufferConverter);
-    }
+    private HttpClientResponse mockDelegate;
 
     @Test
     public void shouldGetRawStatus() {
-        given(mockHttpClientResponse.statusCode()).willReturn(200);
+        given(mockDelegate.statusCode()).willReturn(200);
 
-        int code = vertxClientHttpResponse.getRawStatusCode();
+        VertxClientHttpResponse response = new VertxClientHttpResponse(mockDelegate, Flux.empty());
+        int code = response.getRawStatusCode();
 
         assertThat(code).isEqualTo(200);
     }
 
     @Test
     public void shouldGetStatusCode() {
-        given(mockHttpClientResponse.statusCode()).willReturn(200);
+        given(mockDelegate.statusCode()).willReturn(200);
 
-        HttpStatus status = vertxClientHttpResponse.getStatusCode();
+        VertxClientHttpResponse response = new VertxClientHttpResponse(mockDelegate, Flux.empty());
+        HttpStatus status = response.getStatusCode();
 
         assertThat(status).isEqualTo(HttpStatus.OK);
     }
 
     @Test
-    public void shouldGetBodyChunks() {
-        Buffer firstBuffer = Buffer.buffer("chunk 1");
-        Buffer secondBuffer = Buffer.buffer("chunk 2");
-        given(mockHttpClientResponse.exceptionHandler(any())).willReturn(mockHttpClientResponse);
-        given(mockHttpClientResponse.handler(any())).will(invocation -> {
-            Handler<Buffer> handler = invocation.getArgument(0);
-            handler.handle(firstBuffer);
-            handler.handle(secondBuffer);
-            return mockHttpClientResponse;
-        });
-        given(mockHttpClientResponse.endHandler(any())).will(invocation -> {
-            Handler<Void> handler = invocation.getArgument(0);
-            handler.handle(null);
-            return mockHttpClientResponse;
-        });
+    public void shouldGetBody() {
+        DataBufferFactory factory = new DefaultDataBufferFactory();
+        Flux<DataBuffer> body = Flux.just(factory.wrap("first".getBytes()), factory.wrap("second".getBytes()));
 
-        Flux<DataBuffer> bodyPublisher = vertxClientHttpResponse.getBody();
-
-        StepVerifier.create(bodyPublisher)
-            .expectNext(bufferConverter.toDataBuffer(firstBuffer))
-            .expectNext(bufferConverter.toDataBuffer(secondBuffer))
-            .verifyComplete();
+        VertxClientHttpResponse response = new VertxClientHttpResponse(mockDelegate, body);
+        assertThat(response.getBody()).isEqualTo(body);
     }
 
     @Test
@@ -91,14 +63,15 @@ public class VertxClientHttpResponseTest {
             .add("key1", "value1")
             .add("key1", "value2")
             .add("key2", "value3");
-        given(mockHttpClientResponse.headers()).willReturn(originalHeaders);
+        given(mockDelegate.headers()).willReturn(originalHeaders);
 
         HttpHeaders expectedHeaders = new HttpHeaders();
         expectedHeaders.add("key1", "value1");
         expectedHeaders.add("key1", "value2");
         expectedHeaders.add("key2", "value3");
 
-        HttpHeaders actualHeaders = vertxClientHttpResponse.getHeaders();
+        VertxClientHttpResponse response = new VertxClientHttpResponse(mockDelegate, Flux.empty());
+        HttpHeaders actualHeaders = response.getHeaders();
 
         assertThat(actualHeaders).isEqualTo(expectedHeaders);
     }
@@ -115,14 +88,15 @@ public class VertxClientHttpResponseTest {
             .secure(true)
             .build();
 
-        given(mockHttpClientResponse.cookies()).willReturn(
+        given(mockDelegate.cookies()).willReturn(
             Arrays.asList(simpleCookie.toString(), complexCookie.toString()));
 
         MultiValueMap<String, ResponseCookie> expectedCookies = new LinkedMultiValueMap<>();
         expectedCookies.add(simpleCookie.getName(), simpleCookie);
         expectedCookies.add(complexCookie.getName(), complexCookie);
 
-        MultiValueMap<String, ResponseCookie> actualCookies = vertxClientHttpResponse.getCookies();
+        VertxClientHttpResponse response = new VertxClientHttpResponse(mockDelegate, Flux.empty());
+        MultiValueMap<String, ResponseCookie> actualCookies = response.getCookies();
 
         assertThat(actualCookies).isEqualTo(expectedCookies);
     }

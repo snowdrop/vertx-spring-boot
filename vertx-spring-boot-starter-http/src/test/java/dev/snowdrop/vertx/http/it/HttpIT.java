@@ -253,15 +253,6 @@ public class HttpIT extends TestBase {
             );
     }
 
-    /**
-     * TODO https://github.com/snowdrop/vertx-spring-boot/issues/1
-     *
-     * In this scenario only one client connection is allowed to be open at a single time. With a correct behaviour
-     * first step verifier's cancellation would allow second step verifier to successfully subscribe and receive SSE
-     * data. However, because of https://github.com/snowdrop/vertx-spring-boot/issues/1 client connection is maintained
-     * even after step verifier cancels.
-     */
-    @Ignore
     @Test
     public void testClientWithInfiniteSse() {
         Properties properties = new Properties();
