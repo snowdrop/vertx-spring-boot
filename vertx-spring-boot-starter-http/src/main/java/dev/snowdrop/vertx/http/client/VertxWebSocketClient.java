@@ -9,7 +9,6 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.http.impl.headers.VertxHttpHeaders;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.Assert;
 import org.springframework.web.reactive.socket.HandshakeInfo;
@@ -18,32 +17,25 @@ import org.springframework.web.reactive.socket.client.WebSocketClient;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
 
-public class VertxWebSocketClient implements WebSocketClient, DisposableBean {
+public class VertxWebSocketClient implements WebSocketClient {
 
-    private final boolean internalClient;
+    private final Vertx vertx;
 
-    private final HttpClient httpClient;
+    private final HttpClientOptions clientOptions;
 
     private final BufferConverter bufferConverter;
 
     public VertxWebSocketClient(Vertx vertx) {
         Assert.notNull(vertx, "Vertx is required");
-        this.internalClient = true;
-        this.httpClient = vertx.createHttpClient();
+        this.vertx = vertx;
+        this.clientOptions = new HttpClientOptions();
         this.bufferConverter = new BufferConverter();
     }
 
     public VertxWebSocketClient(Vertx vertx, HttpClientOptions options) {
         Assert.notNull(vertx, "Vertx is required");
-        this.internalClient = true;
-        this.httpClient = vertx.createHttpClient(options);
-        this.bufferConverter = new BufferConverter();
-    }
-
-    public VertxWebSocketClient(HttpClient httpClient) {
-        Assert.notNull(httpClient, "HttpClient is required");
-        this.internalClient = false;
-        this.httpClient = httpClient;
+        this.vertx = vertx;
+        this.clientOptions = options;
         this.bufferConverter = new BufferConverter();
     }
 
@@ -59,18 +51,13 @@ public class VertxWebSocketClient implements WebSocketClient, DisposableBean {
         return Mono.create(sink -> connect(uri, vertxHeaders, handler, sink));
     }
 
-    @Override
-    public void destroy() {
-        if (internalClient) {
-            httpClient.close();
-        }
-    }
-
     private void connect(URI uri, VertxHttpHeaders headers, WebSocketHandler handler, MonoSink<Void> callback) {
-        httpClient.websocket(uri.getPort(), uri.getHost(), uri.getPath(), headers,
+        HttpClient client = vertx.createHttpClient(clientOptions);
+        client.websocket(uri.getPort(), uri.getHost(), uri.getPath(), headers,
             socket -> handler.handle(initSession(uri, socket))
                 .doOnSuccess(callback::success)
                 .doOnError(callback::error)
+                .doFinally(ignore -> client.close())
                 .subscribe(),
             callback::error
         );

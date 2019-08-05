@@ -9,6 +9,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.http.impl.headers.VertxHttpHeaders;
 import org.junit.Before;
@@ -28,7 +29,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 
 @RunWith(MockitoJUnitRunner.class)
 public class VertxWebSocketClientTest {
@@ -56,17 +56,18 @@ public class VertxWebSocketClientTest {
                 handler.handle(mockWebSocket);
                 return mockHttpClient;
             });
+        given(mockVertx.createHttpClient(any(HttpClientOptions.class))).willReturn(mockHttpClient);
 
-        webSocketClient = new VertxWebSocketClient(mockHttpClient);
+        webSocketClient = new VertxWebSocketClient(mockVertx);
     }
 
     @Test
-    public void shouldNotAcceptNullHttpClient() {
+    public void shouldNotAcceptNullVertx() {
         try {
-            new VertxWebSocketClient((HttpClient) null);
+            new VertxWebSocketClient(null);
             fail("IllegalArgumentException expected");
         } catch (IllegalArgumentException e) {
-            assertThat(e).hasMessage("HttpClient is required");
+            assertThat(e).hasMessage("Vertx is required");
         }
     }
 
@@ -130,22 +131,5 @@ public class VertxWebSocketClientTest {
     public void shouldCompleteWithError() {
         webSocketClient.execute(TEST_URI, session -> Mono.error(RuntimeException::new))
             .block(Duration.ofSeconds(2));
-    }
-
-    @Test
-    public void shouldDestroyInternalClient() {
-        given(mockVertx.createHttpClient()).willReturn(mockHttpClient);
-
-        webSocketClient = new VertxWebSocketClient(mockVertx);
-        webSocketClient.destroy();
-
-        verify(mockHttpClient).close();
-    }
-
-    @Test
-    public void shouldNotDestroyProvidedClient() {
-        webSocketClient.destroy();
-
-        verifyZeroInteractions(mockHttpClient);
     }
 }
