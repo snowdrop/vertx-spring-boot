@@ -28,5 +28,6 @@
     <module>vertx-spring-boot-sample-http-security</module>
     <module>vertx-spring-boot-sample-mail</module>
     <module>vertx-spring-boot-sample-sse</module>
+    <module>vertx-spring-boot-sample-amqp</module>
   </modules>
 </project>
