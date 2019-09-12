@@ -1,12 +1,13 @@
 package dev.snowdrop.vertx.http.server;
 
 import java.nio.file.Path;
+import java.util.List;
 
+import dev.snowdrop.vertx.http.common.WriteStreamSubscriber;
 import dev.snowdrop.vertx.http.utils.BufferConverter;
 import dev.snowdrop.vertx.http.utils.CookieConverter;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
-import dev.snowdrop.vertx.http.common.WriteStreamSubscriber;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.slf4j.Logger;
@@ -99,9 +100,9 @@ public class VertxServerHttpResponse extends AbstractServerHttpResponse implemen
     @Override
     protected void applyCookies() {
         getCookies()
-            .toSingleValueMap() // Vert.x doesn't support multi-value cookies
             .values()
             .stream()
+            .flatMap(List::stream)
             .map(CookieConverter::toCookie)
             .forEach(context::addCookie);
     }

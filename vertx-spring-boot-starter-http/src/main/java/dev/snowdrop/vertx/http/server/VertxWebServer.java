@@ -8,7 +8,6 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.CookieHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.server.WebServer;
@@ -41,7 +40,6 @@ public class VertxWebServer implements WebServer {
 
         Router router = Router.router(vertx);
         router.route()
-            .handler(CookieHandler.create())
             .handler(requestHandler);
 
         server = vertx

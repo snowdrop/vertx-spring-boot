@@ -10,9 +10,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.impl.headers.VertxHttpHeaders;
-import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -166,43 +166,63 @@ public class VertxServerHttpResponseTest {
 
     @Test
     public void shouldApplyCookies() {
-        ResponseCookie firstCookie = ResponseCookie.from("cookie1", "value1")
-            .domain("domain1")
-            .path("path1")
-            .maxAge(1)
-            .httpOnly(true)
-            .secure(true)
-            .build();
-        ResponseCookie secondCookie = ResponseCookie.from("cookie2", "value2")
-            .domain("domain2")
-            .path("path2")
-            .maxAge(2)
-            .httpOnly(false)
-            .secure(false)
-            .build();
+        response.addCookie(
+            ResponseCookie.from("cookie1", "value1")
+                .domain("domain1")
+                .path("path1")
+                .maxAge(1)
+                .httpOnly(true)
+                .secure(true)
+                .build()
+        );
+        response.addCookie(
+            ResponseCookie.from("cookie1", "value2")
+                .domain("domain1")
+                .path("path1")
+                .maxAge(1)
+                .httpOnly(true)
+                .secure(true)
+                .build()
+        );
+        response.addCookie(
+            ResponseCookie.from("cookie2", "value3")
+                .domain("domain2")
+                .path("path2")
+                .maxAge(2)
+                .httpOnly(false)
+                .secure(false)
+                .build()
+        );
 
-        response.addCookie(firstCookie);
-        response.addCookie(secondCookie);
         response.applyCookies();
-
-        Cookie expectedFirstCookie = Cookie.cookie("cookie1", "value1")
-            .setDomain("domain1")
-            .setPath("path1")
-            .setMaxAge(1)
-            .setHttpOnly(true)
-            .setSecure(true);
-        Cookie expectedSecondCookie = Cookie.cookie("cookie2", "value2")
-            .setDomain("domain2")
-            .setPath("path2")
-            .setMaxAge(2)
-            .setHttpOnly(false)
-            .setSecure(false);
 
         // Cookie implementation doesn't override equals, so need to work around to be able to assert values
         ArgumentCaptor<Cookie> cookieCaptor = ArgumentCaptor.forClass(Cookie.class);
-        verify(mockRoutingContext, times(2)).addCookie(cookieCaptor.capture());
+        verify(mockRoutingContext, times(3)).addCookie(cookieCaptor.capture());
 
-        assertThat(cookieCaptor.getAllValues().get(0)).isEqualToComparingFieldByField(expectedFirstCookie);
-        assertThat(cookieCaptor.getAllValues().get(1)).isEqualToComparingFieldByField(expectedSecondCookie);
+        assertThat(cookieCaptor.getAllValues().get(0)).isEqualToComparingFieldByField(
+            Cookie.cookie("cookie1", "value1")
+                .setDomain("domain1")
+                .setPath("path1")
+                .setMaxAge(1)
+                .setHttpOnly(true)
+                .setSecure(true)
+        );
+        assertThat(cookieCaptor.getAllValues().get(1)).isEqualToComparingFieldByField(
+            Cookie.cookie("cookie1", "value2")
+                .setDomain("domain1")
+                .setPath("path1")
+                .setMaxAge(1)
+                .setHttpOnly(true)
+                .setSecure(true)
+        );
+        assertThat(cookieCaptor.getAllValues().get(2)).isEqualToComparingFieldByField(
+            Cookie.cookie("cookie2", "value3")
+                .setDomain("domain2")
+                .setPath("path2")
+                .setMaxAge(2)
+                .setHttpOnly(false)
+                .setSecure(false)
+        );
     }
 }

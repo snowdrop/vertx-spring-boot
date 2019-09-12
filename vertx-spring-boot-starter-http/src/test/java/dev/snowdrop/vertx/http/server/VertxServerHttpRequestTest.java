@@ -3,19 +3,19 @@ package dev.snowdrop.vertx.http.server;
 import java.net.InetSocketAddress;
 import java.util.AbstractMap;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.net.ssl.SSLSession;
 
 import dev.snowdrop.vertx.http.utils.BufferConverter;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.impl.headers.VertxHttpHeaders;
 import io.vertx.core.net.SocketAddress;
-import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -106,11 +106,11 @@ public class VertxServerHttpRequestTest {
 
     @Test
     public void shouldInitCookies() {
-        Set<Cookie> originalCookies = new HashSet<>(2);
-        originalCookies.add(Cookie.cookie("cookie1", "value1"));
-        originalCookies.add(Cookie.cookie("cookie2", "value2"));
+        Map<String, Cookie> originalCookies = new HashMap<>(2);
+        originalCookies.put("cookie1", Cookie.cookie("cookie1", "value1"));
+        originalCookies.put("cookie2", Cookie.cookie("cookie2", "value2"));
 
-        given(mockRoutingContext.cookies()).willReturn(originalCookies);
+        given(mockRoutingContext.cookieMap()).willReturn(originalCookies);
 
         assertThat(vertxServerHttpRequest.initCookies()).containsOnly(
             new AbstractMap.SimpleEntry<>("cookie1", Collections.singletonList(new HttpCookie("cookie1", "value1"))),

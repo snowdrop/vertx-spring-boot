@@ -66,7 +66,8 @@ public class VertxServerHttpRequest extends AbstractServerHttpRequest {
     protected MultiValueMap<String, HttpCookie> initCookies() {
         MultiValueMap<String, HttpCookie> cookies = new LinkedMultiValueMap<>();
 
-        context.cookies()
+        context.cookieMap()
+            .values()
             .stream()
             .map(CookieConverter::toHttpCookie)
             .forEach(cookie -> cookies.add(cookie.getName(), cookie));

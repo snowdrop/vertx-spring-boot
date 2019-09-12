@@ -3,7 +3,7 @@ package dev.snowdrop.vertx.http.utils;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.vertx.ext.web.Cookie;
+import io.vertx.core.http.Cookie;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.ResponseCookie;
 
