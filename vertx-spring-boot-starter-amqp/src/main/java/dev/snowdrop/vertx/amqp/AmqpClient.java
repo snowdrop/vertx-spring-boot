@@ -1,7 +1,5 @@
 package dev.snowdrop.vertx.amqp;
 
-import java.util.function.Consumer;
-
 import reactor.core.publisher.Mono;
 
 public interface AmqpClient {
@@ -10,12 +8,11 @@ public interface AmqpClient {
 
     Mono<AmqpSender> createSender(String address);
 
+    Mono<AmqpSender> createSender(String address, AmqpSenderOptions options);
+
     Mono<AmqpReceiver> createReceiver(String address);
 
-    Mono<AmqpReceiver> createReceiver(String address, Consumer<AmqpMessage> messageHandler);
-
-    Mono<AmqpReceiver> createReceiver(String address, AmqpReceiverOptions options,
-        Consumer<AmqpMessage> messageHandler);
+    Mono<AmqpReceiver> createReceiver(String address, AmqpReceiverOptions options);
 
     Mono<Void> close();
 }

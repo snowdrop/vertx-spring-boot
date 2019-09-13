@@ -16,10 +16,7 @@ public interface AmqpConnection {
 
     Mono<AmqpReceiver> createReceiver(String address);
 
-    Mono<AmqpReceiver> createReceiver(String address, Consumer<AmqpMessage> messageHandler);
-
-    Mono<AmqpReceiver> createReceiver(String address, AmqpReceiverOptions options,
-        Consumer<AmqpMessage> messageHandler);
+    Mono<AmqpReceiver> createReceiver(String address, AmqpReceiverOptions options);
 
     Mono<AmqpReceiver> createDynamicReceiver();
 

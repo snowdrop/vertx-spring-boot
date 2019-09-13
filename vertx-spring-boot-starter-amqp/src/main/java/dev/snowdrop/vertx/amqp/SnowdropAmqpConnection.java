@@ -1,6 +1,5 @@
 package dev.snowdrop.vertx.amqp;
 
-import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
 import reactor.core.publisher.Mono;
@@ -47,24 +46,9 @@ class SnowdropAmqpConnection implements AmqpConnection {
     }
 
     @Override
-    public Mono<AmqpReceiver> createReceiver(String address, Consumer<AmqpMessage> messageHandler) {
-        CompletionStage<AmqpReceiver> future = delegate
-            .createReceiver(address, message -> messageHandler.accept(messageConverter.toSnowdropMessage(message)))
-            .thenApply(delegateReceiver -> new SnowdropAmqpReceiver(delegateReceiver, messageConverter));
-
-        return Mono.fromCompletionStage(future);
-    }
-
-    @Override
-    public Mono<AmqpReceiver> createReceiver(String address, AmqpReceiverOptions options,
-        Consumer<AmqpMessage> messageHandler) {
-
-        CompletionStage<AmqpReceiver> future = delegate
-            .createReceiver(address, options.toVertxAmqpReceiverOptions(),
-                message -> messageHandler.accept(messageConverter.toSnowdropMessage(message)))
-            .thenApply(delegateReceiver -> new SnowdropAmqpReceiver(delegateReceiver, messageConverter));
-
-        return Mono.fromCompletionStage(future);
+    public Mono<AmqpReceiver> createReceiver(String address, AmqpReceiverOptions options) {
+        return Mono.fromCompletionStage(delegate.createReceiver(address, options.toVertxAmqpReceiverOptions()))
+            .map(delegateReceiver -> new SnowdropAmqpReceiver(delegateReceiver, messageConverter));
     }
 
     @Override
