@@ -7,12 +7,12 @@ This monolithic application is divided into two logical services which communica
 
 Submitting message for processing
 ```
-POST request > controller > processor client > AMQP broker > uppercase processor > AMQP broker > processor client
+POST request > controller > messages manager > AMQP broker > uppercase processor > AMQP broker > messages manager
 ``` 
 
 Receiving processed messages
 ```
-GET request > controller > processor client > controller > GET response
+GET request > controller > messages manager > controller > GET response
 ```   
 
 ### Usage
