@@ -104,6 +104,11 @@
         <version>${smallrye-axle.version}</version>
       </dependency>
       <dependency>
+        <groupId>io.smallrye.reactive</groupId>
+        <artifactId>smallrye-axle-pg-client</artifactId>
+        <version>${smallrye-axle.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.awaitility</groupId>
         <artifactId>awaitility</artifactId>
         <version>${awaitility.version}</version>
@@ -259,5 +264,6 @@
     <module>vertx-spring-boot-starter-http-test</module>
     <module>vertx-spring-boot-starter-mail</module>
     <module>vertx-spring-boot-starter-amqp</module>
+    <module>vertx-spring-boot-starter-postgres</module>
   </modules>
 </project>
