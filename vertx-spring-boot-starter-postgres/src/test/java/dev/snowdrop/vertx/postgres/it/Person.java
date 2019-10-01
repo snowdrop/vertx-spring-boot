@@ -11,6 +11,12 @@ public class Person {
 
     private int age;
 
+    public Person(String id, String name, int age) {
+        this.id = id;
+        this.name = name;
+        this.age = age;
+    }
+
     public String getId() {
         return id;
     }

@@ -105,6 +105,13 @@ public class ReactivePostgresTemplateIT {
             .verifyComplete();
     }
 
+    @Test
+    public void shouldSaveEntity() {
+        Person person = new Person("1", "Jonas", 30);
+        StepVerifier.create(template.save(person))
+            .verifyComplete();
+    }
+
     private boolean isDatabaseAvailable() {
         try {
             template.query("SELECT NOW()")
