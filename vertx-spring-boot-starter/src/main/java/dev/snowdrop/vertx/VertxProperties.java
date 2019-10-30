@@ -17,7 +17,7 @@ public class VertxProperties {
 
     /**
      * A number of event loop threads to be used by the Vert.x instance.
-     *
+     * <p>
      * Default: 2 * available processors.
      *
      * @see VertxOptions#getEventLoopPoolSize()
@@ -27,7 +27,7 @@ public class VertxProperties {
     /**
      * A maximum number of worker threads to be used by the Vert.x instance.
      * Worker threads are used for running blocking code and worker verticles.
-     *
+     * <p>
      * Default: 20
      *
      * @see VertxOptions#getWorkerPoolSize()
@@ -37,7 +37,7 @@ public class VertxProperties {
     /**
      * An internal blocking pool size.
      * Vert.x maintains a pool for internal blocking operations
-     *
+     * <p>
      * Default: 20
      *
      * @see VertxOptions#getWorkerPoolSize()
@@ -47,7 +47,7 @@ public class VertxProperties {
     /**
      * A blocked thread check period, in {@link VertxProperties#blockedThreadCheckIntervalUnit}.
      * This setting determines how often Vert.x will check whether event loop threads are executing for too long.
-     *
+     * <p>
      * Default: 1000ms
      *
      * @see VertxOptions#getBlockedThreadCheckInterval()
@@ -59,7 +59,7 @@ public class VertxProperties {
      * Vert.x will automatically log a warning if it detects that event loop threads haven't returned within this time.
      * This can be used to detect where the user is blocking an event loop thread, contrary to the Golden Rule of the
      * holy Event Loop.
-     *
+     * <p>
      * Default: 2000000000ns (2s)
      *
      * @see VertxOptions#getMaxEventLoopExecuteTime()
@@ -71,7 +71,7 @@ public class VertxProperties {
      * Vert.x will automatically log a warning if it detects that worker threads haven't returned within this time.
      * This can be used to detect where the user is blocking a worker thread for too long. Although worker threads
      * can be blocked longer than event loop threads, they shouldn't be blocked for long periods of time.
-     *
+     * <p>
      * Default: 60000000000ns (60s)
      *
      * @see VertxOptions#getMaxWorkerExecuteTime()
@@ -80,7 +80,7 @@ public class VertxProperties {
 
     /**
      * Whether HA is enabled on the Vert.x instance.
-     *
+     * <p>
      * Default: false
      *
      * @see VertxOptions#isHAEnabled()
@@ -89,7 +89,7 @@ public class VertxProperties {
 
     /**
      * A quorum size to be used when HA is enabled.
-     *
+     * <p>
      * Default: 1
      *
      * @see VertxOptions#getQuorumSize()
@@ -98,7 +98,7 @@ public class VertxProperties {
 
     /**
      * An HA group to be used when HA is enabled.
-     *
+     * <p>
      * Default: __DEFAULT__
      *
      * @see VertxOptions#getHAGroup()
@@ -107,7 +107,7 @@ public class VertxProperties {
 
     /**
      * A threshold value in {@link VertxProperties#warningExceptionTimeUnit} above which a blocked warning contains a stack trace.
-     *
+     * <p>
      * Default: 5000000000ns (5s)
      *
      * @see VertxOptions#getWarningExceptionTime()
@@ -116,7 +116,7 @@ public class VertxProperties {
 
     /**
      * Whether to prefer the native transport to the JDK transport.
-     *
+     * <p>
      * Default: false
      *
      * @see VertxOptions#getPreferNativeTransport()
@@ -125,7 +125,7 @@ public class VertxProperties {
 
     /**
      * A time unit of {@link VertxProperties#maxEventLoopExecuteTime}.
-     *
+     * <p>
      * Default: ns
      *
      * @see VertxOptions#getMaxEventLoopExecuteTimeUnit()
@@ -134,7 +134,7 @@ public class VertxProperties {
 
     /**
      * A time unit of {@link VertxProperties#maxWorkerExecuteTime}.
-     *
+     * <p>
      * Default: ns
      *
      * @see VertxOptions#getMaxWorkerExecuteTimeUnit()
@@ -143,7 +143,7 @@ public class VertxProperties {
 
     /**
      * A time unit of {@link VertxProperties#warningExceptionTime}.
-     *
+     * <p>
      * Default: ns
      *
      * @see VertxOptions#getWarningExceptionTimeUnit()
@@ -152,7 +152,7 @@ public class VertxProperties {
 
     /**
      * A time unit of {@link VertxProperties#blockedThreadCheckInterval}.
-     *
+     * <p>
      * Default: ms
      *
      * @see VertxOptions#getBlockedThreadCheckIntervalUnit()
@@ -161,7 +161,7 @@ public class VertxProperties {
 
     /**
      * Whether metrics are enabled on the Vert.x instance.
-     *
+     * <p>
      * Default: false
      *
      * @see MetricsOptions#isEnabled()
@@ -358,7 +358,7 @@ public class VertxProperties {
 
         /**
          * Whether classpath resolving is enabled.
-         *
+         * <p>
          * Default: {@link FileSystemOptions#DEFAULT_CLASS_PATH_RESOLVING_ENABLED}
          *
          * @see FileSystemOptions#isClassPathResolvingEnabled()
@@ -367,7 +367,7 @@ public class VertxProperties {
 
         /**
          * Whether file caching is enabled for class path resolving.
-         *
+         * <p>
          * Default: {@link FileSystemOptions#DEFAULT_FILE_CACHING_ENABLED}
          *
          * @see FileSystemOptions#isFileCachingEnabled()
@@ -409,7 +409,7 @@ public class VertxProperties {
 
         /**
          * A list of dns servers.
-         *
+         * <p>
          * Default: null
          *
          * @see AddressResolverOptions#getServers()
@@ -418,7 +418,7 @@ public class VertxProperties {
 
         /**
          * Whether an optional record is automatically included in DNS queries.
-         *
+         * <p>
          * Default: true
          *
          * @see AddressResolverOptions#isOptResourceEnabled()
@@ -427,7 +427,7 @@ public class VertxProperties {
 
         /**
          * A cache min TTL in seconds.
-         *
+         * <p>
          * Default: 0
          *
          * @see AddressResolverOptions#getCacheMinTimeToLive()
@@ -436,7 +436,7 @@ public class VertxProperties {
 
         /**
          * A cache max TTL in seconds.
-         *
+         * <p>
          * Default: Integer.MAX_VALUE
          *
          * @see AddressResolverOptions#getCacheMaxTimeToLive()
@@ -445,7 +445,7 @@ public class VertxProperties {
 
         /**
          * A cache negative TTL in seconds.
-         *
+         * <p>
          * Default: 0
          *
          * @see AddressResolverOptions#getCacheNegativeTimeToLive()
@@ -454,7 +454,7 @@ public class VertxProperties {
 
         /**
          * A query timeout in milliseconds.
-         *
+         * <p>
          * Default: 5000
          *
          * @see AddressResolverOptions#getQueryTimeout()
@@ -463,7 +463,7 @@ public class VertxProperties {
 
         /**
          * A maximum number of queries to be sent during a resolution.
-         *
+         * <p>
          * Default: 4
          *
          * @see AddressResolverOptions#getMaxQueries()
@@ -472,7 +472,7 @@ public class VertxProperties {
 
         /**
          * A DNS queries <i>Recursion Desired</i> flag value.
-         *
+         * <p>
          * Default: true
          *
          * @see AddressResolverOptions#getRdFlag()
@@ -481,7 +481,7 @@ public class VertxProperties {
 
         /**
          * A list of search domains.
-         *
+         * <p>
          * Default: null
          *
          * @see AddressResolverOptions#getSearchDomains()
@@ -490,7 +490,7 @@ public class VertxProperties {
 
         /**
          * An ndots value
-         *
+         * <p>
          * Default: {@link AddressResolverOptions#DEFAULT_NDOTS}
          *
          * @see AddressResolverOptions#getNdots()
@@ -499,7 +499,7 @@ public class VertxProperties {
 
         /**
          * Whether a dns server selection uses round robin.
-         *
+         * <p>
          * Default: {@link AddressResolverOptions#DEFAULT_ROTATE_SERVERS}
          *
          * @see AddressResolverOptions#isRotateServers()

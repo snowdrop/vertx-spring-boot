@@ -14,6 +14,9 @@ class MailProperties {
 
     private MailConfig delegate = new MailConfig();
 
+    /**
+     * @return whether mail starter is enabled.
+     */
     public boolean isEnabled() {
         return enabled;
     }
@@ -22,6 +25,12 @@ class MailProperties {
         this.enabled = enabled;
     }
 
+    /**
+     * Get the hostname of the mail server.
+     *
+     * @return hostname
+     * @see MailConfig#getHostname()
+     */
     public String getHost() {
         return delegate.getHostname();
     }
@@ -30,6 +39,12 @@ class MailProperties {
         delegate.setHostname(host);
     }
 
+    /**
+     * Get the port of the mail server.
+     *
+     * @return port
+     * @see MailConfig#getPort()
+     */
     public int getPort() {
         return delegate.getPort();
     }
@@ -38,6 +53,12 @@ class MailProperties {
         delegate.setPort(port);
     }
 
+    /**
+     * Get security (TLS) options. Could be DISABLED, OPTIONAL or REQUIRED.
+     *
+     * @return the security options
+     * @see MailConfig#getStarttls()
+     */
     public String getStartTls() {
         if (delegate.getStarttls() == null) {
             return null;
@@ -52,6 +73,12 @@ class MailProperties {
         }
     }
 
+    /**
+     * Get login options. Could be DISABLED, NONE, REQUIRED or XOAUTH2.
+     *
+     * @return the login options
+     * @see MailConfig#getLogin()
+     */
     public String getLoginOption() {
         if (delegate.getLogin() == null) {
             return null;
@@ -66,6 +93,14 @@ class MailProperties {
         }
     }
 
+    /**
+     * Get string of allowed auth methods, if set only these methods will be used
+     * if the server supports them. If null or empty all supported methods may be
+     * used
+     *
+     * @return the auth methods
+     * @see MailConfig#getAuthMethods()
+     */
     public String getAuthMethods() {
         return delegate.getAuthMethods();
     }
@@ -74,6 +109,12 @@ class MailProperties {
         delegate.setAuthMethods(authMethods);
     }
 
+    /**
+     * Get mail server username
+     *
+     * @return username
+     * @see MailConfig#getUsername()
+     */
     public String getUsername() {
         return delegate.getUsername();
     }
@@ -82,6 +123,12 @@ class MailProperties {
         delegate.setUsername(username);
     }
 
+    /**
+     * Get mail server password
+     *
+     * @return password
+     * @see MailConfig#getPassword()
+     */
     public String getPassword() {
         return delegate.getPassword();
     }
@@ -90,6 +137,10 @@ class MailProperties {
         delegate.setPassword(password);
     }
 
+    /**
+     * @return whether ssl is used on connect
+     * @see MailConfig#isSsl()
+     */
     public boolean isSsl() {
         return delegate.isSsl();
     }
@@ -98,6 +149,10 @@ class MailProperties {
         delegate.setSsl(ssl);
     }
 
+    /**
+     * @return whether to trust all certificates on ssl connect
+     * @see MailConfig#isTrustAll()
+     */
     public boolean isTrustAll() {
         return delegate.isTrustAll();
     }
@@ -106,6 +161,12 @@ class MailProperties {
         delegate.setTrustAll(trustAll);
     }
 
+    /**
+     * Get a key store file name to be used when opening SMTP connections.
+     *
+     * @return key store
+     * @see MailConfig#getKeyStore()
+     */
     public String getKeystore() {
         return delegate.getKeyStore();
     }
@@ -114,6 +175,12 @@ class MailProperties {
         delegate.setKeyStore(keystore);
     }
 
+    /**
+     * Get a key store password to be used when opening SMTP connections.
+     *
+     * @return a key store password
+     * @see MailConfig#getKeyStorePassword()
+     */
     public String getKeystorePassword() {
         return delegate.getKeyStorePassword();
     }
@@ -122,6 +189,12 @@ class MailProperties {
         delegate.setKeyStorePassword(keystorePassword);
     }
 
+    /**
+     * Get a hostname to be used for HELO/EHLO and the Message-ID.
+     *
+     * @return my own hostname
+     * @see MailConfig#getOwnHostname()
+     */
     public String getOwnHostName() {
         return delegate.getOwnHostname();
     }
@@ -130,6 +203,12 @@ class MailProperties {
         delegate.setOwnHostname(ownHostName);
     }
 
+    /**
+     * Get the max allowed number of open connections to the mail server. if not set, the default is 10.
+     *
+     * @return max pool size value
+     * @see MailConfig#getMaxPoolSize()
+     */
     public int getMaxPoolSize() {
         return delegate.getMaxPoolSize();
     }
@@ -138,6 +217,14 @@ class MailProperties {
         delegate.setMaxPoolSize(maxPoolSize);
     }
 
+    /**
+     * Whether connection pool is enabled.
+     * Default: true.
+     * If the connection pooling is disabled, the max number of sockets is enforced nevertheless.
+     *
+     * @return keep alive value
+     * @see MailConfig#isKeepAlive()
+     */
     public boolean isKeepAlive() {
         return delegate.isKeepAlive();
     }
@@ -146,6 +233,13 @@ class MailProperties {
         delegate.setKeepAlive(keepAlive);
     }
 
+    /**
+     * Whether sending allows rcpt errors (default is false).
+     * If true, the mail will be sent to the recipients that the server accepted, if any.
+     *
+     * @return whether sending allows rcpt errors
+     * @see MailConfig#isAllowRcptErrors()
+     */
     public boolean isAllowRcptErrors() {
         return delegate.isAllowRcptErrors();
     }
@@ -154,6 +248,20 @@ class MailProperties {
         delegate.setAllowRcptErrors(allowRcptErrors);
     }
 
+    /**
+     * Whether ESMTP should be tried as first command (EHLO) (default is true)
+     * <p>
+     * rfc 1869 states that clients should always attempt EHLO as first command to determine if ESMTP
+     * is supported, if this returns an error code, HELO is tried to use old SMTP.
+     * If there is a server that does not support EHLO and does not give an error code back, the connection
+     * should be closed and retried with HELO. We do not do that and rather support turning off ESMTP with a
+     * setting. The odds of this actually happening are very small since the client will not connect to arbitrary
+     * smtp hosts on the internet. Since the client knows that is connects to a host that doesn't support ESMTP/EHLO
+     * in that way, the property has to be set to false.
+     *
+     * @return Wwhether ESMTP should be tried as first command
+     * @see MailConfig#isDisableEsmtp()
+     */
     public boolean isDisableEsmtp() {
         return delegate.isDisableEsmtp();
     }

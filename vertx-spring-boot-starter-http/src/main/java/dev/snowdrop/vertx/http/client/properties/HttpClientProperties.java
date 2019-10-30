@@ -31,8 +31,8 @@ public class HttpClientProperties {
     /**
      * Return the TCP send buffer size, in bytes.
      *
-     * @see HttpClientOptions#getSendBufferSize()
      * @return the send buffer size
+     * @see HttpClientOptions#getSendBufferSize()
      */
     public int getSendBufferSize() {
         return delegate.getSendBufferSize();
@@ -45,8 +45,8 @@ public class HttpClientProperties {
     /**
      * Return the TCP receive buffer size, in bytes
      *
-     * @see HttpClientOptions#getReceiveBufferSize()
      * @return the receive buffer size
+     * @see HttpClientOptions#getReceiveBufferSize()
      */
     public int getReceiveBufferSize() {
         return delegate.getReceiveBufferSize();
@@ -57,8 +57,8 @@ public class HttpClientProperties {
     }
 
     /**
+     * @return the value of reuse address
      * @see HttpClientOptions#isReuseAddress()
-     * @return  the value of reuse address
      */
     public boolean isReuseAddress() {
         return delegate.isReuseAddress();
@@ -69,8 +69,8 @@ public class HttpClientProperties {
     }
 
     /**
+     * @return the value of reuse address - only supported by native transports
      * @see HttpClientOptions#isReusePort()
-     * @return  the value of reuse address - only supported by native transports
      */
     public boolean isReusePort() {
         return delegate.isReusePort();
@@ -81,8 +81,8 @@ public class HttpClientProperties {
     }
 
     /**
+     * @return the value of traffic class
      * @see HttpClientOptions#getTrafficClass()
-     * @return  the value of traffic class
      */
     public int getTrafficClass() {
         return delegate.getTrafficClass();
@@ -93,8 +93,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getLogActivity()
      * @return true when network activity logging is enabled
+     * @see HttpClientOptions#getLogActivity()
      */
     public boolean getLogActivity() {
         return delegate.getLogActivity();
@@ -107,8 +107,8 @@ public class HttpClientProperties {
     // Vert.x TCPSSLOptions
 
     /**
-     * @see HttpClientOptions#isTcpNoDelay()
      * @return TCP no delay enabled ?
+     * @see HttpClientOptions#isTcpNoDelay()
      */
     public boolean isTcpNoDelay() {
         return delegate.isTcpNoDelay();
@@ -119,8 +119,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#isTcpKeepAlive()
      * @return is TCP keep alive enabled?
+     * @see HttpClientOptions#isTcpKeepAlive()
      */
     public boolean isTcpKeepAlive() {
         return delegate.isTcpKeepAlive();
@@ -131,8 +131,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getSoLinger()
      * @return is SO_linger enabled
+     * @see HttpClientOptions#getSoLinger()
      */
     public int getSoLinger() {
         return delegate.getSoLinger();
@@ -143,8 +143,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getIdleTimeout()
      * @return the idle timeout, in time unit specified by {@link #getIdleTimeoutUnit()}.
+     * @see HttpClientOptions#getIdleTimeout()
      */
     public int getIdleTimeout() {
         return delegate.getIdleTimeout();
@@ -155,8 +155,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getIdleTimeoutUnit()
      * @return the idle timeout unit.
+     * @see HttpClientOptions#getIdleTimeoutUnit()
      */
     public TimeUnit getIdleTimeoutUnit() {
         return delegate.getIdleTimeoutUnit();
@@ -167,8 +167,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#isSsl()
      * @return is SSL/TLS enabled?
+     * @see HttpClientOptions#isSsl()
      */
     public boolean isSsl() {
         return delegate.isSsl();
@@ -179,8 +179,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getEnabledCipherSuites()
      * @return the enabled cipher suites
+     * @see HttpClientOptions#getEnabledCipherSuites()
      */
     public Set<String> getEnabledCipherSuites() {
         return delegate.getEnabledCipherSuites();
@@ -193,8 +193,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#isUseAlpn()
      * @return whether to use or not Application-Layer Protocol Negotiation
+     * @see HttpClientOptions#isUseAlpn()
      */
     public boolean isUseAlpn() {
         return delegate.isUseAlpn();
@@ -207,8 +207,8 @@ public class HttpClientProperties {
     /**
      * Returns the enabled SSL/TLS protocols
      *
-     * @see HttpClientOptions#getEnabledSecureTransportProtocols()
      * @return the enabled protocols
+     * @see HttpClientOptions#getEnabledSecureTransportProtocols()
      */
     public Set<String> getEnabledSecureTransportProtocols() {
         return delegate.getEnabledSecureTransportProtocols();
@@ -219,8 +219,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#isTcpFastOpen()
      * @return whether {@code TCP_FASTOPEN} option is enabled
+     * @see HttpClientOptions#isTcpFastOpen()
      */
     public boolean isTcpFastOpen() {
         return delegate.isTcpFastOpen();
@@ -231,8 +231,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#isTcpCork()
      * @return whether {@code TCP_CORK} option is enabled
+     * @see HttpClientOptions#isTcpCork()
      */
     public boolean isTcpCork() {
         return delegate.isTcpCork();
@@ -243,8 +243,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#isTcpQuickAck()
      * @return whether {@code TCP_QUICKACK} option is enabled
+     * @see HttpClientOptions#isTcpQuickAck()
      */
     public boolean isTcpQuickAck() {
         return delegate.isTcpQuickAck();
@@ -257,8 +257,8 @@ public class HttpClientProperties {
     // Vert.x ClientOptionsBase
 
     /**
-     * @see HttpClientOptions#getConnectTimeout()
      * @return the value of connect timeout
+     * @see HttpClientOptions#getConnectTimeout()
      */
     public int getConnectTimeout() {
         return delegate.getConnectTimeout();
@@ -269,8 +269,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#isTrustAll()
      * @return true if all server certificates should be trusted
+     * @see HttpClientOptions#isTrustAll()
      */
     public boolean isTrustAll() {
         return delegate.isTrustAll();
@@ -281,8 +281,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getMetricsName()
      * @return the metrics name identifying the reported metrics.
+     * @see HttpClientOptions#getMetricsName()
      */
     public String getMetricsName() {
         return delegate.getMetricsName();
@@ -293,8 +293,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getLocalAddress()
      * @return the local interface to bind for network connections.
+     * @see HttpClientOptions#getLocalAddress()
      */
     public String getLocalAddress() {
         return delegate.getLocalAddress();
@@ -309,8 +309,8 @@ public class HttpClientProperties {
     /**
      * Is hostname verification (for SSL/TLS) enabled?
      *
-     * @see HttpClientOptions#isVerifyHost()
      * @return {@code true} if enabled
+     * @see HttpClientOptions#isVerifyHost()
      */
     public boolean isVerifyHost() {
         return delegate.isVerifyHost();
@@ -323,8 +323,8 @@ public class HttpClientProperties {
     /**
      * Get the maximum pool size for connections
      *
+     * @return the maximum pool size
      * @see HttpClientOptions#getMaxPoolSize()
-     * @return  the maximum pool size
      */
     public int getMaxPoolSize() {
         return delegate.getMaxPoolSize();
@@ -337,8 +337,8 @@ public class HttpClientProperties {
     /**
      * Is keep alive enabled on the client?
      *
-     * @see HttpClientOptions#isKeepAlive()
      * @return {@code true} if enabled
+     * @see HttpClientOptions#isKeepAlive()
      */
     public boolean isKeepAlive() {
         return delegate.isKeepAlive();
@@ -349,8 +349,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getKeepAliveTimeout()
      * @return the keep alive timeout value in seconds for HTTP/1.x connections
+     * @see HttpClientOptions#getKeepAliveTimeout()
      */
     public int getKeepAliveTimeout() {
         return delegate.getKeepAliveTimeout();
@@ -361,8 +361,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getPipeliningLimit()
      * @return the limit of pending requests a pipe-lined HTTP/1 connection can send
+     * @see HttpClientOptions#getPipeliningLimit()
      */
     public int getPipeliningLimit() {
         return delegate.getPipeliningLimit();
@@ -375,8 +375,8 @@ public class HttpClientProperties {
     /**
      * Is pipe-lining enabled on the client
      *
-     * @see HttpClientOptions#isPipelining()
      * @return {@code true} if pipe-lining is enabled
+     * @see HttpClientOptions#isPipelining()
      */
     public boolean isPipelining() {
         return delegate.isPipelining();
@@ -389,8 +389,8 @@ public class HttpClientProperties {
     /**
      * Get the maximum pool size for HTTP/2 connections
      *
+     * @return the maximum pool size
      * @see HttpClientOptions#getHttp2MaxPoolSize()
-     * @return  the maximum pool size
      */
     public int getHttp2MaxPoolSize() {
         return delegate.getHttp2MaxPoolSize();
@@ -401,9 +401,9 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getHttp2MultiplexingLimit()
      * @return the maximum number of concurrent streams for an HTTP/2 connection, {@code -1} means
      * the value sent by the server
+     * @see HttpClientOptions#getHttp2MultiplexingLimit()
      */
     public int getHttp2MultiplexingLimit() {
         return delegate.getHttp2MultiplexingLimit();
@@ -414,8 +414,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getHttp2ConnectionWindowSize()
      * @return the default HTTP/2 connection window size
+     * @see HttpClientOptions#getHttp2ConnectionWindowSize()
      */
     public int getHttp2ConnectionWindowSize() {
         return delegate.getHttp2ConnectionWindowSize();
@@ -426,8 +426,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getHttp2KeepAliveTimeout()
      * @return the keep alive timeout value in seconds for HTTP/2 connections
+     * @see HttpClientOptions#getHttp2KeepAliveTimeout()
      */
     public int getHttp2KeepAliveTimeout() {
         return delegate.getHttp2KeepAliveTimeout();
@@ -438,8 +438,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getPoolCleanerPeriod()
      * @return the connection pool cleaner period in ms.
+     * @see HttpClientOptions#getPoolCleanerPeriod()
      */
     public int getPoolCleanerPeriod() {
         return delegate.getPoolCleanerPeriod();
@@ -452,8 +452,8 @@ public class HttpClientProperties {
     /**
      * Is compression enabled on the client?
      *
-     * @see HttpClientOptions#isTryUseCompression()
      * @return {@code true} if enabled
+     * @see HttpClientOptions#isTryUseCompression()
      */
     public boolean isTryUseCompression() {
         return delegate.isTryUseCompression();
@@ -466,8 +466,8 @@ public class HttpClientProperties {
     /**
      * Get the maximum WebSocket frame size to use
      *
+     * @return the max WebSocket frame size
      * @see HttpClientOptions#getMaxWebsocketFrameSize()
-     * @return  the max WebSocket frame size
      */
     public int getMaxWebsocketFrameSize() {
         return delegate.getMaxWebsocketFrameSize();
@@ -480,8 +480,8 @@ public class HttpClientProperties {
     /**
      * Get the maximum WebSocket message size to use
      *
+     * @return the max WebSocket message size
      * @see HttpClientOptions#getMaxWebsocketMessageSize()
-     * @return  the max WebSocket message size
      */
     public int getMaxWebsocketMessageSize() {
         return delegate.getMaxWebsocketMessageSize();
@@ -494,8 +494,8 @@ public class HttpClientProperties {
     /**
      * Get the default host name to be used by this client in requests if none is provided when making the request.
      *
+     * @return the default host name
      * @see HttpClientOptions#getDefaultHost()
-     * @return  the default host name
      */
     public String getDefaultHost() {
         return delegate.getDefaultHost();
@@ -508,8 +508,8 @@ public class HttpClientProperties {
     /**
      * Get the default port to be used by this client in requests if none is provided when making the request.
      *
+     * @return the default port
      * @see HttpClientOptions#getDefaultPort()
-     * @return  the default port
      */
     public int getDefaultPort() {
         return delegate.getDefaultPort();
@@ -522,8 +522,8 @@ public class HttpClientProperties {
     /**
      * Get the protocol version.
      *
-     * @see HttpClientOptions#getProtocolVersion()
      * @return the protocol version
+     * @see HttpClientOptions#getProtocolVersion()
      */
     public HttpVersion getProtocolVersion() {
         return delegate.getProtocolVersion();
@@ -536,8 +536,8 @@ public class HttpClientProperties {
     /**
      * Returns the maximum HTTP chunk size
      *
-     * @see HttpClientOptions#getMaxChunkSize()
      * @return the maximum HTTP chunk size
+     * @see HttpClientOptions#getMaxChunkSize()
      */
     public int getMaxChunkSize() {
         return delegate.getMaxChunkSize();
@@ -548,8 +548,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getMaxInitialLineLength()
      * @return the maximum length of the initial line for HTTP/1.x (e.g. {@code "GET / HTTP/1.0"})
+     * @see HttpClientOptions#getMaxInitialLineLength()
      */
     public int getMaxInitialLineLength() {
         return delegate.getMaxInitialLineLength();
@@ -560,8 +560,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getMaxHeaderSize()
      * @return Returns the maximum length of all headers for HTTP/1.x
+     * @see HttpClientOptions#getMaxHeaderSize()
      */
     public int getMaxHeaderSize() {
         return delegate.getMaxHeaderSize();
@@ -574,8 +574,8 @@ public class HttpClientProperties {
     /**
      * Returns the maximum wait queue size
      *
-     * @see HttpClientOptions#getMaxWaitQueueSize()
      * @return the maximum wait queue size
+     * @see HttpClientOptions#getMaxWaitQueueSize()
      */
     public int getMaxWaitQueueSize() {
         return delegate.getMaxWaitQueueSize();
@@ -586,8 +586,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see io.vertx.core.http.Http2Settings#getHeaderTableSize()
      * @return the {@literal SETTINGS_HEADER_TABLE_SIZE} HTTP/2 setting
+     * @see io.vertx.core.http.Http2Settings#getHeaderTableSize()
      */
     public long getHeaderTableSize() {
         return delegate.getInitialSettings().getHeaderTableSize();
@@ -598,8 +598,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see io.vertx.core.http.Http2Settings#isPushEnabled()
      * @return the {@literal SETTINGS_ENABLE_PUSH} HTTP/2 setting
+     * @see io.vertx.core.http.Http2Settings#isPushEnabled()
      */
     public boolean isPushEnabled() {
         return delegate.getInitialSettings().isPushEnabled();
@@ -610,8 +610,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see io.vertx.core.http.Http2Settings#getMaxConcurrentStreams()
      * @return the {@literal SETTINGS_MAX_CONCURRENT_STREAMS} HTTP/2 setting
+     * @see io.vertx.core.http.Http2Settings#getMaxConcurrentStreams()
      */
     public long getMaxConcurrentStreams() {
         return delegate.getInitialSettings().getMaxConcurrentStreams();
@@ -622,8 +622,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see io.vertx.core.http.Http2Settings#getInitialWindowSize()
      * @return the {@literal SETTINGS_INITIAL_WINDOW_SIZE} HTTP/2 setting
+     * @see io.vertx.core.http.Http2Settings#getInitialWindowSize()
      */
     public int getInitialWindowSize() {
         return delegate.getInitialSettings().getInitialWindowSize();
@@ -634,8 +634,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see io.vertx.core.http.Http2Settings#getMaxFrameSize()
      * @return the {@literal SETTINGS_MAX_FRAME_SIZE} HTTP/2 setting
+     * @see io.vertx.core.http.Http2Settings#getMaxFrameSize()
      */
     public int getMaxFrameSize() {
         return delegate.getInitialSettings().getMaxFrameSize();
@@ -646,8 +646,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see io.vertx.core.http.Http2Settings#getMaxHeaderListSize()
      * @return the {@literal SETTINGS_MAX_HEADER_LIST_SIZE} HTTP/2 setting
+     * @see io.vertx.core.http.Http2Settings#getMaxHeaderListSize()
      */
     public long getMaxHeaderListSize() {
         return delegate.getInitialSettings().getMaxHeaderListSize();
@@ -658,8 +658,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see io.vertx.core.http.Http2Settings#getExtraSettings()
      * @return the extra settings used for extending HTTP/2
+     * @see io.vertx.core.http.Http2Settings#getExtraSettings()
      */
     public Map<Integer, Long> getHttp2ExtraSettings() {
         return delegate.getInitialSettings().getExtraSettings();
@@ -670,9 +670,9 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getAlpnVersions()
      * @return the list of protocol versions to provide during the Application-Layer Protocol Negotiation. When
      * the list is empty, the client provides a best effort list according to {@link #setProtocolVersion}
+     * @see HttpClientOptions#getAlpnVersions()
      */
     public List<HttpVersion> getAlpnVersions() {
         return delegate.getAlpnVersions();
@@ -683,8 +683,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#isHttp2ClearTextUpgrade()
      * @return {@code true} when an <i>h2c</i> connection is established using an HTTP/1.1 upgrade request, {@code false} when directly
+     * @see HttpClientOptions#isHttp2ClearTextUpgrade()
      */
     public boolean isHttp2ClearTextUpgrade() {
         return delegate.isHttp2ClearTextUpgrade();
@@ -695,8 +695,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#isSendUnmaskedFrames()
      * @return {@code true} when frame masking is skipped
+     * @see HttpClientOptions#isSendUnmaskedFrames()
      */
     public boolean isSendUnmaskedFrames() {
         return delegate.isSendUnmaskedFrames();
@@ -707,8 +707,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getMaxRedirects()
      * @return the maximum number of redirection a request can follow
+     * @see HttpClientOptions#getMaxRedirects()
      */
     public int getMaxRedirects() {
         return delegate.getMaxRedirects();
@@ -719,8 +719,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#isForceSni()
      * @return whether the client should always use SNI on TLS/SSL connections
+     * @see HttpClientOptions#isForceSni()
      */
     public boolean isForceSni() {
         return delegate.isForceSni();
@@ -731,8 +731,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getDecoderInitialBufferSize()
      * @return the initial buffer size for the HTTP decoder
+     * @see HttpClientOptions#getDecoderInitialBufferSize()
      */
     public int getDecoderInitialBufferSize() {
         return delegate.getDecoderInitialBufferSize();
@@ -743,8 +743,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getTryWebsocketDeflateFrameCompression
      * @return {@code true} when the WebSocket per-frame deflate compression extension will be offered
+     * @see HttpClientOptions#getTryWebsocketDeflateFrameCompression
      */
     public boolean isTryWebsocketDeflateFrameCompression() {
         return delegate.getTryWebsocketDeflateFrameCompression();
@@ -755,8 +755,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getTryUsePerMessageWebsocketCompression()
      * @return {@code true} when the WebSocket per-message deflate compression extension will be offered
+     * @see HttpClientOptions#getTryUsePerMessageWebsocketCompression()
      */
     public boolean isTryUsePerMessageWebsocketCompression() {
         return delegate.getTryUsePerMessageWebsocketCompression();
@@ -767,8 +767,8 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getWebsocketCompressionLevel()
      * @return the Websocket deflate compression level
+     * @see HttpClientOptions#getWebsocketCompressionLevel()
      */
     public int getWebsocketCompressionLevel() {
         return delegate.getWebsocketCompressionLevel();
@@ -779,9 +779,9 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getWebsocketCompressionAllowClientNoContext()
      * @return {@code true} when the {@code client_no_context_takeover} parameter for the WebSocket per-message
      * deflate compression extension will be offered
+     * @see HttpClientOptions#getWebsocketCompressionAllowClientNoContext()
      */
     public boolean isWebsocketCompressionAllowClientNoContext() {
         return delegate.getWebsocketCompressionAllowClientNoContext();
@@ -792,9 +792,9 @@ public class HttpClientProperties {
     }
 
     /**
-     * @see HttpClientOptions#getWebsocketCompressionRequestServerNoContext()
      * @return {@code true} when the {@code server_no_context_takeover} parameter for the Websocket per-message
      * deflate compression extension will be offered
+     * @see HttpClientOptions#getWebsocketCompressionRequestServerNoContext()
      */
     public boolean isWebsocketCompressionRequestServerNoContext() {
         return delegate.getWebsocketCompressionRequestServerNoContext();

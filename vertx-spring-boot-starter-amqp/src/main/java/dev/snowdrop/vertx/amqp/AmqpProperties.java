@@ -22,7 +22,7 @@ public class AmqpProperties {
 
     /**
      * Broker host.
-     *
+     * <p>
      * Default: localhost
      *
      * @see io.vertx.amqp.AmqpClientOptions#getHost()
@@ -31,7 +31,7 @@ public class AmqpProperties {
 
     /**
      * Broker port.
-     *
+     * <p>
      * Default: 5672
      *
      * @see io.vertx.amqp.AmqpClientOptions#getPort()
@@ -256,7 +256,8 @@ public class AmqpProperties {
      *
      * @see io.vertx.amqp.AmqpClientOptions#getEnabledSecureTransportProtocols()
      */
-    private Set<String> enabledSecureTransportProtocols = new LinkedHashSet<>(Arrays.asList("TLSv1", "TLSv1.1", "TLSv1.2"));
+    private Set<String> enabledSecureTransportProtocols =
+        new LinkedHashSet<>(Arrays.asList("TLSv1", "TLSv1.1", "TLSv1.2"));
 
     /**
      * Whether {@code TCP_FASTOPEN} option is enabled
