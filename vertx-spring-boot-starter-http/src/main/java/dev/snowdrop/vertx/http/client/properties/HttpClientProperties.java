@@ -220,7 +220,7 @@ public class HttpClientProperties {
 
     /**
      * @see HttpClientOptions#isTcpFastOpen()
-     * @return wether {@code TCP_FASTOPEN} option is enabled
+     * @return whether {@code TCP_FASTOPEN} option is enabled
      */
     public boolean isTcpFastOpen() {
         return delegate.isTcpFastOpen();
@@ -232,7 +232,7 @@ public class HttpClientProperties {
 
     /**
      * @see HttpClientOptions#isTcpCork()
-     * @return wether {@code TCP_CORK} option is enabled
+     * @return whether {@code TCP_CORK} option is enabled
      */
     public boolean isTcpCork() {
         return delegate.isTcpCork();
@@ -244,7 +244,7 @@ public class HttpClientProperties {
 
     /**
      * @see HttpClientOptions#isTcpQuickAck()
-     * @return wether {@code TCP_QUICKACK} option is enabled
+     * @return whether {@code TCP_QUICKACK} option is enabled
      */
     public boolean isTcpQuickAck() {
         return delegate.isTcpQuickAck();

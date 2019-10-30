@@ -13,106 +13,314 @@ public class AmqpProperties {
 
     static final String PROPERTIES_PREFIX = "vertx.amqp";
 
+    /**
+     * Enable AMQP starter.
+     */
     private boolean enabled = true;
 
     // AmqpClientOptions
 
+    /**
+     * Broker host.
+     *
+     * Default: localhost
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getHost()
+     */
     private String host = "localhost";
 
+    /**
+     * Broker port.
+     *
+     * Default: 5672
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getPort()
+     */
     private int port = 5672;
 
+    /**
+     * Broker username.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getUsername()
+     */
     private String username;
 
+    /**
+     * Broker password.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getPassword()
+     */
     private String password;
 
+    /**
+     * Broker container id.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getContainerId()
+     */
     private String containerId = UUID.randomUUID().toString();
 
     // ProtonClientOptions
 
+    /**
+     * A mechanisms the client should be restricted to use.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getEnabledSaslMechanisms()
+     */
     private Set<String> enabledSaslMechanisms = new LinkedHashSet<>();
 
+    /**
+     * A heartbeat (in milliseconds) as maximum delay between sending frames for the remote peers.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getHeartbeat()
+     */
     private int heartbeat;
 
+    /**
+     * A maximum frame size for the connection.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getMaxFrameSize()
+     */
     private int maxFrameSize;
 
+    /**
+     * A virtual host name override for the connection AMQP Open frame and TLS SNI server name (if TLS is in use).
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getVirtualHost()
+     */
     private String virtualHost;
 
+    /**
+     * A hostname override for TLS SNI Server Name.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getSniServerName()
+     */
     private String sniServerName;
 
     // NetClientOptions
 
+    /**
+     * A number of reconnect attempts.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getReconnectAttempts()
+     */
     private int reconnectAttempts;
 
+    /**
+     * A reconnect interval.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getReconnectInterval()
+     */
     private long reconnectInterval = 1000;
 
+    /**
+     * A hostname verification algorithm.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getHostnameVerificationAlgorithm()
+     */
     private String hostnameVerificationAlgorithm = "";
 
     // ClientOptionsBase
 
+    /**
+     * A connect timeout.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getConnectTimeout()
+     */
     private int connectTimeout = 60000;
 
+    /**
+     * Whether all server certificates should be trusted.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#isTrustAll()
+     */
     private boolean trustAll;
 
+    /**
+     * A metrics name identifying the reported metrics.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getMetricsName()
+     */
     private String metricsName = "";
 
+    /**
+     * Connection proxy settings.
+     */
     private Proxy proxy = new Proxy();
 
+    /**
+     * A local interface to bind for network connections.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getLocalAddress()
+     */
     private String localAddress;
 
     // TCPSSLOptions
 
+    /**
+     * Whether TCP no delay is enabled.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#isTcpNoDelay()
+     */
     private boolean tcpNoDelay = true;
 
+    /**
+     * Whether TCP keep alive is enabled.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#isTcpKeepAlive()
+     */
     private boolean tcpKeepAlive;
 
+    /**
+     * Whether SO_linger is enabled.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getSoLinger()
+     */
     private int soLinger = -1;
 
     private boolean usePooledBuffers;
 
+    /**
+     * An idle timeout, in time unit specified by {@link #idleTimeoutUnit}.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getIdleTimeout()
+     */
     private int idleTimeout;
 
+    /**
+     * An idle timeout unit.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getIdleTimeoutUnit()
+     */
     private TimeUnit idleTimeoutUnit = TimeUnit.SECONDS;
 
+    /**
+     * Whether SSL/TLS is enabled.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#isSsl()
+     */
     private boolean ssl;
 
+    /**
+     * An SSL handshake timeout, in time unit specified by {@link #sslHandshakeTimeoutUnit}.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getSslHandshakeTimeout()
+     */
     private long sslHandshakeTimeout = 10L;
 
+    /**
+     * An SSL handshake timeout unit.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getSslHandshakeTimeoutUnit() ()
+     */
     private TimeUnit sslHandshakeTimeoutUnit = TimeUnit.SECONDS;
 
+    /**
+     * JKS key store properties.
+     */
     private SslStore jksKeyStore = new SslStore();
 
+    /**
+     * JKS trust store properties.
+     */
     private SslStore jksTrustStore = new SslStore();
 
+    /**
+     * JFX key store properties.
+     */
     private SslStore pfxKeyStore = new SslStore();
 
+    /**
+     * PFX trust store properties.
+     */
     private SslStore pfxTrustStore = new SslStore();
 
+    /**
+     * The enabled cipher suites
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getEnabledCipherSuites()
+     */
     private Set<String> enabledCipherSuites = new LinkedHashSet<>();
 
+    /**
+     * JDK SSL engine properties.
+     */
     private JdkSslEngine jdkSslEngine = new JdkSslEngine();
 
+    /**
+     * OpenSSL engine properties.
+     */
     private OpenSslEngine openSslEngine = new OpenSslEngine();
 
+    /**
+     * The enabled SSL/TLS protocols.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getEnabledSecureTransportProtocols()
+     */
     private Set<String> enabledSecureTransportProtocols = new LinkedHashSet<>(Arrays.asList("TLSv1", "TLSv1.1", "TLSv1.2"));
 
+    /**
+     * Whether {@code TCP_FASTOPEN} option is enabled
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#isTcpFastOpen()
+     */
     private boolean tcpFastOpen;
 
+    /**
+     * Whether {@code TCP_CORK} option is enabled.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#isTcpCork()
+     */
     private boolean tcpCork;
 
+    /**
+     * Whether {@code TCP_QUICKACK} option is enabled.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#isTcpQuickAck()
+     */
     private boolean tcpQuickAck;
 
     // NetworkOptions
 
+    /**
+     * A TCP send buffer size in bytes.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getSendBufferSize()
+     */
     private int sendBufferSize = -1;
 
+    /**
+     * A TCP receive buffer size in bytes
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getReceiveBufferSize()
+     */
     private int receiveBufferSize = -1;
 
+    /**
+     * A traffic class.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getTrafficClass()
+     */
     private int trafficClass = -1;
 
+    /**
+     * Whether address should be reused.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#isReuseAddress()
+     */
     private boolean reuseAddress = true;
 
+    /**
+     * Whether network activity logging should be enabled.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#getLogActivity()
+     */
     private boolean logActivity;
 
+    /**
+     * Whether port should be reused.
+     *
+     * @see io.vertx.amqp.AmqpClientOptions#isReusePort()
+     */
     private boolean reusePort;
 
     public boolean isEnabled() {
@@ -557,8 +765,16 @@ public class AmqpProperties {
 
     public static class OpenSslEngine {
 
+        /**
+         * Whether OpenSSL engine is enabled.
+         */
         private boolean enabled;
 
+        /**
+         * Whether session cache is enabled in open SSL session server context.
+         *
+         * @see io.vertx.core.net.OpenSSLEngineOptions#isSessionCacheEnabled()
+         */
         private boolean sessionCacheEnabled;
 
         public boolean isEnabled() {
@@ -580,6 +796,9 @@ public class AmqpProperties {
 
     public static class JdkSslEngine {
 
+        /**
+         * Whether JDK SSL engine is enabled.
+         */
         private boolean enabled;
 
         public boolean isEnabled() {
