@@ -6,7 +6,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import dev.snowdrop.vertx.amqp.AmqpClient;
 import dev.snowdrop.vertx.amqp.AmqpMessage;
 import dev.snowdrop.vertx.amqp.AmqpSender;
-import org.apache.activemq.artemis.jms.server.embedded.EmbeddedJMS;
+import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -32,8 +32,8 @@ public class MessagesManager implements InitializingBean, DisposableBean {
 
     private Disposable receiverDisposer;
 
-    // Injecting EmbeddedJMS to make sure it has started before creating this component.
-    public MessagesManager(AmqpClient client, EmbeddedJMS server) {
+    // Injecting EmbeddedActiveMQ to make sure it has started before creating this component.
+    public MessagesManager(AmqpClient client, EmbeddedActiveMQ server) {
         this.client = client;
     }
 
