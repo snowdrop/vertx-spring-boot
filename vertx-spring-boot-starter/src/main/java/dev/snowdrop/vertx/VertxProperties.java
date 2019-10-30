@@ -15,36 +15,157 @@ public class VertxProperties {
 
     static final String PROPERTIES_PREFIX = "vertx";
 
+    /**
+     * A number of event loop threads to be used by the Vert.x instance.
+     *
+     * Default: 2 * available processors.
+     *
+     * @see VertxOptions#getEventLoopPoolSize()
+     */
     private int eventLoopPoolSize = VertxOptions.DEFAULT_EVENT_LOOP_POOL_SIZE;
 
+    /**
+     * A maximum number of worker threads to be used by the Vert.x instance.
+     * Worker threads are used for running blocking code and worker verticles.
+     *
+     * Default: 20
+     *
+     * @see VertxOptions#getWorkerPoolSize()
+     */
     private int workerPoolSize = VertxOptions.DEFAULT_WORKER_POOL_SIZE;
 
+    /**
+     * An internal blocking pool size.
+     * Vert.x maintains a pool for internal blocking operations
+     *
+     * Default: 20
+     *
+     * @see VertxOptions#getWorkerPoolSize()
+     */
     private int internalBlockingPoolSize = VertxOptions.DEFAULT_INTERNAL_BLOCKING_POOL_SIZE;
 
+    /**
+     * A blocked thread check period, in {@link VertxProperties#blockedThreadCheckIntervalUnit}.
+     * This setting determines how often Vert.x will check whether event loop threads are executing for too long.
+     *
+     * Default: 1000ms
+     *
+     * @see VertxOptions#getBlockedThreadCheckInterval()
+     */
     private long blockedThreadCheckInterval = VertxOptions.DEFAULT_BLOCKED_THREAD_CHECK_INTERVAL;
 
+    /**
+     * Get the value of max event loop execute time, in {@link VertxProperties#maxEventLoopExecuteTimeUnit}.
+     * Vert.x will automatically log a warning if it detects that event loop threads haven't returned within this time.
+     * This can be used to detect where the user is blocking an event loop thread, contrary to the Golden Rule of the
+     * holy Event Loop.
+     *
+     * Default: 2000000000ns (2s)
+     *
+     * @see VertxOptions#getMaxEventLoopExecuteTime()
+     */
     private long maxEventLoopExecuteTime = VertxOptions.DEFAULT_MAX_EVENT_LOOP_EXECUTE_TIME;
 
+    /**
+     * Get the value of max worker execute time, in {@link VertxProperties#maxWorkerExecuteTimeUnit}.
+     * Vert.x will automatically log a warning if it detects that worker threads haven't returned within this time.
+     * This can be used to detect where the user is blocking a worker thread for too long. Although worker threads
+     * can be blocked longer than event loop threads, they shouldn't be blocked for long periods of time.
+     *
+     * Default: 60000000000ns (60s)
+     *
+     * @see VertxOptions#getMaxWorkerExecuteTime()
+     */
     private long maxWorkerExecuteTime = VertxOptions.DEFAULT_MAX_WORKER_EXECUTE_TIME;
 
+    /**
+     * Whether HA is enabled on the Vert.x instance.
+     *
+     * Default: false
+     *
+     * @see VertxOptions#isHAEnabled()
+     */
     private boolean haEnabled = VertxOptions.DEFAULT_HA_ENABLED;
 
+    /**
+     * A quorum size to be used when HA is enabled.
+     *
+     * Default: 1
+     *
+     * @see VertxOptions#getQuorumSize()
+     */
     private int quorumSize = VertxOptions.DEFAULT_QUORUM_SIZE;
 
+    /**
+     * An HA group to be used when HA is enabled.
+     *
+     * Default: __DEFAULT__
+     *
+     * @see VertxOptions#getHAGroup()
+     */
     private String haGroup = VertxOptions.DEFAULT_HA_GROUP;
 
+    /**
+     * A threshold value in {@link VertxProperties#warningExceptionTimeUnit} above which a blocked warning contains a stack trace.
+     *
+     * Default: 5000000000ns (5s)
+     *
+     * @see VertxOptions#getWarningExceptionTime()
+     */
     private long warningExceptionTime = TimeUnit.SECONDS.toNanos(5);
 
+    /**
+     * Whether to prefer the native transport to the JDK transport.
+     *
+     * Default: false
+     *
+     * @see VertxOptions#getPreferNativeTransport()
+     */
     private boolean preferNativeTransport = VertxOptions.DEFAULT_PREFER_NATIVE_TRANSPORT;
 
+    /**
+     * A time unit of {@link VertxProperties#maxEventLoopExecuteTime}.
+     *
+     * Default: ns
+     *
+     * @see VertxOptions#getMaxEventLoopExecuteTimeUnit()
+     */
     private TimeUnit maxEventLoopExecuteTimeUnit = VertxOptions.DEFAULT_MAX_EVENT_LOOP_EXECUTE_TIME_UNIT;
 
+    /**
+     * A time unit of {@link VertxProperties#maxWorkerExecuteTime}.
+     *
+     * Default: ns
+     *
+     * @see VertxOptions#getMaxWorkerExecuteTimeUnit()
+     */
     private TimeUnit maxWorkerExecuteTimeUnit = VertxOptions.DEFAULT_MAX_WORKER_EXECUTE_TIME_UNIT;
 
+    /**
+     * A time unit of {@link VertxProperties#warningExceptionTime}.
+     *
+     * Default: ns
+     *
+     * @see VertxOptions#getWarningExceptionTimeUnit()
+     */
     private TimeUnit warningExceptionTimeUnit = VertxOptions.DEFAULT_WARNING_EXCEPTION_TIME_UNIT;
 
+    /**
+     * A time unit of {@link VertxProperties#blockedThreadCheckInterval}.
+     *
+     * Default: ms
+     *
+     * @see VertxOptions#getBlockedThreadCheckIntervalUnit()
+     */
     private TimeUnit blockedThreadCheckIntervalUnit = VertxOptions.DEFAULT_BLOCKED_THREAD_CHECK_INTERVAL_UNIT;
 
+    /**
+     * Whether metrics are enabled on the Vert.x instance.
+     *
+     * Default: false
+     *
+     * @see MetricsOptions#isEnabled()
+     */
     private boolean metricsEnabled = MetricsOptions.DEFAULT_METRICS_ENABLED;
 
     private FileSystem fileSystem = new FileSystem();
@@ -235,8 +356,22 @@ public class VertxProperties {
 
     public static class FileSystem {
 
+        /**
+         * Whether classpath resolving is enabled.
+         *
+         * Default: {@link FileSystemOptions#DEFAULT_CLASS_PATH_RESOLVING_ENABLED}
+         *
+         * @see FileSystemOptions#isClassPathResolvingEnabled()
+         */
         private boolean classPathResolvingEnabled = FileSystemOptions.DEFAULT_CLASS_PATH_RESOLVING_ENABLED;
 
+        /**
+         * Whether file caching is enabled for class path resolving.
+         *
+         * Default: {@link FileSystemOptions#DEFAULT_FILE_CACHING_ENABLED}
+         *
+         * @see FileSystemOptions#isFileCachingEnabled()
+         */
         private boolean fileCachingEnabled = FileSystemOptions.DEFAULT_FILE_CACHING_ENABLED;
 
         public boolean isClassPathResolvingEnabled() {
@@ -258,30 +393,117 @@ public class VertxProperties {
 
     public static class AddressResolver {
 
+        /**
+         * A path to the alternate hosts configuration file.
+         *
+         * @see AddressResolverOptions#getHostsPath()
+         */
         private String hostsPath;
 
+        /**
+         * A hosts configuration file value.
+         *
+         * @see AddressResolverOptions#getHostsValue()
+         */
         private Buffer hostsValue;
 
+        /**
+         * A list of dns servers.
+         *
+         * Default: null
+         *
+         * @see AddressResolverOptions#getServers()
+         */
         private List<String> servers = AddressResolverOptions.DEFAULT_SERVERS;
 
+        /**
+         * Whether an optional record is automatically included in DNS queries.
+         *
+         * Default: true
+         *
+         * @see AddressResolverOptions#isOptResourceEnabled()
+         */
         private boolean optResourceEnabled = AddressResolverOptions.DEFAULT_OPT_RESOURCE_ENABLED;
 
+        /**
+         * A cache min TTL in seconds.
+         *
+         * Default: 0
+         *
+         * @see AddressResolverOptions#getCacheMinTimeToLive()
+         */
         private int cacheMinTimeToLive = AddressResolverOptions.DEFAULT_CACHE_MIN_TIME_TO_LIVE;
 
+        /**
+         * A cache max TTL in seconds.
+         *
+         * Default: Integer.MAX_VALUE
+         *
+         * @see AddressResolverOptions#getCacheMaxTimeToLive()
+         */
         private int cacheMaxTimeToLive = AddressResolverOptions.DEFAULT_CACHE_MAX_TIME_TO_LIVE;
 
+        /**
+         * A cache negative TTL in seconds.
+         *
+         * Default: 0
+         *
+         * @see AddressResolverOptions#getCacheNegativeTimeToLive()
+         */
         private int cacheNegativeTimeToLive = AddressResolverOptions.DEFAULT_CACHE_NEGATIVE_TIME_TO_LIVE;
 
+        /**
+         * A query timeout in milliseconds.
+         *
+         * Default: 5000
+         *
+         * @see AddressResolverOptions#getQueryTimeout()
+         */
         private long queryTimeout = AddressResolverOptions.DEFAULT_QUERY_TIMEOUT;
 
+        /**
+         * A maximum number of queries to be sent during a resolution.
+         *
+         * Default: 4
+         *
+         * @see AddressResolverOptions#getMaxQueries()
+         */
         private int maxQueries = AddressResolverOptions.DEFAULT_MAX_QUERIES;
 
+        /**
+         * A DNS queries <i>Recursion Desired</i> flag value.
+         *
+         * Default: true
+         *
+         * @see AddressResolverOptions#getRdFlag()
+         */
         private boolean rdFlag = AddressResolverOptions.DEFAULT_RD_FLAG;
 
+        /**
+         * A list of search domains.
+         *
+         * Default: null
+         *
+         * @see AddressResolverOptions#getSearchDomains()
+         */
         private List<String> searchDomains = AddressResolverOptions.DEFAULT_SEACH_DOMAINS;
 
+        /**
+         * An ndots value
+         *
+         * Default: {@link AddressResolverOptions#DEFAULT_NDOTS}
+         *
+         * @see AddressResolverOptions#getNdots()
+         */
         private int ndots = AddressResolverOptions.DEFAULT_NDOTS;
 
+        /**
+         * Whether a dns server selection uses round robin.
+         *
+         * Default: {@link AddressResolverOptions#DEFAULT_ROTATE_SERVERS}
+         *
+         * @see AddressResolverOptions#isRotateServers()
+         */
         private boolean rotateServers = AddressResolverOptions.DEFAULT_ROTATE_SERVERS;
 
         public String getHostsPath() {
