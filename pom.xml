@@ -49,9 +49,9 @@
 
   <properties>
     <awaitility.version>4.0.1</awaitility.version>
-    <smallrye-axle.version>0.0.9</smallrye-axle.version>
+    <smallrye-axle.version>0.0.10</smallrye-axle.version>
     <spring-boot.version>2.2.0.RELEASE</spring-boot.version>
-    <vertx.version>3.8.1</vertx.version>
+    <vertx.version>3.8.2</vertx.version>
 
     <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
