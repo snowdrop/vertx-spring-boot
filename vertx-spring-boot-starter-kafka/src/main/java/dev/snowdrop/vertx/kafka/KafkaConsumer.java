@@ -23,7 +23,7 @@ public interface KafkaConsumer<K, V> extends ReadStream<KafkaConsumerRecord<K, V
 
     Flux<TopicPartition> assignment();
 
-    Flux<PartitionInfo> listTopics();
+    Flux<KafkaPartitionInfo> listTopics();
 
     Mono<Void> unsubscribe();
 
@@ -59,7 +59,7 @@ public interface KafkaConsumer<K, V> extends ReadStream<KafkaConsumerRecord<K, V
 
     Mono<OffsetAndMetadata> committed(TopicPartition topicPartition);
 
-    Flux<PartitionInfo> partitionsFor(String topic);
+    Flux<KafkaPartitionInfo> partitionsFor(String topic);
 
     void batchHandler(Consumer<KafkaConsumerRecords<K, V>> handler);
 

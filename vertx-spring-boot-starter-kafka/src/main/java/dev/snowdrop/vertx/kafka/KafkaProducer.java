@@ -8,9 +8,9 @@ import reactor.core.publisher.Mono;
 
 public interface KafkaProducer<K, V> extends WriteStream<KafkaProducerRecord<K, V>> {
 
-    Mono<RecordMetadata> send(KafkaProducerRecord<K, V> record);
+    Mono<KafkaRecordMetadata> send(KafkaProducerRecord<K, V> record);
 
-    Flux<PartitionInfo> partitionFor(String topic);
+    Flux<KafkaPartitionInfo> partitionFor(String topic);
 
     Mono<Void> flush();
 
