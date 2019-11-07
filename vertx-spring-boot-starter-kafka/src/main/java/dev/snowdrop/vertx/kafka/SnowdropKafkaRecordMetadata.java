@@ -67,4 +67,11 @@ final class SnowdropKafkaRecordMetadata implements KafkaRecordMetadata {
     public int hashCode() {
         return Objects.hash(topic, partition, offset, timestamp, checksum);
     }
+
+    @Override
+    public String toString() {
+        return String.format(
+            "SnowdropKafkaRecordMetadata{topic='%s', partition=%d, offset=%d, timestamp=%d, checksum=%d}", topic,
+            partition, offset, timestamp, checksum);
+    }
 }

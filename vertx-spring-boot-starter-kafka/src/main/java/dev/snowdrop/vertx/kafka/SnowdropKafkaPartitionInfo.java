@@ -71,7 +71,7 @@ final class SnowdropKafkaPartitionInfo implements KafkaPartitionInfo {
         }
 
         SnowdropKafkaPartitionInfo that = (SnowdropKafkaPartitionInfo) o;
-        
+
         return partition == that.partition &&
             Objects.equals(topic, that.topic) &&
             Objects.equals(replicas, that.replicas) &&
@@ -82,5 +82,12 @@ final class SnowdropKafkaPartitionInfo implements KafkaPartitionInfo {
     @Override
     public int hashCode() {
         return Objects.hash(topic, partition, replicas, inSyncReplicas, leader);
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+            "SnowdropKafkaPartitionInfo{topic='%s', partition=%d, replicas=%s, inSyncReplicas=%s, leader=%s}", topic,
+            partition, replicas, inSyncReplicas, leader);
     }
 }

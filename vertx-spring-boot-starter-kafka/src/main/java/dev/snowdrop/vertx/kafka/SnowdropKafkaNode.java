@@ -69,7 +69,7 @@ final class SnowdropKafkaNode implements KafkaNode {
         }
 
         SnowdropKafkaNode that = (SnowdropKafkaNode) o;
-        
+
         return id == that.id &&
             port == that.port &&
             hasRack == that.hasRack &&
@@ -82,5 +82,12 @@ final class SnowdropKafkaNode implements KafkaNode {
     @Override
     public int hashCode() {
         return Objects.hash(id, idString, host, port, hasRack, rack, isEmpty);
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+            "SnowdropKafkaNode{id=%d, idString='%s', host='%s', port=%d, hasRack=%b, rack='%s', isEmpty=%b}", id,
+            idString, host, port, hasRack, rack, isEmpty);
     }
 }

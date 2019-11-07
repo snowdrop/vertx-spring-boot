@@ -7,11 +7,13 @@ import org.apache.kafka.clients.producer.Producer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
+// TODO make package-private once Spring configuration is setup
+public final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
 
     private final io.vertx.axle.kafka.client.producer.KafkaProducer<K, V> delegate;
 
-    SnowdropKafkaProducer(io.vertx.axle.kafka.client.producer.KafkaProducer<K, V> delegate) {
+    // TODO make package-private once Spring configuration is setup
+    public SnowdropKafkaProducer(io.vertx.axle.kafka.client.producer.KafkaProducer<K, V> delegate) {
         this.delegate = delegate;
     }
 
