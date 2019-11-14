@@ -2,9 +2,7 @@ package dev.snowdrop.vertx.kafka;
 
 import java.util.Objects;
 
-import io.vertx.kafka.client.common.Node;
-
-final class SnowdropKafkaNode implements KafkaNode {
+final class SnowdropNode implements Node {
 
     private int id;
 
@@ -20,7 +18,7 @@ final class SnowdropKafkaNode implements KafkaNode {
 
     private boolean isEmpty;
 
-    SnowdropKafkaNode(Node vertxNode) {
+    SnowdropNode(io.vertx.kafka.client.common.Node vertxNode) {
         this.id = vertxNode.getId();
         this.idString = vertxNode.getIdString();
         this.host = vertxNode.getHost();
@@ -68,7 +66,7 @@ final class SnowdropKafkaNode implements KafkaNode {
             return false;
         }
 
-        SnowdropKafkaNode that = (SnowdropKafkaNode) o;
+        SnowdropNode that = (SnowdropNode) o;
 
         return id == that.id &&
             port == that.port &&
@@ -86,8 +84,7 @@ final class SnowdropKafkaNode implements KafkaNode {
 
     @Override
     public String toString() {
-        return String.format(
-            "SnowdropKafkaNode{id=%d, idString='%s', host='%s', port=%d, hasRack=%b, rack='%s', isEmpty=%b}", id,
-            idString, host, port, hasRack, rack, isEmpty);
+        return String.format("%s{id=%d, idString='%s', host='%s', port=%d, hasRack=%b, rack='%s', isEmpty=%b}",
+            getClass().getSimpleName(), id, idString, host, port, hasRack, rack, isEmpty);
     }
 }

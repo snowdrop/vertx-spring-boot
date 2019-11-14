@@ -8,9 +8,9 @@ public interface KafkaPartitionInfo {
 
     long getPartition();
 
-    List<KafkaNode> getReplicas();
+    List<Node> getReplicas();
 
-    List<KafkaNode> getInSyncReplicas();
+    List<Node> getInSyncReplicas();
 
-    KafkaNode getLeader();
+    Node getLeader();
 }

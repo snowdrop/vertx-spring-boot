@@ -1,6 +1,6 @@
 package dev.snowdrop.vertx.kafka;
 
-public interface KafkaNode {
+public interface Node {
 
     int getId();
 

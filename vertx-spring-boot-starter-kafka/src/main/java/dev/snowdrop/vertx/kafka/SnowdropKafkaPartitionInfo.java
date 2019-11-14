@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import io.vertx.kafka.client.common.Node;
 import io.vertx.kafka.client.common.PartitionInfo;
 
 final class SnowdropKafkaPartitionInfo implements KafkaPartitionInfo {
@@ -14,11 +13,11 @@ final class SnowdropKafkaPartitionInfo implements KafkaPartitionInfo {
 
     private final long partition;
 
-    private final List<KafkaNode> replicas;
+    private final List<Node> replicas;
 
-    private final List<KafkaNode> inSyncReplicas;
+    private final List<Node> inSyncReplicas;
 
-    private final KafkaNode leader;
+    private final Node leader;
 
     SnowdropKafkaPartitionInfo(PartitionInfo vertxPartitionInfo) {
         this.topic = vertxPartitionInfo.getTopic();
@@ -31,7 +30,7 @@ final class SnowdropKafkaPartitionInfo implements KafkaPartitionInfo {
             : convertNodes(vertxPartitionInfo.getInSyncReplicas()));
         this.leader = (vertxPartitionInfo.getLeader() == null
             ? null
-            : new SnowdropKafkaNode(vertxPartitionInfo.getLeader()));
+            : new SnowdropNode(vertxPartitionInfo.getLeader()));
     }
 
     public String getTopic() {
@@ -42,21 +41,21 @@ final class SnowdropKafkaPartitionInfo implements KafkaPartitionInfo {
         return partition;
     }
 
-    public List<KafkaNode> getReplicas() {
+    public List<Node> getReplicas() {
         return replicas;
     }
 
-    public List<KafkaNode> getInSyncReplicas() {
+    public List<Node> getInSyncReplicas() {
         return inSyncReplicas;
     }
 
-    public KafkaNode getLeader() {
+    public Node getLeader() {
         return leader;
     }
 
-    private List<KafkaNode> convertNodes(List<Node> vertxNodes) {
+    private List<Node> convertNodes(List<io.vertx.kafka.client.common.Node> vertxNodes) {
         return vertxNodes.stream()
-            .map(SnowdropKafkaNode::new)
+            .map(SnowdropNode::new)
             .collect(Collectors.toList());
     }
 
@@ -86,8 +85,7 @@ final class SnowdropKafkaPartitionInfo implements KafkaPartitionInfo {
 
     @Override
     public String toString() {
-        return String.format(
-            "SnowdropKafkaPartitionInfo{topic='%s', partition=%d, replicas=%s, inSyncReplicas=%s, leader=%s}", topic,
-            partition, replicas, inSyncReplicas, leader);
+        return String.format("%s{topic='%s', partition=%d, replicas=%s, inSyncReplicas=%s, leader=%s}",
+            getClass().getSimpleName(), topic, partition, replicas, inSyncReplicas, leader);
     }
 }
