@@ -17,7 +17,7 @@ public final class KafkaProducerRecord<K, V> {
 
     private final Long timestamp;
 
-    private final List<KafkaHeader> headers;
+    private final List<Header> headers;
 
     public static <K, V> Builder<K, V> builder(String topic, V value, Class<K> keyClass) {
         return new Builder<>(topic, value);
@@ -52,7 +52,7 @@ public final class KafkaProducerRecord<K, V> {
         return timestamp;
     }
 
-    public List<KafkaHeader> getHeaders() {
+    public List<Header> getHeaders() {
         return headers;
     }
 
@@ -87,7 +87,7 @@ public final class KafkaProducerRecord<K, V> {
 
         private final V value;
 
-        private final List<KafkaHeader> headers;
+        private final List<Header> headers;
 
         private K key;
 
@@ -124,12 +124,12 @@ public final class KafkaProducerRecord<K, V> {
             return this;
         }
 
-        public Builder<K, V> withHeader(KafkaHeader header) {
+        public Builder<K, V> withHeader(Header header) {
             headers.add(header);
             return this;
         }
 
-        public Builder<K, V> withHeaders(List<KafkaHeader> headers) {
+        public Builder<K, V> withHeaders(List<Header> headers) {
             this.headers.addAll(headers);
             return this;
         }

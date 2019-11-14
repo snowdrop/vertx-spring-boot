@@ -48,11 +48,11 @@ class SnowdropKafkaConsumerRecord<K, V> implements KafkaConsumerRecord<K, V> {
     }
 
     @Override
-    public List<KafkaHeader> headers() {
+    public List<Header> headers() {
         return delegate
             .headers()
             .stream()
-            .map(KafkaHeader::create)
+            .map(SnowdropHeader::new)
             .collect(Collectors.toList());
     }
 

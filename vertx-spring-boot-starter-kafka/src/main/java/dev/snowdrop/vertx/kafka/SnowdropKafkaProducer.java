@@ -6,6 +6,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import io.vertx.axle.core.buffer.Buffer;
+import io.vertx.axle.kafka.client.producer.KafkaHeader;
 import io.vertx.core.streams.WriteStream;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -108,7 +109,7 @@ public final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
     private io.vertx.axle.kafka.client.producer.KafkaProducerRecord<K, V> toAxleProducerRecord(
         KafkaProducerRecord<K, V> record) {
 
-        List<io.vertx.axle.kafka.client.producer.KafkaHeader> axleHeaders = record
+        List<KafkaHeader> axleHeaders = record
             .getHeaders()
             .stream()
             .map(this::toAxleHeader)
@@ -120,8 +121,7 @@ public final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
             .addHeaders(axleHeaders);
     }
 
-    private io.vertx.axle.kafka.client.producer.KafkaHeader toAxleHeader(KafkaHeader header) {
-        return io.vertx.axle.kafka.client.producer.KafkaHeader
-            .header(header.getKey(), Buffer.buffer(header.getValue().asByteBuffer().array()));
+    private KafkaHeader toAxleHeader(Header header) {
+        return KafkaHeader.header(header.key(), Buffer.buffer(header.value().asByteBuffer().array()));
     }
 }

@@ -52,7 +52,7 @@ public class SnowdropKafkaProducerTest {
             .withKey(1)
             .withTimestamp(2)
             .withPartition(3)
-            .withHeader(KafkaHeader.create("h1", "v1"))
+            .withHeader(Header.create("h1", "v1"))
             .build();
         StepVerifier.create(producer.send(record))
             .expectNext(new SnowdropKafkaRecordMetadata(vertxRecordMetadata))
@@ -192,7 +192,7 @@ public class SnowdropKafkaProducerTest {
             .withKey(1)
             .withTimestamp(2)
             .withPartition(3)
-            .withHeader(KafkaHeader.create("h1", "v1"))
+            .withHeader(Header.create("h1", "v1"))
             .build();
         StepVerifier.create(producer.write(record))
             .verifyComplete();

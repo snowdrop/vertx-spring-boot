@@ -29,8 +29,8 @@ public class KafkaProducerRecordTest {
             .withKey(1)
             .withTimestamp(2)
             .withPartition(3)
-            .withHeader(KafkaHeader.create("key1", "value1"))
-            .withHeaders(Collections.singletonList(KafkaHeader.create("key2", "value2")))
+            .withHeader(Header.create("key1", "value1"))
+            .withHeaders(Collections.singletonList(Header.create("key2", "value2")))
             .build();
 
         assertThat(record.getTopic()).isEqualTo("test-topic");
@@ -39,6 +39,6 @@ public class KafkaProducerRecordTest {
         assertThat(record.getTimestamp()).isEqualTo(2);
         assertThat(record.getPartition()).isEqualTo(3);
         assertThat(record.getHeaders())
-            .containsOnly(KafkaHeader.create("key1", "value1"), KafkaHeader.create("key2", "value2"));
+            .containsOnly(Header.create("key1", "value1"), Header.create("key2", "value2"));
     }
 }

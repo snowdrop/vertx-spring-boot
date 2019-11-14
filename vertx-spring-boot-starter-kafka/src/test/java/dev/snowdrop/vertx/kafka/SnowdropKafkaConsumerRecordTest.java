@@ -88,8 +88,8 @@ public class SnowdropKafkaConsumerRecordTest {
         given(mockDelegate.headers()).willReturn(axleHeaders);
 
         assertThat(record.headers()).containsOnly(
-            KafkaHeader.create("h1", "v1"),
-            KafkaHeader.create("h2", "v2")
+            Header.create("h1", "v1"),
+            Header.create("h2", "v2")
         );
     }
 }

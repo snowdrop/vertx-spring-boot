@@ -18,5 +18,5 @@ public interface KafkaConsumerRecord<K, V> {
 
     V value();
 
-    List<KafkaHeader> headers();
+    List<Header> headers();
 }
