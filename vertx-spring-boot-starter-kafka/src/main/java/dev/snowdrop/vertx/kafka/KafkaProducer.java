@@ -1,6 +1,7 @@
 package dev.snowdrop.vertx.kafka;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import dev.snowdrop.vertx.streams.WriteStream;
 import reactor.core.publisher.Flux;
@@ -18,7 +19,7 @@ public interface KafkaProducer<K, V> extends WriteStream<KafkaProducerRecord<K, 
 
     Mono<Void> close(long timeout);
 
-    org.apache.kafka.clients.producer.Producer<K, V> unwrap();
+    <T> Mono<T> doOnVertxProducer(Function<io.vertx.kafka.client.producer.KafkaProducer<K, V>, T> function);
 
     // WriteStream methods overload
 

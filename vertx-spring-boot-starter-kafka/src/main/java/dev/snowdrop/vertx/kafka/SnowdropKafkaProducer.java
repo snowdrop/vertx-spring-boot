@@ -1,9 +1,9 @@
 package dev.snowdrop.vertx.kafka;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import io.vertx.core.streams.WriteStream;
-import org.apache.kafka.clients.producer.Producer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -52,9 +52,16 @@ public final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
     }
 
     @Override
-    @SuppressWarnings("unchecked") // Axle uses correct generic types, but returns a delegate without them
-    public Producer<K, V> unwrap() {
-        return delegate.getDelegate().unwrap();
+    @SuppressWarnings("unchecked") // Axle API returns KafkaProducer without generics
+    public <T> Mono<T> doOnVertxProducer(Function<io.vertx.kafka.client.producer.KafkaProducer<K, V>, T> function) {
+        return Mono.create(sink -> {
+            try {
+                T result = function.apply((io.vertx.kafka.client.producer.KafkaProducer<K, V>) delegate.getDelegate());
+                sink.success(result);
+            } catch (Throwable t) {
+                sink.error(t);
+            }
+        });
     }
 
     @Override

@@ -2,19 +2,12 @@ package dev.snowdrop.vertx.kafka.it;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import dev.snowdrop.vertx.kafka.KafkaProducer;
 import dev.snowdrop.vertx.kafka.KafkaProducerRecord;
 import dev.snowdrop.vertx.kafka.SnowdropKafkaProducer;
 import io.vertx.core.Vertx;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,18 +63,6 @@ public class ProducerIT {
                 assertThat(metadata.getPartition()).isEqualTo(0);
             })
             .verifyComplete();
-    }
-
-    @Test
-    public void shouldSendWithUnwrappedProducer() throws InterruptedException, ExecutionException, TimeoutException {
-        Producer<String, String> unwrappedProducer = producer.unwrap();
-        ProducerRecord<String, String> record = new ProducerRecord<>("test", "test-value");
-
-        Future<RecordMetadata> sendFuture = unwrappedProducer.send(record);
-        RecordMetadata metadata = sendFuture.get(2, TimeUnit.SECONDS);
-
-        assertThat(metadata.topic()).isEqualTo("test");
-        assertThat(metadata.partition()).isEqualTo(0);
     }
 
     @Test

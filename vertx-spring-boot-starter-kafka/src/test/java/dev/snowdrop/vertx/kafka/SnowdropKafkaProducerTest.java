@@ -1,12 +1,10 @@
 package dev.snowdrop.vertx.kafka;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
-import io.vertx.kafka.client.common.Node;
 import io.vertx.kafka.client.common.PartitionInfo;
 import io.vertx.kafka.client.producer.RecordMetadata;
 import org.junit.Before;
@@ -16,39 +14,39 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import reactor.test.StepVerifier;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SnowdropKafkaProducerTest {
 
     @Mock
-    private io.vertx.axle.kafka.client.producer.KafkaProducer<Integer, String> mockAxleKafkaProducer;
+    private io.vertx.axle.kafka.client.producer.KafkaProducer<Integer, String> mockAxleProducer;
 
     @Mock
-    private io.vertx.kafka.client.producer.KafkaProducer<Integer, String> mockVertxKafkaProducer;
-
-    @Mock
-    private org.apache.kafka.clients.producer.Producer<Integer, String> mockKafkaProducer;
+    private io.vertx.kafka.client.producer.KafkaProducer<Integer, String> mockVertxProducer;
 
     private KafkaProducer<Integer, String> producer;
 
     @Before
     public void setUp() {
-        producer = new SnowdropKafkaProducer<>(mockAxleKafkaProducer);
+        producer = new SnowdropKafkaProducer<>(mockAxleProducer);
     }
 
     @Test
     public void shouldSend() {
+        RecordMetadata vertxRecordMetadata = mock(RecordMetadata.class);
+
+        given(mockAxleProducer.send(any()))
+            .willReturn(completedFuture(vertxRecordMetadata));
+
         KafkaProducerRecord<Integer, String> record = KafkaProducerRecord
             .builder("topic", "value", Integer.class)
             .build();
-        RecordMetadata vertxRecordMetadata = new RecordMetadata(1, 2, 3, 4, "topic");
-
-        given(mockAxleKafkaProducer.send(any()))
-            .willReturn(CompletableFuture.completedFuture(vertxRecordMetadata));
 
         StepVerifier.create(producer.send(record))
             .expectNext(new SnowdropKafkaRecordMetadata(vertxRecordMetadata))
@@ -57,28 +55,26 @@ public class SnowdropKafkaProducerTest {
 
     @Test
     public void shouldGetPartition() {
-        List<Node> vertxKafkaNodes = Arrays.asList(
-            new Node(true, "test-host", 1, "1", true, 8080, "test-rack"),
-            new Node(true, "test-host", 2, "2", true, 8080, "test-rack")
-        );
-        PartitionInfo vertxKafkaPartitionInfo =
-            new PartitionInfo(vertxKafkaNodes, vertxKafkaNodes.get(0), 1, vertxKafkaNodes, "test-topic");
+        PartitionInfo firstPartitionInfo = mock(PartitionInfo.class);
+        PartitionInfo secondPartitionInfo = mock(PartitionInfo.class);
 
-        given(mockAxleKafkaProducer.partitionsFor("test-topic")).willReturn(
-            CompletableFuture.completedFuture(Collections.singletonList(vertxKafkaPartitionInfo)));
+        given(mockAxleProducer.partitionsFor("test-topic"))
+            .willReturn(completedFuture(Arrays.asList(firstPartitionInfo, secondPartitionInfo)));
 
         StepVerifier.create(producer.partitionsFor("test-topic"))
-            .expectNext(new SnowdropKafkaPartitionInfo(vertxKafkaPartitionInfo))
+            .expectNext(new SnowdropKafkaPartitionInfo(firstPartitionInfo))
+            .expectNext(new SnowdropKafkaPartitionInfo(secondPartitionInfo))
             .verifyComplete();
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void shouldFlush() {
-        given(mockAxleKafkaProducer.flush(any())).will(a -> {
-            ((Consumer<Void>) a.getArgument(0)).accept(null);
-            return mockAxleKafkaProducer;
-        });
+        given(mockAxleProducer.flush(any()))
+            .will(a -> {
+                ((Consumer<Void>) a.getArgument(0)).accept(null);
+                return mockAxleProducer;
+            });
 
         StepVerifier.create(producer.flush())
             .verifyComplete();
@@ -86,7 +82,8 @@ public class SnowdropKafkaProducerTest {
 
     @Test
     public void shouldHandleFlushFailure() {
-        given(mockAxleKafkaProducer.flush(any())).willThrow(new RuntimeException("test"));
+        given(mockAxleProducer.flush(any()))
+            .willThrow(new RuntimeException("test"));
 
         StepVerifier.create(producer.flush())
             .verifyErrorMessage("test");
@@ -94,7 +91,8 @@ public class SnowdropKafkaProducerTest {
 
     @Test
     public void shouldClose() {
-        given(mockAxleKafkaProducer.close()).willReturn(CompletableFuture.completedFuture(null));
+        given(mockAxleProducer.close())
+            .willReturn(completedFuture(null));
 
         StepVerifier.create(producer.close())
             .verifyComplete();
@@ -102,18 +100,29 @@ public class SnowdropKafkaProducerTest {
 
     @Test
     public void shouldCloseWithTimeout() {
-        given(mockAxleKafkaProducer.close(1L)).willReturn(CompletableFuture.completedFuture(null));
+        given(mockAxleProducer.close(1L))
+            .willReturn(completedFuture(null));
 
         StepVerifier.create(producer.close(1L))
             .verifyComplete();
     }
 
     @Test
-    public void shouldUnwrap() {
-        given(mockAxleKafkaProducer.getDelegate()).willReturn(mockVertxKafkaProducer);
-        given(mockVertxKafkaProducer.unwrap()).willReturn(mockKafkaProducer);
+    public void shouldDoOnVertxProducer() {
+        given(mockAxleProducer.getDelegate())
+            .willReturn(mockVertxProducer);
 
-        assertThat(producer.unwrap()).isEqualTo(mockKafkaProducer);
+        AtomicReference<io.vertx.kafka.client.producer.KafkaProducer<Integer, String>> vertxConsumer =
+            new AtomicReference<>();
+        Function<io.vertx.kafka.client.producer.KafkaProducer<Integer, String>, Boolean> function = vp -> {
+            vertxConsumer.set(vp);
+            return true;
+        };
+
+        StepVerifier.create(producer.doOnVertxProducer(function))
+            .expectNext(true)
+            .verifyComplete();
+        assertThat(vertxConsumer.get()).isEqualTo(mockVertxProducer);
     }
 
     @Test
@@ -122,7 +131,7 @@ public class SnowdropKafkaProducerTest {
 
         producer.exceptionHandler(handler);
 
-        verify(mockAxleKafkaProducer).exceptionHandler(handler);
+        verify(mockAxleProducer).exceptionHandler(handler);
     }
 
     @Test
@@ -131,19 +140,19 @@ public class SnowdropKafkaProducerTest {
 
         producer.drainHandler(handler);
 
-        verify(mockAxleKafkaProducer).drainHandler(handler);
+        verify(mockAxleProducer).drainHandler(handler);
     }
 
     @Test
     public void shouldWriteQueueMaxSize() {
         producer.setWriteQueueMaxSize(1);
 
-        verify(mockAxleKafkaProducer).setWriteQueueMaxSize(1);
+        verify(mockAxleProducer).setWriteQueueMaxSize(1);
     }
 
     @Test
     public void shouldCheckIfWriteQueueIsFull() {
-        given(mockAxleKafkaProducer.writeQueueFull()).willReturn(true);
+        given(mockAxleProducer.writeQueueFull()).willReturn(true);
 
         assertThat(producer.writeQueueFull()).isTrue();
     }
@@ -154,7 +163,8 @@ public class SnowdropKafkaProducerTest {
             .builder("topic", "value", Integer.class)
             .build();
 
-        given(mockAxleKafkaProducer.write(any())).willReturn(CompletableFuture.completedFuture(null));
+        given(mockAxleProducer.write(any()))
+            .willReturn(completedFuture(null));
 
         StepVerifier.create(producer.write(data))
             .verifyComplete();
@@ -162,7 +172,8 @@ public class SnowdropKafkaProducerTest {
 
     @Test
     public void shouldEnd() {
-        given(mockAxleKafkaProducer.end()).willReturn(CompletableFuture.completedFuture(null));
+        given(mockAxleProducer.end())
+            .willReturn(completedFuture(null));
 
         StepVerifier.create(producer.end())
             .verifyComplete();
@@ -170,8 +181,9 @@ public class SnowdropKafkaProducerTest {
 
     @Test
     public void shouldGetVertxWriteStream() {
-        given(mockAxleKafkaProducer.getDelegate()).willReturn(mockVertxKafkaProducer);
+        given(mockAxleProducer.getDelegate())
+            .willReturn(mockVertxProducer);
 
-        assertThat(producer.vertxWriteStream()).isEqualTo(mockVertxKafkaProducer);
+        assertThat(producer.vertxWriteStream()).isEqualTo(mockVertxProducer);
     }
 }
