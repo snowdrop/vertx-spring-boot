@@ -2,7 +2,7 @@ package dev.snowdrop.vertx.kafka;
 
 import java.util.Objects;
 
-class SnowdropTimestampType implements TimestampType {
+final class SnowdropTimestampType implements TimestampType {
 
     private final int id;
 
@@ -34,7 +34,7 @@ class SnowdropTimestampType implements TimestampType {
         }
 
         SnowdropTimestampType that = (SnowdropTimestampType) o;
-        
+
         return id == that.id &&
             Objects.equals(name, that.name);
     }

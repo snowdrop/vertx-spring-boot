@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import io.vertx.axle.kafka.client.consumer.KafkaConsumerRecord;
 
-class SnowdropConsumerRecord<K, V> implements ConsumerRecord<K, V> {
+final class SnowdropConsumerRecord<K, V> implements ConsumerRecord<K, V> {
 
     private final KafkaConsumerRecord<K, V> delegate;
 

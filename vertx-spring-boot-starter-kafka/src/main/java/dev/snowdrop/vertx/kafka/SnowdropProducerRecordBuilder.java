@@ -3,7 +3,7 @@ package dev.snowdrop.vertx.kafka;
 import java.util.LinkedList;
 import java.util.List;
 
-class SnowdropProducerRecordBuilder<K, V> implements ProducerRecordBuilder<SnowdropProducerRecord<K, V>, K, V> {
+final class SnowdropProducerRecordBuilder<K, V> implements ProducerRecordBuilder<SnowdropProducerRecord<K, V>, K, V> {
 
     private final String topic;
 

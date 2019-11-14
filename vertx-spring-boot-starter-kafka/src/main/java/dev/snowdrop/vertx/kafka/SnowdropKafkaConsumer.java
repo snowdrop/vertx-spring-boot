@@ -37,14 +37,14 @@ public final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
     }
 
     @Override
-    public Mono<Void> assign(KafkaTopicPartition partition) {
-        return Mono.fromCompletionStage(delegate.assign(partition.toVertxTopicPartition()));
+    public Mono<Void> assign(Partition partition) {
+        return Mono.fromCompletionStage(delegate.assign(toVertxTopicPartition(partition)));
     }
 
     @Override
-    public Mono<Void> assign(Flux<KafkaTopicPartition> partitions) {
+    public Mono<Void> assign(Flux<Partition> partitions) {
         Set<TopicPartition> vertxPartitions = partitions
-            .map(KafkaTopicPartition::toVertxTopicPartition)
+            .map(this::toVertxTopicPartition)
             .collect(Collectors.toSet())
             .block();
 
@@ -63,10 +63,10 @@ public final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
     }
 
     @Override
-    public Flux<KafkaTopicPartition> assignments() {
+    public Flux<Partition> assignments() {
         return Mono.fromCompletionStage(delegate.assignment())
             .flatMapMany(Flux::fromIterable)
-            .map(KafkaTopicPartition::create);
+            .map(SnowdropPartition::new);
     }
 
     @Override
@@ -77,41 +77,41 @@ public final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
     }
 
     @Override
-    public void partitionsRevokedHandler(Consumer<Flux<KafkaTopicPartition>> handler) {
+    public void partitionsRevokedHandler(Consumer<Flux<Partition>> handler) {
         delegate.partitionsRevokedHandler(axleTopicPartitions -> {
-            Flux<KafkaTopicPartition> kafkaTopicPartitions = Flux
+            Flux<Partition> partitions = Flux
                 .fromIterable(axleTopicPartitions)
-                .map(KafkaTopicPartition::create);
+                .map(SnowdropPartition::new);
 
-            handler.accept(kafkaTopicPartitions);
+            handler.accept(partitions);
         });
     }
 
     @Override
-    public void partitionsAssignedHandler(Consumer<Flux<KafkaTopicPartition>> handler) {
+    public void partitionsAssignedHandler(Consumer<Flux<Partition>> handler) {
         delegate.partitionsAssignedHandler(axleTopicPartitions -> {
-            Flux<KafkaTopicPartition> kafkaTopicPartitions = Flux
+            Flux<Partition> partitions = Flux
                 .fromIterable(axleTopicPartitions)
-                .map(KafkaTopicPartition::create);
+                .map(SnowdropPartition::new);
 
-            handler.accept(kafkaTopicPartitions);
+            handler.accept(partitions);
         });
     }
 
     @Override
-    public Mono<Void> seek(KafkaTopicPartition partition, long offset) {
-        return Mono.fromCompletionStage(delegate.seek(partition.toVertxTopicPartition(), offset));
+    public Mono<Void> seek(Partition partition, long offset) {
+        return Mono.fromCompletionStage(delegate.seek(toVertxTopicPartition(partition), offset));
     }
 
     @Override
-    public Mono<Void> seekToBeginning(KafkaTopicPartition partition) {
-        return Mono.fromCompletionStage(delegate.seekToBeginning(partition.toVertxTopicPartition()));
+    public Mono<Void> seekToBeginning(Partition partition) {
+        return Mono.fromCompletionStage(delegate.seekToBeginning(toVertxTopicPartition(partition)));
     }
 
     @Override
-    public Mono<Void> seekToBeginning(Flux<KafkaTopicPartition> partitions) {
+    public Mono<Void> seekToBeginning(Flux<Partition> partitions) {
         Set<TopicPartition> vertxPartitions = partitions
-            .map(KafkaTopicPartition::toVertxTopicPartition)
+            .map(this::toVertxTopicPartition)
             .collect(Collectors.toSet())
             .block();
 
@@ -119,14 +119,14 @@ public final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
     }
 
     @Override
-    public Mono<Void> seekToEnd(KafkaTopicPartition partition) {
-        return Mono.fromCompletionStage(delegate.seekToEnd(partition.toVertxTopicPartition()));
+    public Mono<Void> seekToEnd(Partition partition) {
+        return Mono.fromCompletionStage(delegate.seekToEnd(toVertxTopicPartition(partition)));
     }
 
     @Override
-    public Mono<Void> seekToEnd(Flux<KafkaTopicPartition> partitions) {
+    public Mono<Void> seekToEnd(Flux<Partition> partitions) {
         Set<TopicPartition> vertxPartitions = partitions
-            .map(KafkaTopicPartition::toVertxTopicPartition)
+            .map(this::toVertxTopicPartition)
             .collect(Collectors.toSet())
             .block();
 
@@ -134,29 +134,29 @@ public final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
     }
 
     @Override
-    public Mono<Long> position(KafkaTopicPartition partition) {
-        return Mono.fromCompletionStage(delegate.position(partition.toVertxTopicPartition()));
+    public Mono<Long> position(Partition partition) {
+        return Mono.fromCompletionStage(delegate.position(toVertxTopicPartition(partition)));
     }
 
     @Override
-    public Mono<Long> committed(KafkaTopicPartition topicPartition) {
-        return Mono.fromCompletionStage(delegate.committed(topicPartition.toVertxTopicPartition()))
+    public Mono<Long> committed(Partition partition) {
+        return Mono.fromCompletionStage(delegate.committed(toVertxTopicPartition(partition)))
             .map(OffsetAndMetadata::getOffset);
     }
 
     @Override
-    public Mono<Long> beginningOffset(KafkaTopicPartition partition) {
-        return Mono.fromCompletionStage(delegate.beginningOffsets(partition.toVertxTopicPartition()));
+    public Mono<Long> beginningOffset(Partition partition) {
+        return Mono.fromCompletionStage(delegate.beginningOffsets(toVertxTopicPartition(partition)));
     }
 
     @Override
-    public Mono<Long> endOffset(KafkaTopicPartition partition) {
-        return Mono.fromCompletionStage(delegate.endOffsets(partition.toVertxTopicPartition()));
+    public Mono<Long> endOffset(Partition partition) {
+        return Mono.fromCompletionStage(delegate.endOffsets(toVertxTopicPartition(partition)));
     }
 
     @Override
-    public Mono<Long> timeOffset(KafkaTopicPartition partition, long timestamp) {
-        return Mono.fromCompletionStage(delegate.offsetsForTimes(partition.toVertxTopicPartition(), timestamp))
+    public Mono<Long> timeOffset(Partition partition, long timestamp) {
+        return Mono.fromCompletionStage(delegate.offsetsForTimes(toVertxTopicPartition(partition), timestamp))
             .map(OffsetAndTimestamp::getOffset);
     }
 
@@ -198,5 +198,9 @@ public final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
     @Override
     public ReadStream vertxReadStream() {
         return delegate.getDelegate();
+    }
+
+    private TopicPartition toVertxTopicPartition(Partition partition) {
+        return new TopicPartition(partition.topic(), partition.partition());
     }
 }

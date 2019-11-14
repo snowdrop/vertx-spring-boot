@@ -13,41 +13,41 @@ public interface KafkaConsumer<K, V> extends ReadStream<ConsumerRecord<K, V>> {
 
     Mono<Void> subscribe(Flux<String> topics);
 
-    Mono<Void> assign(KafkaTopicPartition partition);
+    Mono<Void> assign(Partition partition);
 
-    Mono<Void> assign(Flux<KafkaTopicPartition> partitions);
+    Mono<Void> assign(Flux<Partition> partitions);
 
     Mono<Void> unsubscribe();
 
     Flux<String> subscriptions();
 
-    Flux<KafkaTopicPartition> assignments();
+    Flux<Partition> assignments();
 
     Flux<KafkaPartitionInfo> partitionsFor(String topic);
 
-    void partitionsRevokedHandler(Consumer<Flux<KafkaTopicPartition>> handler);
+    void partitionsRevokedHandler(Consumer<Flux<Partition>> handler);
 
-    void partitionsAssignedHandler(Consumer<Flux<KafkaTopicPartition>> handler);
+    void partitionsAssignedHandler(Consumer<Flux<Partition>> handler);
 
-    Mono<Void> seek(KafkaTopicPartition partition, long offset);
+    Mono<Void> seek(Partition partition, long offset);
 
-    Mono<Void> seekToBeginning(KafkaTopicPartition partition);
+    Mono<Void> seekToBeginning(Partition partition);
 
-    Mono<Void> seekToBeginning(Flux<KafkaTopicPartition> partitions);
+    Mono<Void> seekToBeginning(Flux<Partition> partitions);
 
-    Mono<Void> seekToEnd(KafkaTopicPartition partition);
+    Mono<Void> seekToEnd(Partition partition);
 
-    Mono<Void> seekToEnd(Flux<KafkaTopicPartition> partitions);
+    Mono<Void> seekToEnd(Flux<Partition> partitions);
 
-    Mono<Long> position(KafkaTopicPartition partition);
+    Mono<Long> position(Partition partition);
 
-    Mono<Long> committed(KafkaTopicPartition partition);
+    Mono<Long> committed(Partition partition);
 
-    Mono<Long> beginningOffset(KafkaTopicPartition partition);
+    Mono<Long> beginningOffset(Partition partition);
 
-    Mono<Long> endOffset(KafkaTopicPartition partition);
+    Mono<Long> endOffset(Partition partition);
 
-    Mono<Long> timeOffset(KafkaTopicPartition partition, long timestamp);
+    Mono<Long> timeOffset(Partition partition, long timestamp);
 
     Mono<Void> commit();
 

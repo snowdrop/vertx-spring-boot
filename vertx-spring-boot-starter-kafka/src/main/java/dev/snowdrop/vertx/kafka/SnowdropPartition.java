@@ -5,13 +5,13 @@ import java.util.Objects;
 import io.vertx.kafka.client.common.TopicPartition;
 import org.springframework.util.StringUtils;
 
-public final class KafkaTopicPartition {
+final class SnowdropPartition implements Partition {
 
     private final String topic;
 
     private final int partition;
 
-    public static KafkaTopicPartition create(String topic, int partition) {
+    SnowdropPartition(String topic, int partition) {
         if (StringUtils.isEmpty(topic)) {
             throw new IllegalArgumentException("Topic cannot be empty");
         }
@@ -20,23 +20,21 @@ public final class KafkaTopicPartition {
             throw new IllegalArgumentException("Partition cannot be negative");
         }
 
-        return new KafkaTopicPartition(topic, partition);
-    }
-
-    static KafkaTopicPartition create(TopicPartition vertxTopicPartition) {
-        return new KafkaTopicPartition(vertxTopicPartition.getTopic(), vertxTopicPartition.getPartition());
-    }
-
-    private KafkaTopicPartition(String topic, int partition) {
         this.topic = topic;
         this.partition = partition;
     }
 
-    public String getTopic() {
+    SnowdropPartition(TopicPartition topicPartition) {
+        this(topicPartition.getTopic(), topicPartition.getPartition());
+    }
+
+    @Override
+    public String topic() {
         return topic;
     }
 
-    public int getPartition() {
+    @Override
+    public int partition() {
         return partition;
     }
 
@@ -50,7 +48,7 @@ public final class KafkaTopicPartition {
             return false;
         }
 
-        KafkaTopicPartition that = (KafkaTopicPartition) o;
+        SnowdropPartition that = (SnowdropPartition) o;
 
         return partition == that.partition &&
             Objects.equals(topic, that.topic);
@@ -63,7 +61,7 @@ public final class KafkaTopicPartition {
 
     @Override
     public String toString() {
-        return String.format("%s{topic='%s', partition=%d}", KafkaTopicPartition.class.getSimpleName(), topic,
+        return String.format("%s{topic='%s', partition=%d}", SnowdropPartition.class.getSimpleName(), topic,
             partition);
     }
 
