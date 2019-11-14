@@ -135,8 +135,8 @@ public class SnowdropKafkaConsumerTest {
             .willReturn(completedFuture(asList(firstPartition, secondPartition)));
 
         StepVerifier.create(consumer.partitionsFor("test-topic"))
-            .expectNext(new SnowdropKafkaPartitionInfo(firstPartition))
-            .expectNext(new SnowdropKafkaPartitionInfo(secondPartition))
+            .expectNext(new SnowdropPartitionInfo(firstPartition))
+            .expectNext(new SnowdropPartitionInfo(secondPartition))
             .verifyComplete();
     }
 

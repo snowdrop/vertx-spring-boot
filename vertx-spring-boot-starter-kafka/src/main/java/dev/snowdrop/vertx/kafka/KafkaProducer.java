@@ -11,7 +11,7 @@ public interface KafkaProducer<K, V> extends WriteStream<ProducerRecord<K, V>> {
 
     Mono<RecordMetadata> send(ProducerRecord<K, V> record);
 
-    Flux<KafkaPartitionInfo> partitionsFor(String topic);
+    Flux<PartitionInfo> partitionsFor(String topic);
 
     Mono<Void> flush();
 

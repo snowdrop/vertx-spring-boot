@@ -2,7 +2,7 @@ package dev.snowdrop.vertx.kafka;
 
 import java.util.List;
 
-public interface KafkaPartitionInfo {
+public interface PartitionInfo {
 
     String getTopic();
 

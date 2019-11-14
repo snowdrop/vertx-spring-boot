@@ -5,9 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import io.vertx.kafka.client.common.PartitionInfo;
-
-final class SnowdropKafkaPartitionInfo implements KafkaPartitionInfo {
+final class SnowdropPartitionInfo implements PartitionInfo {
 
     private final String topic;
 
@@ -19,7 +17,7 @@ final class SnowdropKafkaPartitionInfo implements KafkaPartitionInfo {
 
     private final Node leader;
 
-    SnowdropKafkaPartitionInfo(PartitionInfo vertxPartitionInfo) {
+    SnowdropPartitionInfo(io.vertx.kafka.client.common.PartitionInfo vertxPartitionInfo) {
         this.topic = vertxPartitionInfo.getTopic();
         this.partition = vertxPartitionInfo.getPartition();
         this.replicas = (vertxPartitionInfo.getReplicas() == null
@@ -69,7 +67,7 @@ final class SnowdropKafkaPartitionInfo implements KafkaPartitionInfo {
             return false;
         }
 
-        SnowdropKafkaPartitionInfo that = (SnowdropKafkaPartitionInfo) o;
+        SnowdropPartitionInfo that = (SnowdropPartitionInfo) o;
 
         return partition == that.partition &&
             Objects.equals(topic, that.topic) &&

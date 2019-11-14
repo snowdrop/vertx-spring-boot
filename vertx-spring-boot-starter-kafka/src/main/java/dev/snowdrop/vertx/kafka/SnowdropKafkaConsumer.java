@@ -70,10 +70,10 @@ public final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
     }
 
     @Override
-    public Flux<KafkaPartitionInfo> partitionsFor(String topic) {
+    public Flux<PartitionInfo> partitionsFor(String topic) {
         return Mono.fromCompletionStage(delegate.partitionsFor(topic))
             .flatMapMany(Flux::fromIterable)
-            .map(SnowdropKafkaPartitionInfo::new);
+            .map(SnowdropPartitionInfo::new);
     }
 
     @Override

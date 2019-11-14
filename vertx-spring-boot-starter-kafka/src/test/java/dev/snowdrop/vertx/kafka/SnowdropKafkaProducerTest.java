@@ -84,8 +84,8 @@ public class SnowdropKafkaProducerTest {
             .willReturn(completedFuture(Arrays.asList(firstPartitionInfo, secondPartitionInfo)));
 
         StepVerifier.create(producer.partitionsFor("test-topic"))
-            .expectNext(new SnowdropKafkaPartitionInfo(firstPartitionInfo))
-            .expectNext(new SnowdropKafkaPartitionInfo(secondPartitionInfo))
+            .expectNext(new SnowdropPartitionInfo(firstPartitionInfo))
+            .expectNext(new SnowdropPartitionInfo(secondPartitionInfo))
             .verifyComplete();
     }
 

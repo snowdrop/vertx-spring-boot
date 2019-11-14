@@ -23,7 +23,7 @@ public interface KafkaConsumer<K, V> extends ReadStream<ConsumerRecord<K, V>> {
 
     Flux<Partition> assignments();
 
-    Flux<KafkaPartitionInfo> partitionsFor(String topic);
+    Flux<PartitionInfo> partitionsFor(String topic);
 
     void partitionsRevokedHandler(Consumer<Flux<Partition>> handler);
 
