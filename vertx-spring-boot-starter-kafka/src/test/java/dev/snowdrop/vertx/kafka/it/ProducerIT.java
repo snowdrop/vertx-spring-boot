@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import dev.snowdrop.vertx.kafka.KafkaProducer;
-import dev.snowdrop.vertx.kafka.KafkaProducerRecord;
+import dev.snowdrop.vertx.kafka.ProducerRecord;
 import dev.snowdrop.vertx.kafka.SnowdropKafkaProducer;
 import io.vertx.core.Vertx;
 import org.junit.After;
@@ -53,8 +53,8 @@ public class ProducerIT {
 
     @Test
     public void shouldSend() {
-        KafkaProducerRecord<String, String> record = KafkaProducerRecord
-            .builder("test", "test-value", String.class)
+        ProducerRecord<String, String> record = ProducerRecord
+            .<String, String>builder("test", "test-value")
             .build();
 
         StepVerifier.create(producer.send(record))
@@ -67,8 +67,8 @@ public class ProducerIT {
 
     @Test
     public void shouldWrite() {
-        KafkaProducerRecord<String, String> record = KafkaProducerRecord
-            .builder("test", "test-value", String.class)
+        ProducerRecord<String, String> record = ProducerRecord
+            .<String, String>builder("test", "test-value")
             .build();
 
         StepVerifier.create(producer.write(record))
@@ -90,8 +90,8 @@ public class ProducerIT {
 
     @Test
     public void shouldCloseAndHandleException() {
-        KafkaProducerRecord<String, String> record = KafkaProducerRecord
-            .builder("test", "test-value", String.class)
+        ProducerRecord<String, String> record = ProducerRecord
+            .<String, String>builder("test", "test-value")
             .build();
 
         AtomicBoolean wasExceptionHandled = new AtomicBoolean(false);

@@ -47,9 +47,8 @@ public class SnowdropKafkaProducerTest {
             .willReturn(completedFuture(vertxRecordMetadata));
 
         // Create snowdrop producer record and send it
-        KafkaProducerRecord<Integer, String> record = KafkaProducerRecord
-            .builder("topic", "value", Integer.class)
-            .withKey(1)
+        ProducerRecord<Integer, String> record = ProducerRecord
+            .builder("topic", "value", 1)
             .withTimestamp(2)
             .withPartition(3)
             .withHeader(Header.create("h1", "v1"))
@@ -187,9 +186,8 @@ public class SnowdropKafkaProducerTest {
             .willReturn(completedFuture(null));
 
         // Create snowdrop producer record and write it
-        KafkaProducerRecord<Integer, String> record = KafkaProducerRecord
-            .builder("topic", "value", Integer.class)
-            .withKey(1)
+        ProducerRecord<Integer, String> record = ProducerRecord
+            .builder("topic", "value", 1)
             .withTimestamp(2)
             .withPartition(3)
             .withHeader(Header.create("h1", "v1"))

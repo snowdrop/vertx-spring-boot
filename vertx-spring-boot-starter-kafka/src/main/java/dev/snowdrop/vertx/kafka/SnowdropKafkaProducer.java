@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import io.vertx.axle.core.buffer.Buffer;
 import io.vertx.axle.kafka.client.producer.KafkaHeader;
+import io.vertx.axle.kafka.client.producer.KafkaProducerRecord;
 import io.vertx.core.streams.WriteStream;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -22,7 +23,7 @@ public final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
     }
 
     @Override
-    public Mono<KafkaRecordMetadata> send(KafkaProducerRecord<K, V> record) {
+    public Mono<KafkaRecordMetadata> send(ProducerRecord<K, V> record) {
         return Mono.fromCompletionStage(delegate.send(toAxleProducerRecord(record)))
             .map(SnowdropKafkaRecordMetadata::new);
     }
@@ -92,7 +93,7 @@ public final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
     }
 
     @Override
-    public Mono<Void> write(KafkaProducerRecord<K, V> record) {
+    public Mono<Void> write(ProducerRecord<K, V> record) {
         return Mono.fromCompletionStage(delegate.write(toAxleProducerRecord(record)));
     }
 
@@ -106,18 +107,15 @@ public final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
         return delegate.getDelegate();
     }
 
-    private io.vertx.axle.kafka.client.producer.KafkaProducerRecord<K, V> toAxleProducerRecord(
-        KafkaProducerRecord<K, V> record) {
-
+    private KafkaProducerRecord<K, V> toAxleProducerRecord(ProducerRecord<K, V> record) {
         List<KafkaHeader> axleHeaders = record
-            .getHeaders()
+            .headers()
             .stream()
             .map(this::toAxleHeader)
             .collect(Collectors.toList());
 
-        // TODO use import
-        return io.vertx.axle.kafka.client.producer.KafkaProducerRecord
-            .create(record.getTopic(), record.getKey(), record.getValue(), record.getTimestamp(), record.getPartition())
+        return KafkaProducerRecord
+            .create(record.topic(), record.key(), record.value(), record.timestamp(), record.partition())
             .addHeaders(axleHeaders);
     }
 

@@ -7,9 +7,9 @@ import dev.snowdrop.vertx.streams.WriteStream;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public interface KafkaProducer<K, V> extends WriteStream<KafkaProducerRecord<K, V>> {
+public interface KafkaProducer<K, V> extends WriteStream<ProducerRecord<K, V>> {
 
-    Mono<KafkaRecordMetadata> send(KafkaProducerRecord<K, V> record);
+    Mono<KafkaRecordMetadata> send(ProducerRecord<K, V> record);
 
     Flux<KafkaPartitionInfo> partitionsFor(String topic);
 
