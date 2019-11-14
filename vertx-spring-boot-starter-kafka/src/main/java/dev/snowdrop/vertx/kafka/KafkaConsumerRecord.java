@@ -12,7 +12,7 @@ public interface KafkaConsumerRecord<K, V> {
 
     long timestamp();
 
-    KafkaTimestampType timestampType();
+    TimestampType timestampType();
 
     K key();
 

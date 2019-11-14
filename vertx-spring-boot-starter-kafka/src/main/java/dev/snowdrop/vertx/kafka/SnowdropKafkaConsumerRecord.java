@@ -33,8 +33,8 @@ class SnowdropKafkaConsumerRecord<K, V> implements KafkaConsumerRecord<K, V> {
     }
 
     @Override
-    public KafkaTimestampType timestampType() {
-        return new SnowdropKafkaTimestampType(delegate.timestampType());
+    public TimestampType timestampType() {
+        return new SnowdropTimestampType(delegate.timestampType());
     }
 
     @Override

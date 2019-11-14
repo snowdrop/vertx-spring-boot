@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.common.record.TimestampType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,9 +59,11 @@ public class SnowdropKafkaConsumerRecordTest {
 
     @Test
     public void shouldGetTimestampType() {
-        given(mockDelegate.timestampType()).willReturn(TimestampType.CREATE_TIME);
+        given(mockDelegate.timestampType())
+            .willReturn(org.apache.kafka.common.record.TimestampType.CREATE_TIME);
 
-        assertThat(record.timestampType()).isEqualTo(new SnowdropKafkaTimestampType(TimestampType.CREATE_TIME));
+        assertThat(record.timestampType())
+            .isEqualTo(new SnowdropTimestampType(org.apache.kafka.common.record.TimestampType.CREATE_TIME));
     }
 
     @Test
