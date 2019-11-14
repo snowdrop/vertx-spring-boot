@@ -1,19 +1,16 @@
 package dev.snowdrop.vertx.kafka;
 
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
-import io.vertx.kafka.client.common.Node;
 import io.vertx.kafka.client.common.PartitionInfo;
 import io.vertx.kafka.client.common.TopicPartition;
 import io.vertx.kafka.client.consumer.OffsetAndMetadata;
+import io.vertx.kafka.client.consumer.OffsetAndTimestamp;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,37 +20,37 @@ import org.mockito.junit.MockitoJUnitRunner;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
+import static java.util.Arrays.asList;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.mock;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SnowdropKafkaConsumerTest {
 
     @Mock
-    private io.vertx.kafka.client.consumer.KafkaConsumer<Integer, String> mockVertxKafkaConsumer;
+    private io.vertx.kafka.client.consumer.KafkaConsumer<Integer, String> mockVertxConsumer;
 
     @Mock
-    private io.vertx.axle.kafka.client.consumer.KafkaConsumer<Integer, String> mockAxleKafkaConsumer;
+    private io.vertx.axle.kafka.client.consumer.KafkaConsumer<Integer, String> mockAxleConsumer;
 
     @Mock
-    private io.vertx.axle.kafka.client.consumer.KafkaConsumerRecords<Integer, String> mockAxleKafkaConsumerRecords;
-
-    @Mock
-    private io.vertx.axle.kafka.client.consumer.KafkaConsumerRecord<Integer, String> mockAxleKafkaConsumerRecord;
+    private io.vertx.axle.kafka.client.consumer.KafkaConsumerRecord<Integer, String> mockAxleConsumerRecord;
 
     private SnowdropKafkaConsumer<Integer, String> consumer;
 
     @Before
     public void setUp() {
-        consumer = new SnowdropKafkaConsumer<>(mockAxleKafkaConsumer);
+        consumer = new SnowdropKafkaConsumer<>(mockAxleConsumer);
     }
 
     @Test
     public void shouldSubscribeToSingleTopic() {
-        given(mockAxleKafkaConsumer.subscribe("test-topic")).willReturn(CompletableFuture.completedFuture(null));
+        given(mockAxleConsumer.subscribe("test-topic"))
+            .willReturn(completedFuture(null));
 
         StepVerifier.create(consumer.subscribe("test-topic"))
             .verifyComplete();
@@ -61,18 +58,17 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldSubscribeToMultipleTopics() {
-        Set<String> topics = new HashSet<>(Arrays.asList("test-topic-1", "test-topic-2"));
+        given(mockAxleConsumer.subscribe(toSet("test-topic-1", "test-topic-2")))
+            .willReturn(completedFuture(null));
 
-        given(mockAxleKafkaConsumer.subscribe(topics)).willReturn(CompletableFuture.completedFuture(null));
-
-        StepVerifier.create(consumer.subscribe(topics))
+        StepVerifier.create(consumer.subscribe(Flux.just("test-topic-1", "test-topic-2")))
             .verifyComplete();
     }
 
     @Test
     public void shouldAssignSinglePartition() {
-        given(mockAxleKafkaConsumer.assign(new TopicPartition("test-topic", 1)))
-            .willReturn(CompletableFuture.completedFuture(null));
+        given(mockAxleConsumer.assign(new TopicPartition("test-topic", 1)))
+            .willReturn(completedFuture(null));
 
         StepVerifier.create(consumer.assign(KafkaTopicPartition.create("test-topic", 1)))
             .verifyComplete();
@@ -80,38 +76,25 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldAssignMultiplePartitions() {
-        Set<KafkaTopicPartition> kafkaTopicPartitions = new HashSet<>(Arrays.asList(
+        Set<TopicPartition> vertxPartitions = toSet(
+            new TopicPartition("test-topic-1", 0),
+            new TopicPartition("test-topic-2", 1)
+        );
+        given(mockAxleConsumer.assign(vertxPartitions))
+            .willReturn(completedFuture(null));
+
+        Flux<KafkaTopicPartition> partitions = Flux.just(
             KafkaTopicPartition.create("test-topic-1", 0),
             KafkaTopicPartition.create("test-topic-2", 1)
-        ));
-        Set<TopicPartition> vertxTopicPartitions = new HashSet<>(Arrays.asList(
-            new TopicPartition("test-topic-1", 0),
-            new TopicPartition("test-topic-2", 1)
-        ));
-
-        given(mockAxleKafkaConsumer.assign(vertxTopicPartitions)).willReturn(CompletableFuture.completedFuture(null));
-
-        StepVerifier.create(consumer.assign(kafkaTopicPartitions))
-            .verifyComplete();
-    }
-
-    @Test
-    public void shouldGetAssignment() {
-        Set<TopicPartition> vertxTopicPartitions = new HashSet<>(Arrays.asList(
-            new TopicPartition("test-topic-1", 0),
-            new TopicPartition("test-topic-2", 1)
-        ));
-        given(mockAxleKafkaConsumer.assignment()).willReturn(CompletableFuture.completedFuture(vertxTopicPartitions));
-
-        StepVerifier.create(consumer.assignment())
-            .expectNext(KafkaTopicPartition.create("test-topic-1", 0))
-            .expectNext(KafkaTopicPartition.create("test-topic-2", 1))
+        );
+        StepVerifier.create(consumer.assign(partitions))
             .verifyComplete();
     }
 
     @Test
     public void shouldUnsubscribe() {
-        given(mockAxleKafkaConsumer.unsubscribe()).willReturn(CompletableFuture.completedFuture(null));
+        given(mockAxleConsumer.unsubscribe())
+            .willReturn(completedFuture(null));
 
         StepVerifier.create(consumer.unsubscribe())
             .verifyComplete();
@@ -119,124 +102,106 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldGetSubscriptions() {
-        Set<String> topics = new HashSet<>(Arrays.asList("test-topic-1", "test-topic-2"));
-        given(mockAxleKafkaConsumer.subscription()).willReturn(CompletableFuture.completedFuture(topics));
+        given(mockAxleConsumer.subscription())
+            .willReturn(completedFuture(toSet("test-topic-1", "test-topic-2")));
 
-        StepVerifier.create(consumer.subscription())
-            .expectNextSequence(topics)
+        StepVerifier.create(consumer.subscriptions())
+            .expectNext("test-topic-1")
+            .expectNext("test-topic-2")
             .verifyComplete();
     }
 
     @Test
-    public void shouldPauseSinglePartition() {
-        given(mockAxleKafkaConsumer.pause(new TopicPartition("test-topic", 1)))
-            .willReturn(CompletableFuture.completedFuture(null));
-
-        StepVerifier.create(consumer.pause(KafkaTopicPartition.create("test-topic", 1)))
-            .verifyComplete();
-    }
-
-    @Test
-    public void shouldPauseMultiplePartitions() {
-        Set<KafkaTopicPartition> kafkaTopicPartitions = new HashSet<>(Arrays.asList(
-            KafkaTopicPartition.create("test-topic-1", 0),
-            KafkaTopicPartition.create("test-topic-2", 1)
-        ));
-        Set<TopicPartition> vertxTopicPartitions = new HashSet<>(Arrays.asList(
+    public void shouldGetAssignments() {
+        Set<TopicPartition> vertxPartitions = toSet(
             new TopicPartition("test-topic-1", 0),
             new TopicPartition("test-topic-2", 1)
-        ));
-        given(mockAxleKafkaConsumer.pause(vertxTopicPartitions))
-            .willReturn(CompletableFuture.completedFuture(null));
+        );
+        given(mockAxleConsumer.assignment())
+            .willReturn(completedFuture(vertxPartitions));
 
-        StepVerifier.create(consumer.pause(kafkaTopicPartitions))
-            .verifyComplete();
-    }
-
-    @Test
-    public void shouldGetPausedPartitions() {
-        Set<TopicPartition> vertxTopicPartitions = new HashSet<>(Arrays.asList(
-            new TopicPartition("test-topic-1", 0),
-            new TopicPartition("test-topic-2", 1)
-        ));
-        given(mockAxleKafkaConsumer.paused()).willReturn(CompletableFuture.completedFuture(vertxTopicPartitions));
-
-        StepVerifier.create(consumer.paused())
+        StepVerifier.create(consumer.assignments())
             .expectNext(KafkaTopicPartition.create("test-topic-1", 0))
             .expectNext(KafkaTopicPartition.create("test-topic-2", 1))
             .verifyComplete();
     }
 
     @Test
-    public void shouldResumeSinglePartition() {
-        given(mockAxleKafkaConsumer.resume(new TopicPartition("test-topic", 1)))
-            .willReturn(CompletableFuture.completedFuture(null));
+    public void shouldGetPartitionsFor() {
+        PartitionInfo firstPartition = mock(PartitionInfo.class);
+        PartitionInfo secondPartition = mock(PartitionInfo.class);
 
-        StepVerifier.create(consumer.resume(KafkaTopicPartition.create("test-topic", 1)))
-            .verifyComplete();
-    }
+        given(mockAxleConsumer.partitionsFor("test-topic"))
+            .willReturn(completedFuture(asList(firstPartition, secondPartition)));
 
-    @Test
-    public void shouldResumeMultiplePartitions() {
-        Set<KafkaTopicPartition> kafkaTopicPartitions = new HashSet<>(Arrays.asList(
-            KafkaTopicPartition.create("test-topic-1", 0),
-            KafkaTopicPartition.create("test-topic-2", 1)
-        ));
-        Set<TopicPartition> vertxTopicPartitions = new HashSet<>(Arrays.asList(
-            new TopicPartition("test-topic-1", 0),
-            new TopicPartition("test-topic-2", 1)
-        ));
-        given(mockAxleKafkaConsumer.resume(vertxTopicPartitions))
-            .willReturn(CompletableFuture.completedFuture(null));
-
-        StepVerifier.create(consumer.resume(kafkaTopicPartitions))
+        StepVerifier.create(consumer.partitionsFor("test-topic"))
+            .expectNext(new SnowdropKafkaPartitionInfo(firstPartition))
+            .expectNext(new SnowdropKafkaPartitionInfo(secondPartition))
             .verifyComplete();
     }
 
     @Test
     public void shouldAddPartitionsRevokedHandler() {
-        given(mockAxleKafkaConsumer.partitionsRevokedHandler(any()))
+        given(mockAxleConsumer.partitionsRevokedHandler(any()))
             .will(a -> {
                 Consumer<Set<TopicPartition>> handler = a.getArgument(0);
-                handler.accept(Collections.singleton(new TopicPartition("test-topic", 1)));
-                return mockAxleKafkaConsumer;
+                handler.accept(toSet(
+                    new TopicPartition("test-topic", 1),
+                    new TopicPartition("test-topic", 2)
+                ));
+                return mockAxleConsumer;
             });
 
         AtomicReference<Flux<KafkaTopicPartition>> futureTopicPartition = new AtomicReference<>();
         consumer.partitionsRevokedHandler(futureTopicPartition::set);
 
-        await().atMost(Duration.ofSeconds(2))
+        await()
+            .atMost(Duration.ofSeconds(2))
             .untilAtomic(futureTopicPartition, Matchers.is(Matchers.notNullValue()));
 
+        Set<KafkaTopicPartition> partitions = toSet(
+            KafkaTopicPartition.create("test-topic", 1),
+            KafkaTopicPartition.create("test-topic", 2)
+        );
         StepVerifier.create(futureTopicPartition.get())
-            .expectNext(KafkaTopicPartition.create("test-topic", 1))
+            .assertNext(p -> assertThat(partitions.remove(p)).isTrue())
+            .assertNext(p -> assertThat(partitions.remove(p)).isTrue())
             .verifyComplete();
     }
 
     @Test
     public void shouldAddPartitionsAssignedHandler() {
-        given(mockAxleKafkaConsumer.partitionsAssignedHandler(any()))
+        given(mockAxleConsumer.partitionsAssignedHandler(any()))
             .will(a -> {
                 Consumer<Set<TopicPartition>> handler = a.getArgument(0);
-                handler.accept(Collections.singleton(new TopicPartition("test-topic", 1)));
-                return mockAxleKafkaConsumer;
+                handler.accept(toSet(
+                    new TopicPartition("test-topic", 1),
+                    new TopicPartition("test-topic", 2)
+                ));
+                return mockAxleConsumer;
             });
 
         AtomicReference<Flux<KafkaTopicPartition>> futureTopicPartition = new AtomicReference<>();
         consumer.partitionsAssignedHandler(futureTopicPartition::set);
 
-        await().atMost(Duration.ofSeconds(2))
+        await()
+            .atMost(Duration.ofSeconds(2))
             .untilAtomic(futureTopicPartition, Matchers.is(Matchers.notNullValue()));
 
+        Set<KafkaTopicPartition> partitions = toSet(
+            KafkaTopicPartition.create("test-topic", 1),
+            KafkaTopicPartition.create("test-topic", 2)
+        );
         StepVerifier.create(futureTopicPartition.get())
-            .expectNext(KafkaTopicPartition.create("test-topic", 1))
+            .assertNext(p -> assertThat(partitions.remove(p)).isTrue())
+            .assertNext(p -> assertThat(partitions.remove(p)).isTrue())
             .verifyComplete();
     }
 
     @Test
     public void shouldSeek() {
-        given(mockAxleKafkaConsumer.seek(new TopicPartition("test-topic", 1), 2))
-            .willReturn(CompletableFuture.completedFuture(null));
+        given(mockAxleConsumer.seek(new TopicPartition("test-topic", 1), 2))
+            .willReturn(completedFuture(null));
 
         StepVerifier.create(consumer.seek(KafkaTopicPartition.create("test-topic", 1), 2))
             .verifyComplete();
@@ -244,8 +209,8 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldSeekToBeginningOfSinglePartition() {
-        given(mockAxleKafkaConsumer.seekToBeginning(new TopicPartition("test-topic", 1)))
-            .willReturn(CompletableFuture.completedFuture(null));
+        given(mockAxleConsumer.seekToBeginning(new TopicPartition("test-topic", 1)))
+            .willReturn(completedFuture(null));
 
         StepVerifier.create(consumer.seekToBeginning(KafkaTopicPartition.create("test-topic", 1)))
             .verifyComplete();
@@ -253,18 +218,22 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldSeekToBeginningOfMultiplePartitions() {
-        given(mockAxleKafkaConsumer.seekToBeginning(Collections.singleton(new TopicPartition("test-topic", 1))))
-            .willReturn(CompletableFuture.completedFuture(null));
+        given(mockAxleConsumer.seekToBeginning(toSet(
+            new TopicPartition("test-topic", 1),
+            new TopicPartition("test-topic", 2)))
+        ).willReturn(completedFuture(null));
 
         StepVerifier
-            .create(consumer.seekToBeginning(Collections.singleton(KafkaTopicPartition.create("test-topic", 1))))
-            .verifyComplete();
+            .create(consumer.seekToBeginning(Flux.just(
+                KafkaTopicPartition.create("test-topic", 1),
+                KafkaTopicPartition.create("test-topic", 2)))
+            ).verifyComplete();
     }
 
     @Test
     public void shouldSeekToEndOfSinglePartition() {
-        given(mockAxleKafkaConsumer.seekToEnd(new TopicPartition("test-topic", 1)))
-            .willReturn(CompletableFuture.completedFuture(null));
+        given(mockAxleConsumer.seekToEnd(new TopicPartition("test-topic", 1)))
+            .willReturn(completedFuture(null));
 
         StepVerifier.create(consumer.seekToEnd(KafkaTopicPartition.create("test-topic", 1)))
             .verifyComplete();
@@ -272,81 +241,22 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldSeekToEndOfMultiplePartitions() {
-        given(mockAxleKafkaConsumer.seekToEnd(Collections.singleton(new TopicPartition("test-topic", 1))))
-            .willReturn(CompletableFuture.completedFuture(null));
+        given(mockAxleConsumer.seekToEnd(toSet(
+            new TopicPartition("test-topic", 1),
+            new TopicPartition("test-topic", 2)))
+        ).willReturn(completedFuture(null));
 
         StepVerifier
-            .create(consumer.seekToEnd(Collections.singleton(KafkaTopicPartition.create("test-topic", 1))))
-            .verifyComplete();
-    }
-
-    @Test
-    public void shouldCommit() {
-        given(mockAxleKafkaConsumer.commit())
-            .willReturn(CompletableFuture.completedFuture(null));
-
-        StepVerifier.create(consumer.commit())
-            .verifyComplete();
-    }
-
-    @Test
-    public void shouldGetCommittedOffset() {
-        given(mockAxleKafkaConsumer.committed(new TopicPartition("test-topic", 1)))
-            .willReturn(CompletableFuture.completedFuture(new OffsetAndMetadata(2, "test-metadata")));
-
-        StepVerifier.create(consumer.committed(KafkaTopicPartition.create("test-topic", 1)))
-            .expectNext(new SnowdropKafkaOffsetAndMetadata(2, "test-metadata"))
-            .verifyComplete();
-    }
-
-    @Test
-    public void getPartitionsFor() {
-        List<Node> vertxKafkaNodes = Arrays.asList(
-            new Node(true, "test-host", 1, "1", true, 8080, "test-rack"),
-            new Node(true, "test-host", 2, "2", true, 8080, "test-rack")
-        );
-        PartitionInfo vertxKafkaPartitionInfo =
-            new PartitionInfo(vertxKafkaNodes, vertxKafkaNodes.get(0), 1, vertxKafkaNodes, "test-topic");
-
-        given(mockAxleKafkaConsumer.partitionsFor("test-topic")).willReturn(
-            CompletableFuture.completedFuture(Collections.singletonList(vertxKafkaPartitionInfo)));
-
-        StepVerifier.create(consumer.partitionsFor("test-topic"))
-            .expectNext(new SnowdropKafkaPartitionInfo(vertxKafkaPartitionInfo))
-            .verifyComplete();
-    }
-
-    @Test
-    public void shouldAddBatchHandler() {
-        given(mockAxleKafkaConsumer.batchHandler(any()))
-            .will(a -> {
-                Consumer<io.vertx.axle.kafka.client.consumer.KafkaConsumerRecords> handler = a.getArgument(0);
-                handler.accept(mockAxleKafkaConsumerRecords);
-                return mockAxleKafkaConsumer;
-            });
-
-        AtomicReference<KafkaConsumerRecords<Integer, String>> futureRecords = new AtomicReference<>();
-        consumer.batchHandler(futureRecords::set);
-
-        await().atMost(Duration.ofSeconds(2))
-            .untilAtomic(futureRecords, Matchers.is(Matchers.notNullValue()));
-
-        assertThat(futureRecords.get()).isEqualTo(new SnowdropKafkaConsumerRecords<>(mockAxleKafkaConsumerRecords));
-    }
-
-    @Test
-    public void shouldClose() {
-        given(mockAxleKafkaConsumer.close())
-            .willReturn(CompletableFuture.completedFuture(null));
-
-        StepVerifier.create(consumer.close())
-            .verifyComplete();
+            .create(consumer.seekToEnd(Flux.just(
+                KafkaTopicPartition.create("test-topic", 1),
+                KafkaTopicPartition.create("test-topic", 2)))
+            ).verifyComplete();
     }
 
     @Test
     public void shouldGetPosition() {
-        given(mockAxleKafkaConsumer.position(new TopicPartition("test-topic", 1)))
-            .willReturn(CompletableFuture.completedFuture(1L));
+        given(mockAxleConsumer.position(new TopicPartition("test-topic", 1)))
+            .willReturn(completedFuture(1L));
 
         StepVerifier.create(consumer.position(KafkaTopicPartition.create("test-topic", 1)))
             .expectNext(1L)
@@ -354,76 +264,108 @@ public class SnowdropKafkaConsumerTest {
     }
 
     @Test
-    public void shouldGetOffsetForTimes() {
-        io.vertx.kafka.client.consumer.OffsetAndTimestamp vertxOffsetAndTimestamp =
-            new io.vertx.kafka.client.consumer.OffsetAndTimestamp(3L, 4L);
-        given(mockAxleKafkaConsumer.offsetsForTimes(new TopicPartition("test-topic", 1), 2L))
-            .willReturn(CompletableFuture.completedFuture(vertxOffsetAndTimestamp));
+    public void shouldGetCommitted() {
+        given(mockAxleConsumer.committed(new TopicPartition("test-topic", 1)))
+            .willReturn(completedFuture(new OffsetAndMetadata(2, "test-metadata")));
 
-        StepVerifier.create(consumer.offsetsForTimes(KafkaTopicPartition.create("test-topic", 1), 2L))
-            .expectNext(new SnowdropKafkaOffsetAndTimestamp(vertxOffsetAndTimestamp))
+        StepVerifier.create(consumer.committed(KafkaTopicPartition.create("test-topic", 1)))
+            .expectNext(2L)
             .verifyComplete();
     }
 
     @Test
     public void shouldGetBeginningOffset() {
-        given(mockAxleKafkaConsumer.beginningOffsets(new TopicPartition("test-topic", 1)))
-            .willReturn(CompletableFuture.completedFuture(2L));
+        given(mockAxleConsumer.beginningOffsets(new TopicPartition("test-topic", 1)))
+            .willReturn(completedFuture(2L));
 
-        StepVerifier.create(consumer.beginningOffsets(KafkaTopicPartition.create("test-topic", 1)))
+        StepVerifier.create(consumer.beginningOffset(KafkaTopicPartition.create("test-topic", 1)))
             .expectNext(2L)
             .verifyComplete();
     }
 
     @Test
     public void shouldGetEndOffset() {
-        given(mockAxleKafkaConsumer.endOffsets(new TopicPartition("test-topic", 1)))
-            .willReturn(CompletableFuture.completedFuture(2L));
+        given(mockAxleConsumer.endOffsets(new TopicPartition("test-topic", 1)))
+            .willReturn(completedFuture(2L));
 
-        StepVerifier.create(consumer.endOffsets(KafkaTopicPartition.create("test-topic", 1)))
+        StepVerifier.create(consumer.endOffset(KafkaTopicPartition.create("test-topic", 1)))
             .expectNext(2L)
             .verifyComplete();
     }
 
     @Test
-    public void shouldSetPollTimeout() {
-        consumer.pollTimeout(1);
+    public void shouldGetTimeOffset() {
+        given(mockAxleConsumer.offsetsForTimes(new TopicPartition("test-topic", 1), 2L))
+            .willReturn(completedFuture(new OffsetAndTimestamp(2L, 3L)));
 
-        verify(mockAxleKafkaConsumer).pollTimeout(1);
-    }
-
-    @Test
-    public void shouldPollRecords() {
-        given(mockAxleKafkaConsumer.poll(1L))
-            .willReturn(CompletableFuture.completedFuture(mockAxleKafkaConsumerRecords));
-
-        StepVerifier.create(consumer.poll(1))
-            .expectNext(new SnowdropKafkaConsumerRecords<>(mockAxleKafkaConsumerRecords))
+        StepVerifier.create(consumer.timeOffset(KafkaTopicPartition.create("test-topic", 1), 2L))
+            .expectNext(2L)
             .verifyComplete();
     }
 
     @Test
+    public void shouldCommit() {
+        given(mockAxleConsumer.commit())
+            .willReturn(completedFuture(null));
+
+        StepVerifier.create(consumer.commit())
+            .verifyComplete();
+    }
+
+    @Test
+    public void shouldClose() {
+        given(mockAxleConsumer.close())
+            .willReturn(completedFuture(null));
+
+        StepVerifier.create(consumer.close())
+            .verifyComplete();
+    }
+
+    @Test
+    public void shouldDoOnVertxConsumer() {
+        given(mockAxleConsumer.getDelegate())
+            .willReturn(mockVertxConsumer);
+
+        AtomicReference<io.vertx.kafka.client.consumer.KafkaConsumer<Integer, String>> vertxConsumer =
+            new AtomicReference<>();
+        Function<io.vertx.kafka.client.consumer.KafkaConsumer<Integer, String>, Boolean> function = vc -> {
+            vertxConsumer.set(vc);
+            return true;
+        };
+
+        StepVerifier.create(consumer.doOnVertxConsumer(function))
+            .expectNext(true)
+            .verifyComplete();
+        assertThat(vertxConsumer.get()).isEqualTo(mockVertxConsumer);
+    }
+
+    @Test
     public void shouldGetMono() {
-        given(mockAxleKafkaConsumer.toPublisher()).willReturn(Flux.just(mockAxleKafkaConsumerRecord));
+        given(mockAxleConsumer.toPublisher()).willReturn(Flux.just(mockAxleConsumerRecord));
 
         StepVerifier.create(consumer.mono())
-            .expectNext(new SnowdropKafkaConsumerRecord<>(mockAxleKafkaConsumerRecord))
+            .expectNext(new SnowdropKafkaConsumerRecord<>(mockAxleConsumerRecord))
             .verifyComplete();
     }
 
     @Test
     public void shouldGetFlux() {
-        given(mockAxleKafkaConsumer.toPublisher()).willReturn(Flux.just(mockAxleKafkaConsumerRecord));
+        given(mockAxleConsumer.toPublisher()).willReturn(Flux.just(mockAxleConsumerRecord));
 
         StepVerifier.create(consumer.flux())
-            .expectNext(new SnowdropKafkaConsumerRecord<>(mockAxleKafkaConsumerRecord))
+            .expectNext(new SnowdropKafkaConsumerRecord<>(mockAxleConsumerRecord))
             .verifyComplete();
     }
 
     @Test
     public void shouldGetVertxReadStream() {
-        given(mockAxleKafkaConsumer.getDelegate()).willReturn(mockVertxKafkaConsumer);
+        given(mockAxleConsumer.getDelegate()).willReturn(mockVertxConsumer);
 
-        assertThat(consumer.vertxReadStream()).isEqualTo(mockVertxKafkaConsumer);
+        assertThat(consumer.vertxReadStream()).isEqualTo(mockVertxConsumer);
+    }
+
+    @SafeVarargs
+    private final <T> Set<T> toSet(T... elements) {
+        return new HashSet<T>(asList(elements));
     }
 }
