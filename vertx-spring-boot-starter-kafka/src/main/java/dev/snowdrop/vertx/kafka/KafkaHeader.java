@@ -24,6 +24,13 @@ public final class KafkaHeader {
         return new KafkaHeader(key, value);
     }
 
+    static KafkaHeader create(io.vertx.axle.kafka.client.producer.KafkaHeader axelHeader) {
+        DataBuffer valueBuffer = new DefaultDataBufferFactory()
+            .wrap(axelHeader.value().getBytes());
+
+        return create(axelHeader.key(), valueBuffer);
+    }
+
     private KafkaHeader(String key, DataBuffer value) {
         this.key = key;
         this.value = value;

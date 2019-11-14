@@ -7,6 +7,4 @@ public interface KafkaConsumerRecords<K, V> {
     boolean isEmpty();
 
     KafkaConsumerRecord<K, V> recordAt(int index);
-
-    org.apache.kafka.clients.consumer.ConsumerRecords<K, V> unwrap();
 }

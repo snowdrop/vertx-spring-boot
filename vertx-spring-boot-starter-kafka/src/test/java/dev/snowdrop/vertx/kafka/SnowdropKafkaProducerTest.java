@@ -67,7 +67,7 @@ public class SnowdropKafkaProducerTest {
         given(mockAxleKafkaProducer.partitionsFor("test-topic")).willReturn(
             CompletableFuture.completedFuture(Collections.singletonList(vertxKafkaPartitionInfo)));
 
-        StepVerifier.create(producer.partitionFor("test-topic"))
+        StepVerifier.create(producer.partitionsFor("test-topic"))
             .expectNext(new SnowdropKafkaPartitionInfo(vertxKafkaPartitionInfo))
             .verifyComplete();
     }

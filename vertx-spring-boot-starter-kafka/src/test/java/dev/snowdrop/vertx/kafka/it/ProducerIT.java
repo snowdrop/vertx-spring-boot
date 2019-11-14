@@ -96,7 +96,7 @@ public class ProducerIT {
 
     @Test
     public void shouldGetPartitionInfo() {
-        StepVerifier.create(producer.partitionFor("test"))
+        StepVerifier.create(producer.partitionsFor("test"))
             .assertNext(partitionInfo -> {
                 assertThat(partitionInfo.getTopic()).isEqualTo("test");
                 assertThat(partitionInfo.getPartition()).isEqualTo(0);

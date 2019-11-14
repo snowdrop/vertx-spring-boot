@@ -12,13 +12,11 @@ public interface KafkaConsumerRecord<K, V> {
 
     long timestamp();
 
-    TimestampType timestampType();
+    KafkaTimestampType timestampType();
 
     K key();
 
     V value();
 
     List<KafkaHeader> headers();
-
-    org.apache.kafka.clients.consumer.ConsumerRecord<K, V> unwrap();
 }

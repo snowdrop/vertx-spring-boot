@@ -24,7 +24,7 @@ public final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
     }
 
     @Override
-    public Flux<KafkaPartitionInfo> partitionFor(String topic) {
+    public Flux<KafkaPartitionInfo> partitionsFor(String topic) {
         return Mono.fromCompletionStage(delegate.partitionsFor(topic))
             .flatMapMany(Flux::fromIterable)
             .map(SnowdropKafkaPartitionInfo::new);

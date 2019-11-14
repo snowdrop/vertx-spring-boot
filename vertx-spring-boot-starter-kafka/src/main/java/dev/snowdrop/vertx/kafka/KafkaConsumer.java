@@ -1,9 +1,7 @@
 package dev.snowdrop.vertx.kafka;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 import dev.snowdrop.vertx.streams.ReadStream;
 import reactor.core.publisher.Flux;
@@ -15,49 +13,43 @@ public interface KafkaConsumer<K, V> extends ReadStream<KafkaConsumerRecord<K, V
 
     Mono<Void> subscribe(Set<String> topics);
 
-    Mono<Void> subscribe(Pattern pattern);
+    Mono<Void> assign(KafkaTopicPartition partition);
 
-    Mono<Void> assign(TopicPartition partition);
+    Mono<Void> assign(Set<KafkaTopicPartition> partitions);
 
-    Mono<Void> assign(Set<TopicPartition> partitions);
-
-    Flux<TopicPartition> assignment();
-
-    Flux<KafkaPartitionInfo> listTopics();
+    Flux<KafkaTopicPartition> assignment();
 
     Mono<Void> unsubscribe();
 
     Flux<String> subscription();
 
-    Mono<Void> pause(TopicPartition partition);
+    Mono<Void> pause(KafkaTopicPartition partition);
 
-    Mono<Void> pause(Set<TopicPartition> partitions);
+    Mono<Void> pause(Set<KafkaTopicPartition> partitions);
 
-    Flux<TopicPartition> paused();
+    Flux<KafkaTopicPartition> paused();
 
-    Mono<Void> resume(TopicPartition partition);
+    Mono<Void> resume(KafkaTopicPartition partition);
 
-    Mono<Void> resume(Set<TopicPartition> partitions);
+    Mono<Void> resume(Set<KafkaTopicPartition> partitions);
 
-    void partitionsRevokedHandler(Consumer<Flux<TopicPartition>> handler);
+    void partitionsRevokedHandler(Consumer<Flux<KafkaTopicPartition>> handler);
 
-    void partitionsAssignedHandler(Consumer<Flux<TopicPartition>> handler);
+    void partitionsAssignedHandler(Consumer<Flux<KafkaTopicPartition>> handler);
 
-    Mono<Void> seek(TopicPartition partition, long offset);
+    Mono<Void> seek(KafkaTopicPartition partition, long offset);
 
-    Mono<Void> seekToBeginning(TopicPartition partition);
+    Mono<Void> seekToBeginning(KafkaTopicPartition partition);
 
-    Mono<Void> seekToBeginning(Set<TopicPartition> partitions);
+    Mono<Void> seekToBeginning(Set<KafkaTopicPartition> partitions);
 
-    Mono<Void> seekToEnd(TopicPartition partition);
+    Mono<Void> seekToEnd(KafkaTopicPartition partition);
 
-    Mono<Void> seekToEnd(Set<TopicPartition> partitions);
+    Mono<Void> seekToEnd(Set<KafkaTopicPartition> partitions);
 
     Mono<Void> commit();
 
-    Mono<Map<TopicPartition, OffsetAndMetadata>> commit(Map<TopicPartition, OffsetAndMetadata> offsets);
-
-    Mono<OffsetAndMetadata> committed(TopicPartition topicPartition);
+    Mono<KafkaOffsetAndMetadata> committed(KafkaTopicPartition topicPartition);
 
     Flux<KafkaPartitionInfo> partitionsFor(String topic);
 
@@ -65,23 +57,15 @@ public interface KafkaConsumer<K, V> extends ReadStream<KafkaConsumerRecord<K, V
 
     Mono<Void> close();
 
-    Mono<Long> position(TopicPartition partition);
+    Mono<Long> position(KafkaTopicPartition partition);
 
-    Mono<Map<TopicPartition, OffsetAndTimestamp>> offsetsForTimes(Map<TopicPartition, Long> partitionTimestamps);
+    Mono<KafkaOffsetAndTimestamp> offsetsForTimes(KafkaTopicPartition partition, Long timestamp);
 
-    Mono<OffsetAndTimestamp> offsetsForTimes(TopicPartition partition, Long timestamp);
+    Mono<Long> beginningOffsets(KafkaTopicPartition partition);
 
-    Mono<Long> beginningOffsets(TopicPartition partition);
-
-    Mono<Map<TopicPartition, Long>> beginningOffsets(Set<TopicPartition> partitions);
-
-    Mono<Long> endOffsets(TopicPartition partition);
-
-    Mono<Map<TopicPartition, Long>> endOffsets(Set<TopicPartition> partitions);
+    Mono<Long> endOffsets(KafkaTopicPartition partition);
 
     void pollTimeout(long timeout);
 
     Mono<KafkaConsumerRecords<K, V>> poll(long timeout);
-
-    org.apache.kafka.clients.consumer.Consumer<K, V> unwrap();
 }
