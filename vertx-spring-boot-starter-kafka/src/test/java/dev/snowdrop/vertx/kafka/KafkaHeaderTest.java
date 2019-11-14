@@ -29,14 +29,4 @@ public class KafkaHeaderTest {
         assertThat(header.getKey()).isEqualTo("key");
         assertThat(header.getValue()).isEqualTo(value);
     }
-
-    @Test
-    public void shouldConvertToAxleKafkaHeader() {
-        io.vertx.axle.kafka.client.producer.KafkaHeader axleHeader = KafkaHeader
-            .create("key", "value")
-            .toAxleKafkaHeader();
-
-        assertThat(axleHeader.key()).isEqualTo("key");
-        assertThat(axleHeader.value()).isEqualTo(Buffer.buffer("value"));
-    }
 }

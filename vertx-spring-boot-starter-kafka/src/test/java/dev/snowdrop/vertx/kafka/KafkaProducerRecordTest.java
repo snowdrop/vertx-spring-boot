@@ -41,24 +41,4 @@ public class KafkaProducerRecordTest {
         assertThat(record.getHeaders())
             .containsOnly(KafkaHeader.create("key1", "value1"), KafkaHeader.create("key2", "value2"));
     }
-
-    @Test
-    public void shouldConvertToAxleKafkaProducerRecord() {
-        io.vertx.axle.kafka.client.producer.KafkaProducerRecord<Integer, String> record = KafkaProducerRecord
-            .builder("test-topic", "test-value", Integer.class)
-            .withKey(1)
-            .withTimestamp(2)
-            .withPartition(3)
-            .withHeader(KafkaHeader.create("key1", "value1"))
-            .withHeaders(Collections.singletonList(KafkaHeader.create("key2", "value2")))
-            .build()
-            .toAxleKafkaProducerRecord();
-
-        assertThat(record.topic()).isEqualTo("test-topic");
-        assertThat(record.value()).isEqualTo("test-value");
-        assertThat(record.key()).isEqualTo(1);
-        assertThat(record.timestamp()).isEqualTo(2);
-        assertThat(record.partition()).isEqualTo(3);
-        assertThat(record.headers()).hasSize(2);
-    }
 }

@@ -10,6 +10,7 @@ import io.vertx.kafka.client.producer.RecordMetadata;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import reactor.test.StepVerifier;
@@ -38,19 +39,41 @@ public class SnowdropKafkaProducerTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldSend() {
-        RecordMetadata vertxRecordMetadata = mock(RecordMetadata.class);
-
+        // Setup a response to be returned by Axle producer
+        RecordMetadata vertxRecordMetadata = new RecordMetadata(1, 2, 3, 4, "t");
         given(mockAxleProducer.send(any()))
             .willReturn(completedFuture(vertxRecordMetadata));
 
+        // Create snowdrop producer record and send it
         KafkaProducerRecord<Integer, String> record = KafkaProducerRecord
             .builder("topic", "value", Integer.class)
+            .withKey(1)
+            .withTimestamp(2)
+            .withPartition(3)
+            .withHeader(KafkaHeader.create("h1", "v1"))
             .build();
-
         StepVerifier.create(producer.send(record))
             .expectNext(new SnowdropKafkaRecordMetadata(vertxRecordMetadata))
             .verifyComplete();
+
+        // Capture axle producer record submitted by snowdrop producer
+        ArgumentCaptor<io.vertx.axle.kafka.client.producer.KafkaProducerRecord<Integer, String>> axleRecordCaptor =
+            ArgumentCaptor.forClass(io.vertx.axle.kafka.client.producer.KafkaProducerRecord.class);
+        verify(mockAxleProducer).send(axleRecordCaptor.capture());
+        io.vertx.axle.kafka.client.producer.KafkaProducerRecord<Integer, String> axleRecord =
+            axleRecordCaptor.getValue();
+
+        // Verify that snowdrop producer converted records correctly
+        assertThat(axleRecord.topic()).isEqualTo("topic");
+        assertThat(axleRecord.value()).isEqualTo("value");
+        assertThat(axleRecord.key()).isEqualTo(1);
+        assertThat(axleRecord.timestamp()).isEqualTo(2);
+        assertThat(axleRecord.partition()).isEqualTo(3);
+        assertThat(axleRecord.headers()).hasSize(1);
+        assertThat(axleRecord.headers().get(0).key()).isEqualTo("h1");
+        assertThat(axleRecord.headers().get(0).value().toString()).isEqualTo("v1");
     }
 
     @Test
@@ -158,16 +181,38 @@ public class SnowdropKafkaProducerTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldWrite() {
-        KafkaProducerRecord<Integer, String> data = KafkaProducerRecord
-            .builder("topic", "value", Integer.class)
-            .build();
-
         given(mockAxleProducer.write(any()))
             .willReturn(completedFuture(null));
 
-        StepVerifier.create(producer.write(data))
+        // Create snowdrop producer record and write it
+        KafkaProducerRecord<Integer, String> record = KafkaProducerRecord
+            .builder("topic", "value", Integer.class)
+            .withKey(1)
+            .withTimestamp(2)
+            .withPartition(3)
+            .withHeader(KafkaHeader.create("h1", "v1"))
+            .build();
+        StepVerifier.create(producer.write(record))
             .verifyComplete();
+
+        // Capture axle producer record submitted by snowdrop producer
+        ArgumentCaptor<io.vertx.axle.kafka.client.producer.KafkaProducerRecord<Integer, String>> axleRecordCaptor =
+            ArgumentCaptor.forClass(io.vertx.axle.kafka.client.producer.KafkaProducerRecord.class);
+        verify(mockAxleProducer).write(axleRecordCaptor.capture());
+        io.vertx.axle.kafka.client.producer.KafkaProducerRecord<Integer, String> axleRecord =
+            axleRecordCaptor.getValue();
+
+        // Verify that snowdrop producer converted records correctly
+        assertThat(axleRecord.topic()).isEqualTo("topic");
+        assertThat(axleRecord.value()).isEqualTo("value");
+        assertThat(axleRecord.key()).isEqualTo(1);
+        assertThat(axleRecord.timestamp()).isEqualTo(2);
+        assertThat(axleRecord.partition()).isEqualTo(3);
+        assertThat(axleRecord.headers()).hasSize(1);
+        assertThat(axleRecord.headers().get(0).key()).isEqualTo("h1");
+        assertThat(axleRecord.headers().get(0).value().toString()).isEqualTo("v1");
     }
 
     @Test

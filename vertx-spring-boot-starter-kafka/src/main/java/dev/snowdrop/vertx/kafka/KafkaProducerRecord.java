@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public final class KafkaProducerRecord<K, V> {
 
@@ -80,16 +79,6 @@ public final class KafkaProducerRecord<K, V> {
     @Override
     public int hashCode() {
         return Objects.hash(key, value, topic, partition, timestamp, headers);
-    }
-
-    // TODO here or as a separate converter?
-    io.vertx.axle.kafka.client.producer.KafkaProducerRecord<K, V> toAxleKafkaProducerRecord() {
-        List<io.vertx.axle.kafka.client.producer.KafkaHeader> axleHeaders = headers.stream()
-            .map(KafkaHeader::toAxleKafkaHeader)
-            .collect(Collectors.toList());
-
-        return io.vertx.axle.kafka.client.producer.KafkaProducerRecord.create(topic, key, value, timestamp, partition)
-            .addHeaders(axleHeaders);
     }
 
     public static class Builder<K, V> {

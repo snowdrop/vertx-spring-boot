@@ -3,7 +3,6 @@ package dev.snowdrop.vertx.kafka;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import io.vertx.axle.core.buffer.Buffer;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 
@@ -62,10 +61,5 @@ public final class KafkaHeader {
     @Override
     public int hashCode() {
         return Objects.hash(key, value);
-    }
-
-    // TODO here or as a separate converter?
-    io.vertx.axle.kafka.client.producer.KafkaHeader toAxleKafkaHeader() {
-        return io.vertx.axle.kafka.client.producer.KafkaHeader.header(key, Buffer.buffer(value.asByteBuffer().array()));
     }
 }
