@@ -54,7 +54,7 @@ public class SnowdropKafkaProducerTest {
             .withHeader(Header.create("h1", "v1"))
             .build();
         StepVerifier.create(producer.send(record))
-            .expectNext(new SnowdropKafkaRecordMetadata(vertxRecordMetadata))
+            .expectNext(new SnowdropRecordMetadata(vertxRecordMetadata))
             .verifyComplete();
 
         // Capture axle producer record submitted by snowdrop producer

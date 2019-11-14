@@ -59,8 +59,8 @@ public class ProducerIT {
 
         StepVerifier.create(producer.send(record))
             .assertNext(metadata -> {
-                assertThat(metadata.getTopic()).isEqualTo("test");
-                assertThat(metadata.getPartition()).isEqualTo(0);
+                assertThat(metadata.topic()).isEqualTo("test");
+                assertThat(metadata.partition()).isEqualTo(0);
             })
             .verifyComplete();
     }

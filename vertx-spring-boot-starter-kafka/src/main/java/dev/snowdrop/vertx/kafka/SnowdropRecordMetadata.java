@@ -2,9 +2,7 @@ package dev.snowdrop.vertx.kafka;
 
 import java.util.Objects;
 
-import io.vertx.kafka.client.producer.RecordMetadata;
-
-final class SnowdropKafkaRecordMetadata implements KafkaRecordMetadata {
+final class SnowdropRecordMetadata implements RecordMetadata {
 
     private final String topic;
 
@@ -16,7 +14,7 @@ final class SnowdropKafkaRecordMetadata implements KafkaRecordMetadata {
 
     private final long checksum;
 
-    SnowdropKafkaRecordMetadata(RecordMetadata vertxRecordMetadata) {
+    SnowdropRecordMetadata(io.vertx.kafka.client.producer.RecordMetadata vertxRecordMetadata) {
         this.topic = vertxRecordMetadata.getTopic();
         this.partition = vertxRecordMetadata.getPartition();
         this.offset = vertxRecordMetadata.getOffset();
@@ -24,23 +22,23 @@ final class SnowdropKafkaRecordMetadata implements KafkaRecordMetadata {
         this.checksum = vertxRecordMetadata.checksum();
     }
 
-    public String getTopic() {
+    public String topic() {
         return topic;
     }
 
-    public long getPartition() {
+    public long partition() {
         return partition;
     }
 
-    public long getOffset() {
+    public long offset() {
         return offset;
     }
 
-    public long getTimestamp() {
+    public long timestamp() {
         return timestamp;
     }
 
-    public long getChecksum() {
+    public long checksum() {
         return checksum;
     }
 
@@ -54,7 +52,7 @@ final class SnowdropKafkaRecordMetadata implements KafkaRecordMetadata {
             return false;
         }
 
-        SnowdropKafkaRecordMetadata that = (SnowdropKafkaRecordMetadata) o;
+        SnowdropRecordMetadata that = (SnowdropRecordMetadata) o;
 
         return partition == that.partition &&
             offset == that.offset &&
@@ -70,8 +68,7 @@ final class SnowdropKafkaRecordMetadata implements KafkaRecordMetadata {
 
     @Override
     public String toString() {
-        return String.format(
-            "SnowdropKafkaRecordMetadata{topic='%s', partition=%d, offset=%d, timestamp=%d, checksum=%d}", topic,
-            partition, offset, timestamp, checksum);
+        return String.format("%s{topic='%s', partition=%d, offset=%d, timestamp=%d, checksum=%d}",
+            getClass().getSimpleName(), topic, partition, offset, timestamp, checksum);
     }
 }

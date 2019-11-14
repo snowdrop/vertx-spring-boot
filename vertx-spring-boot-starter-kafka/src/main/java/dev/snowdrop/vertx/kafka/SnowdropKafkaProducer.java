@@ -23,9 +23,9 @@ public final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
     }
 
     @Override
-    public Mono<KafkaRecordMetadata> send(ProducerRecord<K, V> record) {
+    public Mono<RecordMetadata> send(ProducerRecord<K, V> record) {
         return Mono.fromCompletionStage(delegate.send(toAxleProducerRecord(record)))
-            .map(SnowdropKafkaRecordMetadata::new);
+            .map(SnowdropRecordMetadata::new);
     }
 
     @Override
