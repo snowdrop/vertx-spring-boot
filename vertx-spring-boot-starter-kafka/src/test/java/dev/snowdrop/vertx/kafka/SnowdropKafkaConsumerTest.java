@@ -344,7 +344,7 @@ public class SnowdropKafkaConsumerTest {
         given(mockAxleConsumer.toPublisher()).willReturn(Flux.just(mockAxleConsumerRecord));
 
         StepVerifier.create(consumer.mono())
-            .expectNext(new SnowdropKafkaConsumerRecord<>(mockAxleConsumerRecord))
+            .expectNext(new SnowdropConsumerRecord<>(mockAxleConsumerRecord))
             .verifyComplete();
     }
 
@@ -353,7 +353,7 @@ public class SnowdropKafkaConsumerTest {
         given(mockAxleConsumer.toPublisher()).willReturn(Flux.just(mockAxleConsumerRecord));
 
         StepVerifier.create(consumer.flux())
-            .expectNext(new SnowdropKafkaConsumerRecord<>(mockAxleConsumerRecord))
+            .expectNext(new SnowdropConsumerRecord<>(mockAxleConsumerRecord))
             .verifyComplete();
     }
 

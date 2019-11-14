@@ -4,11 +4,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-class SnowdropKafkaConsumerRecord<K, V> implements KafkaConsumerRecord<K, V> {
+import io.vertx.axle.kafka.client.consumer.KafkaConsumerRecord;
 
-    private final io.vertx.axle.kafka.client.consumer.KafkaConsumerRecord<K, V> delegate;
+class SnowdropConsumerRecord<K, V> implements ConsumerRecord<K, V> {
 
-    SnowdropKafkaConsumerRecord(io.vertx.axle.kafka.client.consumer.KafkaConsumerRecord<K, V> delegate) {
+    private final KafkaConsumerRecord<K, V> delegate;
+
+    SnowdropConsumerRecord(KafkaConsumerRecord<K, V> delegate) {
         this.delegate = delegate;
     }
 
@@ -66,7 +68,7 @@ class SnowdropKafkaConsumerRecord<K, V> implements KafkaConsumerRecord<K, V> {
             return false;
         }
 
-        SnowdropKafkaConsumerRecord<?, ?> that = (SnowdropKafkaConsumerRecord<?, ?>) o;
+        SnowdropConsumerRecord<?, ?> that = (SnowdropConsumerRecord<?, ?>) o;
 
         return Objects.equals(delegate, that.delegate);
     }

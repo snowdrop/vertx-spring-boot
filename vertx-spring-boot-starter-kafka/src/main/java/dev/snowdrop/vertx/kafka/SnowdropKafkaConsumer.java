@@ -184,15 +184,15 @@ public final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
     }
 
     @Override
-    public Mono<KafkaConsumerRecord<K, V>> mono() {
+    public Mono<ConsumerRecord<K, V>> mono() {
         return Mono.from(delegate.toPublisher())
-            .map(SnowdropKafkaConsumerRecord::new);
+            .map(SnowdropConsumerRecord::new);
     }
 
     @Override
-    public Flux<KafkaConsumerRecord<K, V>> flux() {
+    public Flux<ConsumerRecord<K, V>> flux() {
         return Flux.from(delegate.toPublisher())
-            .map(SnowdropKafkaConsumerRecord::new);
+            .map(SnowdropConsumerRecord::new);
     }
 
     @Override

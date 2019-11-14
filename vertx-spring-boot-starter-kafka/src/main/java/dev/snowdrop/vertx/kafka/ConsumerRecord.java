@@ -2,7 +2,7 @@ package dev.snowdrop.vertx.kafka;
 
 import java.util.List;
 
-public interface KafkaConsumerRecord<K, V> {
+public interface ConsumerRecord<K, V> {
 
     String topic();
 

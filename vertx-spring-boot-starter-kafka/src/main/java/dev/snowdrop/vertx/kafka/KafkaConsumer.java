@@ -7,7 +7,7 @@ import dev.snowdrop.vertx.streams.ReadStream;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public interface KafkaConsumer<K, V> extends ReadStream<KafkaConsumerRecord<K, V>> {
+public interface KafkaConsumer<K, V> extends ReadStream<ConsumerRecord<K, V>> {
 
     Mono<Void> subscribe(String topic);
 
