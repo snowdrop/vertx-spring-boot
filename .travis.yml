@@ -2,9 +2,6 @@ language: java
 jdk:
   - openjdk8
   - openjdk11
-jobs:
-  include:
-    - stage: "Unit tests"
-      script: ./mvnw surefire:test
-    - stage: "Integration tests"
-      script: ./mvnw failsafe:integration-test
+script:
+  - ./mvnw surefire:test
+  - ./mvnw failsafe:integration-test
