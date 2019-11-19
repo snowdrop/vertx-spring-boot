@@ -1,19 +1,15 @@
 package dev.snowdrop.vertx.kafka.it;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import dev.snowdrop.vertx.kafka.KafkaProducer;
+import dev.snowdrop.vertx.kafka.KafkaProducerFactory;
 import dev.snowdrop.vertx.kafka.ProducerRecord;
-import dev.snowdrop.vertx.kafka.SnowdropKafkaProducer;
-import io.vertx.core.Vertx;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -22,28 +18,21 @@ import reactor.test.StepVerifier;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@EmbeddedKafka(topics = "test", partitions = 1, bootstrapServersProperty = "test.kafka.bootstrap.servers")
+@SpringBootTest(properties = {
+    "vertx.kafka.producer.key.serializer=org.apache.kafka.common.serialization.StringSerializer",
+    "vertx.kafka.producer.value.serializer=org.apache.kafka.common.serialization.StringSerializer"
+})
+@EmbeddedKafka(topics = "test", partitions = 1, bootstrapServersProperty = "vertx.kafka.producer.bootstrap.servers")
 public class ProducerIT {
 
     @Autowired
-    private Vertx vertx;
-
-    @Value("${test.kafka.bootstrap.servers}")
-    private String bootstrapServers;
+    private KafkaProducerFactory producerFactory;
 
     private KafkaProducer<String, String> producer;
 
     @Before
     public void setUp() {
-        Map<String, String> config = new HashMap<>();
-        config.put("bootstrap.servers", bootstrapServers);
-        config.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        config.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-
-        producer = new SnowdropKafkaProducer<>(
-            io.vertx.axle.kafka.client.producer.KafkaProducer.create(io.vertx.axle.core.Vertx.newInstance(vertx),
-                config));
+        producer = producerFactory.create();
     }
 
     @After
