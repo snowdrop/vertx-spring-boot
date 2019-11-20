@@ -1,9 +1,9 @@
 package dev.snowdrop.vertx.kafka;
 
 import java.util.Arrays;
-import java.util.List;
 
 import io.vertx.axle.kafka.client.producer.KafkaHeader;
+import org.apache.kafka.common.record.TimestampType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,68 +26,58 @@ public class SnowdropConsumerRecordTest {
 
     @Before
     public void setUp() {
+        given(mockAxleConsumerRecord.topic()).willReturn("test-topic");
+        given(mockAxleConsumerRecord.partition()).willReturn(1);
+        given(mockAxleConsumerRecord.offset()).willReturn(2L);
+        given(mockAxleConsumerRecord.timestamp()).willReturn(3L);
+        given(mockAxleConsumerRecord.timestampType()).willReturn(TimestampType.CREATE_TIME);
+        given(mockAxleConsumerRecord.key()).willReturn(4);
+        given(mockAxleConsumerRecord.value()).willReturn("test-value");
+        given(mockAxleConsumerRecord.headers()).willReturn(Arrays.asList(
+            KafkaHeader.header("h1", "v1"),
+            KafkaHeader.header("h2", "v2")
+        ));
         record = new SnowdropConsumerRecord<>(mockAxleConsumerRecord);
     }
 
     @Test
     public void shouldGetTopic() {
-        given(mockAxleConsumerRecord.topic()).willReturn("test-topic");
-
         assertThat(record.topic()).isEqualTo("test-topic");
     }
 
     @Test
     public void shouldGetPartition() {
-        given(mockAxleConsumerRecord.partition()).willReturn(1);
-
         assertThat(record.partition()).isEqualTo(1);
     }
 
     @Test
     public void shouldGetOffset() {
-        given(mockAxleConsumerRecord.offset()).willReturn(2L);
-
         assertThat(record.offset()).isEqualTo(2L);
     }
 
     @Test
     public void shouldGetTimestamp() {
-        given(mockAxleConsumerRecord.timestamp()).willReturn(3L);
-
         assertThat(record.timestamp()).isEqualTo(3L);
     }
 
     @Test
     public void shouldGetTimestampType() {
-        given(mockAxleConsumerRecord.timestampType())
-            .willReturn(org.apache.kafka.common.record.TimestampType.CREATE_TIME);
-
         assertThat(record.timestampType())
             .isEqualTo(new SnowdropTimestampType(org.apache.kafka.common.record.TimestampType.CREATE_TIME));
     }
 
     @Test
     public void shouldGetKey() {
-        given(mockAxleConsumerRecord.key()).willReturn(4);
-
         assertThat(record.key()).isEqualTo(4);
     }
 
     @Test
     public void shouldGetValue() {
-        given(mockAxleConsumerRecord.value()).willReturn("test-value");
-
         assertThat(record.value()).isEqualTo("test-value");
     }
 
     @Test
     public void shouldGetHeaders() {
-        List<KafkaHeader> axleHeaders = Arrays.asList(
-            KafkaHeader.header("h1", "v1"),
-            KafkaHeader.header("h2", "v2")
-        );
-        given(mockAxleConsumerRecord.headers()).willReturn(axleHeaders);
-
         assertThat(record.headers()).containsOnly(
             Header.create("h1", "v1"),
             Header.create("h2", "v2")
