@@ -24,13 +24,13 @@ public final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
 
     @Override
     public Mono<RecordMetadata> send(ProducerRecord<K, V> record) {
-        return Mono.fromCompletionStage(delegate.send(toAxleProducerRecord(record)))
+        return Mono.fromCompletionStage(() -> delegate.send(toAxleProducerRecord(record)))
             .map(SnowdropRecordMetadata::new);
     }
 
     @Override
     public Flux<PartitionInfo> partitionsFor(String topic) {
-        return Mono.fromCompletionStage(delegate.partitionsFor(topic))
+        return Mono.fromCompletionStage(() -> delegate.partitionsFor(topic))
             .flatMapMany(Flux::fromIterable)
             .map(SnowdropPartitionInfo::new);
     }
@@ -48,12 +48,12 @@ public final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
 
     @Override
     public Mono<Void> close() {
-        return Mono.fromCompletionStage(delegate.close());
+        return Mono.fromCompletionStage(delegate::close);
     }
 
     @Override
     public Mono<Void> close(long timeout) {
-        return Mono.fromCompletionStage(delegate.close(timeout));
+        return Mono.fromCompletionStage(() -> delegate.close(timeout));
     }
 
     @Override
@@ -94,12 +94,12 @@ public final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
 
     @Override
     public Mono<Void> write(ProducerRecord<K, V> record) {
-        return Mono.fromCompletionStage(delegate.write(toAxleProducerRecord(record)));
+        return Mono.fromCompletionStage(() -> delegate.write(toAxleProducerRecord(record)));
     }
 
     @Override
     public Mono<Void> end() {
-        return Mono.fromCompletionStage(delegate.end());
+        return Mono.fromCompletionStage(delegate::end);
     }
 
     @Override

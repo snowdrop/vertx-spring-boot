@@ -1,6 +1,7 @@
 package dev.snowdrop.vertx.kafka;
 
 import java.util.Set;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -24,7 +25,7 @@ public final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
 
     @Override
     public Mono<Void> subscribe(String topic) {
-        return Mono.fromCompletionStage(delegate.subscribe(topic));
+        return Mono.fromCompletionStage(() -> delegate.subscribe(topic));
     }
 
     @Override
@@ -33,12 +34,12 @@ public final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
             .collect(Collectors.toSet())
             .block();
 
-        return Mono.fromCompletionStage(delegate.subscribe(topicsSet));
+        return Mono.fromCompletionStage(() -> delegate.subscribe(topicsSet));
     }
 
     @Override
     public Mono<Void> assign(Partition partition) {
-        return Mono.fromCompletionStage(delegate.assign(toVertxTopicPartition(partition)));
+        return Mono.fromCompletionStage(() -> delegate.assign(toVertxTopicPartition(partition)));
     }
 
     @Override
@@ -48,30 +49,30 @@ public final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
             .collect(Collectors.toSet())
             .block();
 
-        return Mono.fromCompletionStage(delegate.assign(vertxPartitions));
+        return Mono.fromCompletionStage(() -> delegate.assign(vertxPartitions));
     }
 
     @Override
     public Mono<Void> unsubscribe() {
-        return Mono.fromCompletionStage(delegate.unsubscribe());
+        return Mono.fromCompletionStage(delegate::unsubscribe);
     }
 
     @Override
     public Flux<String> subscriptions() {
-        return Mono.fromCompletionStage(delegate.subscription())
+        return Mono.fromCompletionStage(delegate::subscription)
             .flatMapMany(Flux::fromIterable);
     }
 
     @Override
     public Flux<Partition> assignments() {
-        return Mono.fromCompletionStage(delegate.assignment())
+        return Mono.fromCompletionStage(delegate::assignment)
             .flatMapMany(Flux::fromIterable)
             .map(SnowdropPartition::new);
     }
 
     @Override
     public Flux<PartitionInfo> partitionsFor(String topic) {
-        return Mono.fromCompletionStage(delegate.partitionsFor(topic))
+        return Mono.fromCompletionStage(() -> delegate.partitionsFor(topic))
             .flatMapMany(Flux::fromIterable)
             .map(SnowdropPartitionInfo::new);
     }
@@ -100,12 +101,12 @@ public final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
 
     @Override
     public Mono<Void> seek(Partition partition, long offset) {
-        return Mono.fromCompletionStage(delegate.seek(toVertxTopicPartition(partition), offset));
+        return Mono.fromCompletionStage(() -> delegate.seek(toVertxTopicPartition(partition), offset));
     }
 
     @Override
     public Mono<Void> seekToBeginning(Partition partition) {
-        return Mono.fromCompletionStage(delegate.seekToBeginning(toVertxTopicPartition(partition)));
+        return Mono.fromCompletionStage(() -> delegate.seekToBeginning(toVertxTopicPartition(partition)));
     }
 
     @Override
@@ -115,12 +116,12 @@ public final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
             .collect(Collectors.toSet())
             .block();
 
-        return Mono.fromCompletionStage(delegate.seekToBeginning(vertxPartitions));
+        return Mono.fromCompletionStage(() -> delegate.seekToBeginning(vertxPartitions));
     }
 
     @Override
     public Mono<Void> seekToEnd(Partition partition) {
-        return Mono.fromCompletionStage(delegate.seekToEnd(toVertxTopicPartition(partition)));
+        return Mono.fromCompletionStage(() -> delegate.seekToEnd(toVertxTopicPartition(partition)));
     }
 
     @Override
@@ -130,44 +131,44 @@ public final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
             .collect(Collectors.toSet())
             .block();
 
-        return Mono.fromCompletionStage(delegate.seekToEnd(vertxPartitions));
+        return Mono.fromCompletionStage(() -> delegate.seekToEnd(vertxPartitions));
     }
 
     @Override
     public Mono<Long> position(Partition partition) {
-        return Mono.fromCompletionStage(delegate.position(toVertxTopicPartition(partition)));
+        return Mono.fromCompletionStage(() -> delegate.position(toVertxTopicPartition(partition)));
     }
 
     @Override
     public Mono<Long> committed(Partition partition) {
-        return Mono.fromCompletionStage(delegate.committed(toVertxTopicPartition(partition)))
+        return Mono.fromCompletionStage(() -> delegate.committed(toVertxTopicPartition(partition)))
             .map(OffsetAndMetadata::getOffset);
     }
 
     @Override
     public Mono<Long> beginningOffset(Partition partition) {
-        return Mono.fromCompletionStage(delegate.beginningOffsets(toVertxTopicPartition(partition)));
+        return Mono.fromCompletionStage(() -> delegate.beginningOffsets(toVertxTopicPartition(partition)));
     }
 
     @Override
     public Mono<Long> endOffset(Partition partition) {
-        return Mono.fromCompletionStage(delegate.endOffsets(toVertxTopicPartition(partition)));
+        return Mono.fromCompletionStage(() -> delegate.endOffsets(toVertxTopicPartition(partition)));
     }
 
     @Override
     public Mono<Long> timeOffset(Partition partition, long timestamp) {
-        return Mono.fromCompletionStage(delegate.offsetsForTimes(toVertxTopicPartition(partition), timestamp))
+        return Mono.fromCompletionStage(() -> delegate.offsetsForTimes(toVertxTopicPartition(partition), timestamp))
             .map(OffsetAndTimestamp::getOffset);
     }
 
     @Override
     public Mono<Void> commit() {
-        return Mono.fromCompletionStage(delegate.commit());
+        return Mono.fromCompletionStage(delegate::commit);
     }
 
     @Override
     public Mono<Void> close() {
-        return Mono.fromCompletionStage(delegate.close());
+        return Mono.fromCompletionStage(delegate::close);
     }
 
     @Override

@@ -1,12 +1,10 @@
 package dev.snowdrop.vertx.kafka.it;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
 import dev.snowdrop.vertx.kafka.ConsumerRecord;
@@ -27,6 +25,7 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.junit4.SpringRunner;
 import reactor.core.publisher.Mono;
 
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -55,8 +54,6 @@ public class SinglePartitionE2EIT {
     private KafkaProducer<String, String> producer;
 
     private List<KafkaConsumer<String, String>> consumers = new LinkedList<>();
-
-    private KafkaConsumer<String, String> alternativeConsumer;
 
     @Before
     public void setUp() {
@@ -87,7 +84,9 @@ public class SinglePartitionE2EIT {
         List<ConsumerRecord<String, String>> records = new CopyOnWriteArrayList<>();
         String topic = "single-consumer";
 
-        subscribeAndWaitForAssignment(consumer, topic, records::add);
+        subscribe(consumer, topic, records::add);
+        waitForAssignmentPropagation();
+
         sendToTopic(producer, topic, "k1", "v1");
         sendToTopic(producer, topic, "k2", "v2");
 
@@ -107,8 +106,11 @@ public class SinglePartitionE2EIT {
         List<ConsumerRecord<String, String>> secondConsumerRecords = new CopyOnWriteArrayList<>();
         String topic = "two-groups";
 
-        subscribeAndWaitForAssignment(firstConsumer, topic, firstConsumerRecords::add);
-        subscribeAndWaitForAssignment(secondConsumer, topic, secondConsumerRecords::add);
+        subscribe(firstConsumer, topic, firstConsumerRecords::add);
+        subscribe(secondConsumer, topic, secondConsumerRecords::add);
+
+        waitForAssignmentPropagation();
+
         sendToTopic(producer, topic, "k1", "v1");
         sendToTopic(producer, topic, "k2", "v2");
 
@@ -125,8 +127,16 @@ public class SinglePartitionE2EIT {
         assertConsumerRecord(firstConsumerRecords.get(1), topic, "k2", "v2", 1);
     }
 
-    private void assertConsumerRecord(ConsumerRecord<String, String> record, String topic, String key, String value,
-        int offset) {
+    private KafkaConsumer<String, String> createConsumer(String groupId) {
+        KafkaConsumer<String, String> consumer = consumerFactory.create(singletonMap("group.id", groupId));
+        // Preserve the consumer for cleanup after a test
+        consumers.add(consumer);
+
+        return consumer;
+    }
+
+    private void assertConsumerRecord(ConsumerRecord<String, String> record, String topic, String key,
+        String value, int offset) {
 
         assertThat(record.topic()).isEqualTo(topic);
         assertThat(record.partition()).isEqualTo(0);
@@ -135,40 +145,26 @@ public class SinglePartitionE2EIT {
         assertThat(record.offset()).isEqualTo(offset);
     }
 
-    private KafkaConsumer<String, String> createConsumer(String groupId) {
-        HashMap<String, String> config = new HashMap<>();
-        config.putIfAbsent("group.id", groupId);
-        // Embedded kafka only sets one property with bootstrap servers.
-        // In this case it's producer property thus we need to set consumer property manually.
-        config.putIfAbsent("bootstrap.servers", properties.getProducer().get("bootstrap.servers"));
-
-        KafkaConsumer<String, String> consumer = consumerFactory.create(config);
-        // Preserve the consumer for cleanup after a test
-        consumers.add(consumer);
-
-        return consumer;
-    }
-
-    private void subscribeAndWaitForAssignment(KafkaConsumer<String, String> consumer, String topic,
-        Consumer<ConsumerRecord<String, String>> handler) throws InterruptedException {
+    private void subscribe(KafkaConsumer<String, String> consumer, String topic,
+        Consumer<ConsumerRecord<String, String>> handler) {
 
         consumer
             .flux()
+            .log(consumer + " receiving")
             .subscribe(handler);
-
-        CountDownLatch latch = new CountDownLatch(1);
-        consumer.partitionsAssignedHandler(partitions -> latch.countDown());
-
         consumer
             .subscribe(topic)
             .block();
-
-        latch.await();
     }
 
     private void sendToTopic(KafkaProducer<String, String> producer, String topic, String key, String value) {
         producer
             .send(ProducerRecord.builder(topic, value, key).build())
             .block();
+    }
+
+    private void waitForAssignmentPropagation() throws InterruptedException {
+        // Give Kafka some time to execute partition assignment
+        Thread.sleep(2000);
     }
 }
