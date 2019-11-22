@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
@@ -21,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.junit4.SpringRunner;
 import reactor.core.publisher.Mono;
@@ -35,8 +37,11 @@ import static org.awaitility.Awaitility.await;
     "vertx.kafka.consumer.key.deserializer=org.apache.kafka.common.serialization.StringDeserializer",
     "vertx.kafka.consumer.value.deserializer=org.apache.kafka.common.serialization.StringDeserializer"
 })
-@EmbeddedKafka(partitions = 1, bootstrapServersProperty = "vertx.kafka.producer.bootstrap.servers")
+@EmbeddedKafka(partitions = 1)
 public class SinglePartitionE2EIT {
+
+    @Autowired
+    private EmbeddedKafkaBroker broker;
 
     @Autowired
     private KafkaProperties properties;
@@ -55,6 +60,15 @@ public class SinglePartitionE2EIT {
 
     @Before
     public void setUp() {
+        // Workaround for Spring Kafka 2.2.11. In 2.3.x property can be injected automatically
+        Map<String, String> producerConfig = properties.getProducer();
+        producerConfig.put("bootstrap.servers", broker.getBrokersAsString());
+        properties.setProducer(producerConfig);
+
+        Map<String, String> consumerConfig = properties.getConsumer();
+        consumerConfig.put("bootstrap.servers", broker.getBrokersAsString());
+        properties.setConsumer(consumerConfig);
+
         producer = producerFactory.create();
     }
 

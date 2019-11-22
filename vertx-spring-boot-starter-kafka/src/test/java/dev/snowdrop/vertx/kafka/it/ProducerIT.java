@@ -1,5 +1,6 @@
 package dev.snowdrop.vertx.kafka.it;
 
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import dev.snowdrop.vertx.kafka.KafkaProducer;
@@ -11,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.junit4.SpringRunner;
 import reactor.test.StepVerifier;
@@ -22,8 +24,11 @@ import static org.assertj.core.api.Assertions.assertThat;
     "vertx.kafka.producer.key.serializer=org.apache.kafka.common.serialization.StringSerializer",
     "vertx.kafka.producer.value.serializer=org.apache.kafka.common.serialization.StringSerializer"
 })
-@EmbeddedKafka(topics = "test", partitions = 1, bootstrapServersProperty = "vertx.kafka.producer.bootstrap.servers")
+@EmbeddedKafka(topics = "test", partitions = 1)
 public class ProducerIT {
+
+    @Autowired
+    private EmbeddedKafkaBroker broker;
 
     @Autowired
     private KafkaProducerFactory producerFactory;
@@ -32,7 +37,8 @@ public class ProducerIT {
 
     @Before
     public void setUp() {
-        producer = producerFactory.create();
+        // Workaround for Spring Kafka 2.2.11. In 2.3.x property can be injected automatically
+        producer = producerFactory.create(Collections.singletonMap("bootstrap.servers", broker.getBrokersAsString()));
     }
 
     @After
