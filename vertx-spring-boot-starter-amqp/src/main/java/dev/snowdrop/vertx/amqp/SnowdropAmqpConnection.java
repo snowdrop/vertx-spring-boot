@@ -23,42 +23,42 @@ class SnowdropAmqpConnection implements AmqpConnection {
 
     @Override
     public Mono<AmqpSender> createSender(String address) {
-        return Mono.fromCompletionStage(delegate.createSender(address))
+        return Mono.fromCompletionStage(() -> delegate.createSender(address))
             .map(delegateSender -> new SnowdropAmqpSender(delegateSender, messageConverter));
     }
 
     @Override
     public Mono<AmqpSender> createSender(String address, AmqpSenderOptions options) {
-        return Mono.fromCompletionStage(delegate.createSender(address, options.toVertxAmqpSenderOptions()))
+        return Mono.fromCompletionStage(() -> delegate.createSender(address, options.toVertxAmqpSenderOptions()))
             .map(delegateSender -> new SnowdropAmqpSender(delegateSender, messageConverter));
     }
 
     @Override
     public Mono<AmqpSender> createAnonymousSender() {
-        return Mono.fromCompletionStage(delegate.createAnonymousSender())
+        return Mono.fromCompletionStage(delegate::createAnonymousSender)
             .map(delegateSender -> new SnowdropAmqpSender(delegateSender, messageConverter));
     }
 
     @Override
     public Mono<AmqpReceiver> createReceiver(String address) {
-        return Mono.fromCompletionStage(delegate.createReceiver(address))
+        return Mono.fromCompletionStage(() -> delegate.createReceiver(address))
             .map(delegateReceiver -> new SnowdropAmqpReceiver(delegateReceiver, messageConverter));
     }
 
     @Override
     public Mono<AmqpReceiver> createReceiver(String address, AmqpReceiverOptions options) {
-        return Mono.fromCompletionStage(delegate.createReceiver(address, options.toVertxAmqpReceiverOptions()))
+        return Mono.fromCompletionStage(() -> delegate.createReceiver(address, options.toVertxAmqpReceiverOptions()))
             .map(delegateReceiver -> new SnowdropAmqpReceiver(delegateReceiver, messageConverter));
     }
 
     @Override
     public Mono<AmqpReceiver> createDynamicReceiver() {
-        return Mono.fromCompletionStage(delegate.createDynamicReceiver())
+        return Mono.fromCompletionStage(delegate::createDynamicReceiver)
             .map(delegateReceiver -> new SnowdropAmqpReceiver(delegateReceiver, messageConverter));
     }
 
     @Override
     public Mono<Void> close() {
-        return Mono.fromCompletionStage(delegate.close());
+        return Mono.fromCompletionStage(delegate::close);
     }
 }

@@ -48,17 +48,17 @@ class SnowdropAmqpSender implements AmqpSender {
 
     @Override
     public Mono<Void> write(AmqpMessage message) {
-        return Mono.fromCompletionStage(delegate.write(messageConverter.toAxleMessage(message)));
+        return Mono.fromCompletionStage(() -> delegate.write(messageConverter.toAxleMessage(message)));
     }
 
     @Override
     public Mono<Void> end() {
-        return Mono.fromCompletionStage(delegate.end());
+        return Mono.fromCompletionStage(delegate::end);
     }
 
     @Override
     public Mono<Void> end(AmqpMessage message) {
-        return Mono.fromCompletionStage(delegate.end(messageConverter.toAxleMessage(message)));
+        return Mono.fromCompletionStage(() -> delegate.end(messageConverter.toAxleMessage(message)));
     }
 
     @Override
@@ -70,7 +70,7 @@ class SnowdropAmqpSender implements AmqpSender {
 
     @Override
     public Mono<Void> sendWithAck(AmqpMessage message) {
-        return Mono.fromCompletionStage(delegate.sendWithAck(messageConverter.toAxleMessage(message)));
+        return Mono.fromCompletionStage(() -> delegate.sendWithAck(messageConverter.toAxleMessage(message)));
     }
 
     @Override
@@ -85,6 +85,6 @@ class SnowdropAmqpSender implements AmqpSender {
 
     @Override
     public Mono<Void> close() {
-        return Mono.fromCompletionStage(delegate.close());
+        return Mono.fromCompletionStage(delegate::close);
     }
 }

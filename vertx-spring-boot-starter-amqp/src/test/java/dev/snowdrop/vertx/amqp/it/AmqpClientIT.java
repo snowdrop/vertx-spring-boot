@@ -54,17 +54,18 @@ public class AmqpClientIT {
         AmqpSender sender = createSender("test-queue");
         Mono<Void> ackMono = Flux.just("first", "second", "third")
             .map(string -> AmqpMessage.create().withBody(string).build())
-            .map(sender::sendWithAck)
+            .flatMap(sender::sendWithAck)
             .then();
 
         StepVerifier.create(ackMono)
-            .verifyComplete();
+            .expectComplete()
+            .verify(Duration.ofSeconds(5));
         StepVerifier.create(receivedMessagesFlux)
             .expectNext("first")
             .expectNext("second")
             .expectNext("third")
             .thenCancel()
-            .verify();
+            .verify(Duration.ofSeconds(5));
     }
 
     @Test
@@ -76,15 +77,16 @@ public class AmqpClientIT {
         AmqpSender sender = createSender("test-queue");
         Mono<Void> ackMono = Mono.just("first")
             .map(string -> AmqpMessage.create().withBody(string).build())
-            .map(sender::sendWithAck)
+            .flatMap(sender::sendWithAck)
             .then();
 
         StepVerifier.create(ackMono)
-            .verifyComplete();
+            .expectComplete()
+            .verify(Duration.ofSeconds(5));
         StepVerifier.create(receivedMessagesMono)
             .expectNext("first")
             .thenCancel()
-            .verify();
+            .verify(Duration.ofSeconds(5));
     }
 
     @Test
@@ -97,18 +99,19 @@ public class AmqpClientIT {
 
         Mono<Void> ackMono = Flux.just("first", "second", "third")
             .map(body -> AmqpMessage.create().address(receiver.address()).withBody(body).build())
-            .map(sender::sendWithAck)
+            .flatMap(sender::sendWithAck)
             .then();
 
         StepVerifier.create(ackMono)
-            .verifyComplete();
+            .expectComplete()
+            .verify(Duration.ofSeconds(5));
 
         StepVerifier.create(receivedMessagesFlux)
             .expectNext("first")
             .expectNext("second")
             .expectNext("third")
             .thenCancel()
-            .verify();
+            .verify(Duration.ofSeconds(5));
     }
 
     @Test
@@ -128,13 +131,14 @@ public class AmqpClientIT {
             .then();
 
         StepVerifier.create(endMono)
-            .verifyComplete();
+            .expectComplete()
+            .verify(Duration.ofSeconds(5));
         StepVerifier.create(receivedMessagesFlux)
             .expectNext("first")
             .expectNext("second")
             .expectNext("third")
             .thenCancel()
-            .verify();
+            .verify(Duration.ofSeconds(5));
     }
 
     @Test
@@ -155,13 +159,14 @@ public class AmqpClientIT {
             .then();
 
         StepVerifier.create(endMono)
-            .verifyComplete();
+            .expectComplete()
+            .verify(Duration.ofSeconds(5));
         StepVerifier.create(receivedMessagesFlux)
             .expectNext("first")
             .expectNext("second")
             .expectNext("third")
             .thenCancel()
-            .verify();
+            .verify(Duration.ofSeconds(5));
     }
 
     @Test
@@ -186,7 +191,8 @@ public class AmqpClientIT {
 
         StepVerifier.create(resultMono)
             .expectNext(original)
-            .verifyComplete();
+            .expectComplete()
+            .verify(Duration.ofSeconds(5));
     }
 
     @Test
@@ -211,7 +217,8 @@ public class AmqpClientIT {
 
         StepVerifier.create(resultMono)
             .expectNext(original)
-            .verifyComplete();
+            .expectComplete()
+            .verify(Duration.ofSeconds(5));
     }
 
     @Test
@@ -230,7 +237,8 @@ public class AmqpClientIT {
 
         StepVerifier.create(resultMono)
             .expectNext(original)
-            .verifyComplete();
+            .expectComplete()
+            .verify(Duration.ofSeconds(5));
     }
 
     @Test
@@ -263,7 +271,7 @@ public class AmqpClientIT {
                 assertThat(message.bodyAsString()).isEqualTo(request.bodyAsString().toUpperCase());
             })
             .thenCancel()
-            .verify();
+            .verify(Duration.ofSeconds(5));
     }
 
     private AmqpConnection createConnection() {

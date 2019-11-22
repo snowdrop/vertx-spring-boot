@@ -38,7 +38,7 @@ class SnowdropAmqpReceiver implements AmqpReceiver {
 
     @Override
     public Mono<Void> close() {
-        return Mono.fromCompletionStage(delegate.close());
+        return Mono.fromCompletionStage(delegate::close);
     }
 
     @Override
