@@ -22,6 +22,7 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -121,7 +122,9 @@ public class AmqpClientIT {
         AmqpSender output = createSender("output-queue");
         AmqpReceiver result = createReceiver("output-queue");
 
-        input.pipeTo(output);
+        Disposable pipeDisposer = input.pipeTo(output)
+            .subscribe();
+
         Flux<String> receivedMessagesFlux = result.flux()
             .map(AmqpMessage::bodyAsString);
 
@@ -129,6 +132,8 @@ public class AmqpClientIT {
             .map(body -> AmqpMessage.create().withBody(body).build())
             .flatMap(source::sendWithAck)
             .then();
+
+        pipeDisposer.dispose();
 
         StepVerifier.create(endMono)
             .expectComplete()

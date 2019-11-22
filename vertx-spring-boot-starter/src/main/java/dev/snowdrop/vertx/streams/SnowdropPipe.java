@@ -32,7 +32,7 @@ class SnowdropPipe<T> implements Pipe<T> {
 
     @Override
     public Mono<Void> to(WriteStream<T> destination) {
-        return Mono.fromCompletionStage(delegate.to(toAxleWriteStream(destination)));
+        return Mono.fromCompletionStage(() -> delegate.to(toAxleWriteStream(destination)));
     }
 
     @Override
