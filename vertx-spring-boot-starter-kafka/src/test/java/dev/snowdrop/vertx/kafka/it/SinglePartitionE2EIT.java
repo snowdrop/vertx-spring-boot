@@ -53,19 +53,11 @@ public class SinglePartitionE2EIT {
 
     private KafkaProducer<String, String> producer;
 
-    private List<KafkaConsumer<String, String>> consumers = new LinkedList<>();
+    private List<KafkaConsumer<String, String>> consumersToCleanup = new LinkedList<>();
 
     @Before
     public void setUp() {
-        // Workaround for Spring Kafka 2.2.11. In 2.3.x property can be injected automatically
-        Map<String, String> producerConfig = properties.getProducer();
-        producerConfig.put("bootstrap.servers", broker.getBrokersAsString());
-        properties.setProducer(producerConfig);
-
-        Map<String, String> consumerConfig = properties.getConsumer();
-        consumerConfig.put("bootstrap.servers", broker.getBrokersAsString());
-        properties.setConsumer(consumerConfig);
-
+        setBootstrapServers(broker.getBrokersAsString());
         producer = producerFactory.create();
     }
 
@@ -73,7 +65,7 @@ public class SinglePartitionE2EIT {
     public void tearDown() {
         producer.close().block(Duration.ofSeconds(5));
 
-        consumers.stream()
+        consumersToCleanup.stream()
             .map(KafkaConsumer::close)
             .forEach(Mono::block);
     }
@@ -130,7 +122,7 @@ public class SinglePartitionE2EIT {
     private KafkaConsumer<String, String> createConsumer(String groupId) {
         KafkaConsumer<String, String> consumer = consumerFactory.create(singletonMap("group.id", groupId));
         // Preserve the consumer for cleanup after a test
-        consumers.add(consumer);
+        consumersToCleanup.add(consumer);
 
         return consumer;
     }
@@ -166,5 +158,16 @@ public class SinglePartitionE2EIT {
     private void waitForAssignmentPropagation() throws InterruptedException {
         // Give Kafka some time to execute partition assignment
         Thread.sleep(2000);
+    }
+
+    private void setBootstrapServers(String bootstrapServers) {
+        // Workaround for Spring Kafka 2.2.11. In 2.3.x property can be injected automatically
+        Map<String, String> producerConfig = properties.getProducer();
+        producerConfig.put("bootstrap.servers", bootstrapServers);
+        properties.setProducer(producerConfig);
+
+        Map<String, String> consumerConfig = properties.getConsumer();
+        consumerConfig.put("bootstrap.servers", bootstrapServers);
+        properties.setConsumer(consumerConfig);
     }
 }
