@@ -1,6 +1,7 @@
 package dev.snowdrop.vertx.kafka;
 
 import java.time.Duration;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -11,7 +12,6 @@ import io.vertx.kafka.client.common.PartitionInfo;
 import io.vertx.kafka.client.common.TopicPartition;
 import io.vertx.kafka.client.consumer.OffsetAndMetadata;
 import io.vertx.kafka.client.consumer.OffsetAndTimestamp;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,6 +24,8 @@ import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -61,7 +63,7 @@ public class SnowdropKafkaConsumerTest {
         given(mockAxleConsumer.subscribe(toSet("test-topic-1", "test-topic-2")))
             .willReturn(completedFuture(null));
 
-        StepVerifier.create(consumer.subscribe(Flux.just("test-topic-1", "test-topic-2")))
+        StepVerifier.create(consumer.subscribe(asList("test-topic-1", "test-topic-2")))
             .verifyComplete();
     }
 
@@ -83,7 +85,7 @@ public class SnowdropKafkaConsumerTest {
         given(mockAxleConsumer.assign(vertxPartitions))
             .willReturn(completedFuture(null));
 
-        Flux<Partition> partitions = Flux.just(
+        Collection<Partition> partitions = asList(
             Partition.create("test-topic-1", 0),
             Partition.create("test-topic-2", 1)
         );
@@ -152,21 +154,17 @@ public class SnowdropKafkaConsumerTest {
                 return mockAxleConsumer;
             });
 
-        AtomicReference<Flux<Partition>> futureTopicPartition = new AtomicReference<>();
-        consumer.partitionsRevokedHandler(futureTopicPartition::set);
+        AtomicReference<Set<Partition>> partitions = new AtomicReference<>();
+        consumer.partitionsRevokedHandler(partitions::set);
 
         await()
             .atMost(Duration.ofSeconds(2))
-            .untilAtomic(futureTopicPartition, Matchers.is(Matchers.notNullValue()));
+            .untilAtomic(partitions, is(notNullValue()));
 
-        Set<Partition> partitions = toSet(
+        assertThat(partitions.get()).containsOnly(
             Partition.create("test-topic", 1),
             Partition.create("test-topic", 2)
         );
-        StepVerifier.create(futureTopicPartition.get())
-            .assertNext(p -> assertThat(partitions.remove(p)).isTrue())
-            .assertNext(p -> assertThat(partitions.remove(p)).isTrue())
-            .verifyComplete();
     }
 
     @Test
@@ -181,21 +179,17 @@ public class SnowdropKafkaConsumerTest {
                 return mockAxleConsumer;
             });
 
-        AtomicReference<Flux<Partition>> futureTopicPartition = new AtomicReference<>();
-        consumer.partitionsAssignedHandler(futureTopicPartition::set);
+        AtomicReference<Set<Partition>> partitions = new AtomicReference<>();
+        consumer.partitionsAssignedHandler(partitions::set);
 
         await()
             .atMost(Duration.ofSeconds(2))
-            .untilAtomic(futureTopicPartition, Matchers.is(Matchers.notNullValue()));
+            .untilAtomic(partitions, is(notNullValue()));
 
-        Set<Partition> partitions = toSet(
+        assertThat(partitions.get()).containsOnly(
             Partition.create("test-topic", 1),
             Partition.create("test-topic", 2)
         );
-        StepVerifier.create(futureTopicPartition.get())
-            .assertNext(p -> assertThat(partitions.remove(p)).isTrue())
-            .assertNext(p -> assertThat(partitions.remove(p)).isTrue())
-            .verifyComplete();
     }
 
     @Test
@@ -224,7 +218,7 @@ public class SnowdropKafkaConsumerTest {
         ).willReturn(completedFuture(null));
 
         StepVerifier
-            .create(consumer.seekToBeginning(Flux.just(
+            .create(consumer.seekToBeginning(asList(
                 Partition.create("test-topic", 1),
                 Partition.create("test-topic", 2)))
             ).verifyComplete();
@@ -247,7 +241,7 @@ public class SnowdropKafkaConsumerTest {
         ).willReturn(completedFuture(null));
 
         StepVerifier
-            .create(consumer.seekToEnd(Flux.just(
+            .create(consumer.seekToEnd(asList(
                 Partition.create("test-topic", 1),
                 Partition.create("test-topic", 2)))
             ).verifyComplete();
@@ -366,6 +360,6 @@ public class SnowdropKafkaConsumerTest {
 
     @SafeVarargs
     private final <T> Set<T> toSet(T... elements) {
-        return new HashSet<T>(asList(elements));
+        return new HashSet<>(asList(elements));
     }
 }

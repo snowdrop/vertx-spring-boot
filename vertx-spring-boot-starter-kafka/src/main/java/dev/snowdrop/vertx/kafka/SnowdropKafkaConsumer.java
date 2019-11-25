@@ -1,5 +1,7 @@
 package dev.snowdrop.vertx.kafka;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -32,14 +34,10 @@ final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
     }
 
     @Override
-    public Mono<Void> subscribe(Flux<String> topics) {
+    public Mono<Void> subscribe(Collection<String> topics) {
         Objects.requireNonNull(topics, "Topics cannot be null");
 
-        Set<String> topicsSet = topics
-            .collect(Collectors.toSet())
-            .block();
-
-        return Mono.fromCompletionStage(() -> delegate.subscribe(topicsSet));
+        return Mono.fromCompletionStage(() -> delegate.subscribe(new HashSet<>(topics)));
     }
 
     @Override
@@ -50,13 +48,13 @@ final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
     }
 
     @Override
-    public Mono<Void> assign(Flux<Partition> partitions) {
+    public Mono<Void> assign(Collection<Partition> partitions) {
         Objects.requireNonNull(partitions, "Partitions cannot be null");
 
         Set<TopicPartition> vertxPartitions = partitions
+            .stream()
             .map(this::toVertxTopicPartition)
-            .collect(Collectors.toSet())
-            .block();
+            .collect(Collectors.toSet());
 
         return Mono.fromCompletionStage(() -> delegate.assign(vertxPartitions));
     }
@@ -91,26 +89,28 @@ final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
     }
 
     @Override
-    public void partitionsRevokedHandler(Consumer<Flux<Partition>> handler) {
+    public void partitionsRevokedHandler(Consumer<Set<Partition>> handler) {
         Objects.requireNonNull(handler, "Handler cannot be null");
 
         delegate.partitionsRevokedHandler(axleTopicPartitions -> {
-            Flux<Partition> partitions = Flux
-                .fromIterable(axleTopicPartitions)
-                .map(SnowdropPartition::new);
+            Set<Partition> partitions = axleTopicPartitions
+                .stream()
+                .map(SnowdropPartition::new)
+                .collect(Collectors.toSet());
 
             handler.accept(partitions);
         });
     }
 
     @Override
-    public void partitionsAssignedHandler(Consumer<Flux<Partition>> handler) {
+    public void partitionsAssignedHandler(Consumer<Set<Partition>> handler) {
         Objects.requireNonNull(handler, "Handler cannot be null");
 
         delegate.partitionsAssignedHandler(axleTopicPartitions -> {
-            Flux<Partition> partitions = Flux
-                .fromIterable(axleTopicPartitions)
-                .map(SnowdropPartition::new);
+            Set<Partition> partitions = axleTopicPartitions
+                .stream()
+                .map(SnowdropPartition::new)
+                .collect(Collectors.toSet());
 
             handler.accept(partitions);
         });
@@ -134,13 +134,13 @@ final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
     }
 
     @Override
-    public Mono<Void> seekToBeginning(Flux<Partition> partitions) {
+    public Mono<Void> seekToBeginning(Collection<Partition> partitions) {
         Objects.requireNonNull(partitions, "Partitions cannot be null");
 
         Set<TopicPartition> vertxPartitions = partitions
+            .stream()
             .map(this::toVertxTopicPartition)
-            .collect(Collectors.toSet())
-            .block();
+            .collect(Collectors.toSet());
 
         return Mono.fromCompletionStage(() -> delegate.seekToBeginning(vertxPartitions));
     }
@@ -153,13 +153,13 @@ final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
     }
 
     @Override
-    public Mono<Void> seekToEnd(Flux<Partition> partitions) {
+    public Mono<Void> seekToEnd(Collection<Partition> partitions) {
         Objects.requireNonNull(partitions, "Partitions cannot be null");
 
         Set<TopicPartition> vertxPartitions = partitions
+            .stream()
             .map(this::toVertxTopicPartition)
-            .collect(Collectors.toSet())
-            .block();
+            .collect(Collectors.toSet());
 
         return Mono.fromCompletionStage(() -> delegate.seekToEnd(vertxPartitions));
     }

@@ -1,5 +1,7 @@
 package dev.snowdrop.vertx.kafka;
 
+import java.util.Collection;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -11,11 +13,11 @@ public interface KafkaConsumer<K, V> extends ReadStream<ConsumerRecord<K, V>> {
 
     Mono<Void> subscribe(String topic);
 
-    Mono<Void> subscribe(Flux<String> topics);
+    Mono<Void> subscribe(Collection<String> topics);
 
     Mono<Void> assign(Partition partition);
 
-    Mono<Void> assign(Flux<Partition> partitions);
+    Mono<Void> assign(Collection<Partition> partitions);
 
     Mono<Void> unsubscribe();
 
@@ -25,19 +27,19 @@ public interface KafkaConsumer<K, V> extends ReadStream<ConsumerRecord<K, V>> {
 
     Flux<PartitionInfo> partitionsFor(String topic);
 
-    void partitionsRevokedHandler(Consumer<Flux<Partition>> handler);
+    void partitionsRevokedHandler(Consumer<Set<Partition>> handler);
 
-    void partitionsAssignedHandler(Consumer<Flux<Partition>> handler);
+    void partitionsAssignedHandler(Consumer<Set<Partition>> handler);
 
     Mono<Void> seek(Partition partition, long offset);
 
     Mono<Void> seekToBeginning(Partition partition);
 
-    Mono<Void> seekToBeginning(Flux<Partition> partitions);
+    Mono<Void> seekToBeginning(Collection<Partition> partitions);
 
     Mono<Void> seekToEnd(Partition partition);
 
-    Mono<Void> seekToEnd(Flux<Partition> partitions);
+    Mono<Void> seekToEnd(Collection<Partition> partitions);
 
     Mono<Long> position(Partition partition);
 
