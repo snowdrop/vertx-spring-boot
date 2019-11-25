@@ -2,6 +2,9 @@ package dev.snowdrop.vertx.kafka;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
+
+import org.springframework.util.StringUtils;
 
 final class SnowdropProducerRecordBuilder<K, V> implements ProducerRecordBuilder<SnowdropProducerRecord<K, V>, K, V> {
 
@@ -18,6 +21,10 @@ final class SnowdropProducerRecordBuilder<K, V> implements ProducerRecordBuilder
     private Long timestamp;
 
     SnowdropProducerRecordBuilder(String topic, V value) {
+        if (StringUtils.isEmpty(topic)) {
+            throw new IllegalArgumentException("Topic cannot be empty");
+        }
+
         this.topic = topic;
         this.value = value;
         this.headers = new LinkedList<>();
@@ -51,12 +58,14 @@ final class SnowdropProducerRecordBuilder<K, V> implements ProducerRecordBuilder
 
     @Override
     public ProducerRecordBuilder<SnowdropProducerRecord<K, V>, K, V> withHeader(Header header) {
+        Objects.requireNonNull(header, "Header cannot be null");
         this.headers.add(header);
         return this;
     }
 
     @Override
     public ProducerRecordBuilder<SnowdropProducerRecord<K, V>, K, V> withHeaders(List<Header> headers) {
+        Objects.requireNonNull(headers, "Headers cannot be null");
         this.headers.addAll(headers);
         return this;
     }

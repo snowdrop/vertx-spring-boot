@@ -3,9 +3,11 @@ package dev.snowdrop.vertx.kafka;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
+import io.vertx.axle.core.buffer.Buffer;
 import io.vertx.axle.kafka.client.producer.KafkaHeader;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
+import org.springframework.util.StringUtils;
 
 final class SnowdropHeader implements Header {
 
@@ -14,16 +16,19 @@ final class SnowdropHeader implements Header {
     private final DataBuffer value;
 
     SnowdropHeader(String key, DataBuffer value) {
+        if (StringUtils.isEmpty(key)) {
+            throw new IllegalArgumentException("Header key cannot be empty");
+        }
         this.key = key;
         this.value = value;
     }
 
     SnowdropHeader(String key, String value) {
-        this(key, toDataBuffer(value.getBytes(StandardCharsets.UTF_8)));
+        this(key, toDataBuffer(value));
     }
 
     SnowdropHeader(KafkaHeader axelHeader) {
-        this(axelHeader.key(), toDataBuffer(axelHeader.value().getBytes()));
+        this(axelHeader.key(), toDataBuffer(axelHeader.value()));
     }
 
     @Override
@@ -56,7 +61,17 @@ final class SnowdropHeader implements Header {
         return Objects.hash(key, value);
     }
 
-    private static DataBuffer toDataBuffer(byte[] bytes) {
-        return new DefaultDataBufferFactory().wrap(bytes);
+    private static DataBuffer toDataBuffer(String string) {
+        if (string == null) {
+            return null;
+        }
+        return new DefaultDataBufferFactory().wrap(string.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static DataBuffer toDataBuffer(Buffer buffer) {
+        if (buffer == null) {
+            return null;
+        }
+        return new DefaultDataBufferFactory().wrap(buffer.getBytes());
     }
 }

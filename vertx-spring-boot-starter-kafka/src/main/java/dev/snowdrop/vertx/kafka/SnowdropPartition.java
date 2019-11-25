@@ -64,9 +64,4 @@ final class SnowdropPartition implements Partition {
         return String.format("%s{topic='%s', partition=%d}", SnowdropPartition.class.getSimpleName(), topic,
             partition);
     }
-
-    // TODO here or as a separate converter?
-    io.vertx.kafka.client.common.TopicPartition toVertxTopicPartition() {
-        return new io.vertx.kafka.client.common.TopicPartition(topic, partition);
-    }
 }

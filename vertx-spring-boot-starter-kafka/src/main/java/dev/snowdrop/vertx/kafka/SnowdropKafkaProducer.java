@@ -1,6 +1,7 @@
 package dev.snowdrop.vertx.kafka;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -9,27 +10,32 @@ import io.vertx.axle.core.buffer.Buffer;
 import io.vertx.axle.kafka.client.producer.KafkaHeader;
 import io.vertx.axle.kafka.client.producer.KafkaProducerRecord;
 import io.vertx.core.streams.WriteStream;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-// TODO make package-private once Spring configuration is setup
-public final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
+final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
 
     private final io.vertx.axle.kafka.client.producer.KafkaProducer<K, V> delegate;
 
-    // TODO make package-private once Spring configuration is setup
-    public SnowdropKafkaProducer(io.vertx.axle.kafka.client.producer.KafkaProducer<K, V> delegate) {
+    SnowdropKafkaProducer(io.vertx.axle.kafka.client.producer.KafkaProducer<K, V> delegate) {
         this.delegate = delegate;
     }
 
     @Override
     public Mono<RecordMetadata> send(ProducerRecord<K, V> record) {
+        Objects.requireNonNull(record, "Record cannot be null");
+
         return Mono.fromCompletionStage(() -> delegate.send(toAxleProducerRecord(record)))
             .map(SnowdropRecordMetadata::new);
     }
 
     @Override
     public Flux<PartitionInfo> partitionsFor(String topic) {
+        if (StringUtils.isEmpty(topic)) {
+            throw new IllegalArgumentException("Topic cannot be empty");
+        }
+
         return Mono.fromCompletionStage(() -> delegate.partitionsFor(topic))
             .flatMapMany(Flux::fromIterable)
             .map(SnowdropPartitionInfo::new);
@@ -59,6 +65,8 @@ public final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
     @Override
     @SuppressWarnings("unchecked") // Axle API returns KafkaProducer without generics
     public <T> Mono<T> doOnVertxProducer(Function<io.vertx.kafka.client.producer.KafkaProducer<K, V>, T> function) {
+        Objects.requireNonNull(function, "Function cannot be null");
+
         return Mono.create(sink -> {
             try {
                 T result = function.apply((io.vertx.kafka.client.producer.KafkaProducer<K, V>) delegate.getDelegate());
@@ -94,6 +102,8 @@ public final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
 
     @Override
     public Mono<Void> write(ProducerRecord<K, V> record) {
+        Objects.requireNonNull(record, "Record cannot be null");
+
         return Mono.fromCompletionStage(() -> delegate.write(toAxleProducerRecord(record)));
     }
 
