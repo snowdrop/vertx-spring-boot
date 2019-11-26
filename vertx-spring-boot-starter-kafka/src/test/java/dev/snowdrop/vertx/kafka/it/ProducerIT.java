@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import dev.snowdrop.vertx.kafka.KafkaProducer;
 import dev.snowdrop.vertx.kafka.KafkaProducerFactory;
+import dev.snowdrop.vertx.kafka.KafkaProperties;
 import dev.snowdrop.vertx.kafka.ProducerRecord;
 import org.junit.After;
 import org.junit.Before;
@@ -25,25 +26,25 @@ import static org.assertj.core.api.Assertions.assertThat;
     "vertx.kafka.producer.value.serializer=org.apache.kafka.common.serialization.StringSerializer"
 })
 @EmbeddedKafka(topics = "test", partitions = 1)
-public class ProducerIT {
+public class ProducerIT extends AbstractIT {
 
     @Autowired
     private EmbeddedKafkaBroker broker;
 
     @Autowired
-    private KafkaProducerFactory producerFactory;
+    private KafkaProperties properties;
 
-    private KafkaProducer<String, String> producer;
+    @Autowired
+    private KafkaProducerFactory producerFactory;
 
     @Before
     public void setUp() {
-        // Workaround for Spring Kafka 2.2.11. In 2.3.x property can be injected automatically
-        producer = producerFactory.create(Collections.singletonMap("bootstrap.servers", broker.getBrokersAsString()));
+        super.setUp(producerFactory, null, properties, broker);
     }
 
     @After
     public void tearDown() {
-        producer.close().block();
+        super.tearDown();
     }
 
     @Test
@@ -52,6 +53,7 @@ public class ProducerIT {
             .<String, String>builder("test", "test-value")
             .build();
 
+        KafkaProducer<String, String> producer = createProducer();
         StepVerifier.create(producer.send(record))
             .assertNext(metadata -> {
                 assertThat(metadata.topic()).isEqualTo("test");
@@ -66,12 +68,14 @@ public class ProducerIT {
             .<String, String>builder("test", "test-value")
             .build();
 
+        KafkaProducer<String, String> producer = createProducer();
         StepVerifier.create(producer.write(record))
             .verifyComplete();
     }
 
     @Test
     public void shouldGetPartitionInfo() {
+        KafkaProducer<String, String> producer = createProducer();
         StepVerifier.create(producer.partitionsFor("test"))
             .assertNext(partitionInfo -> {
                 assertThat(partitionInfo.getTopic()).isEqualTo("test");
@@ -90,6 +94,8 @@ public class ProducerIT {
             .build();
 
         AtomicBoolean wasExceptionHandled = new AtomicBoolean(false);
+
+        KafkaProducer<String, String> producer = createProducer();
         producer.exceptionHandler(t -> wasExceptionHandled.set(true));
 
         StepVerifier.create(producer.close())

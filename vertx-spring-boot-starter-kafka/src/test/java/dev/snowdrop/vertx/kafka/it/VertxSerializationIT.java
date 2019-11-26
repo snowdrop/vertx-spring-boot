@@ -1,9 +1,6 @@
 package dev.snowdrop.vertx.kafka.it;
 
 import java.time.Duration;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -32,7 +29,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.junit4.SpringRunner;
-import reactor.core.publisher.Mono;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -48,7 +44,23 @@ import static org.hamcrest.Matchers.notNullValue;
     "vertx.kafka.consumer.group.id=test"
 })
 @EmbeddedKafka(partitions = 1)
-public class VertxSerializationIT {
+public class VertxSerializationIT extends AbstractIT {
+
+    private static final String VALUE_SERIALIZER = "value.serializer";
+
+    private static final String VALUE_DESERIALIZER = "value.deserializer";
+
+    private static final String JSON_OBJECT_SERIALIZER = JsonObjectSerializer.class.getName();
+
+    private static final String JSON_OBJECT_DESERIALIZER = JsonObjectDeserializer.class.getName();
+
+    private static final String JSON_ARRAY_SERIALIZER = JsonArraySerializer.class.getName();
+
+    private static final String JSON_ARRAY_DESERIALIZER = JsonArrayDeserializer.class.getName();
+
+    private static final String BUFFER_SERIALIZER = BufferSerializer.class.getName();
+
+    private static final String BUFFER_DESERIALIZER = BufferDeserializer.class.getName();
 
     @Autowired
     private EmbeddedKafkaBroker broker;
@@ -62,135 +74,74 @@ public class VertxSerializationIT {
     @Autowired
     private KafkaConsumerFactory consumerFactory;
 
-    private List<KafkaProducer<?, ?>> producersToCleanup = new LinkedList<>();
-
-    private List<KafkaConsumer<?, ?>> consumersToCleanup = new LinkedList<>();
-
     @Before
     public void setUp() {
-        setBootstrapServers(broker.getBrokersAsString());
+        super.setUp(producerFactory, consumerFactory, properties, broker);
     }
 
     @After
     public void tearDown() {
-        producersToCleanup.stream()
-            .map(KafkaProducer::close)
-            .forEach(Mono::block);
-        consumersToCleanup.stream()
-            .map(KafkaConsumer::close)
-            .forEach(Mono::block);
+        super.tearDown();
     }
 
     @Test
     public void shouldSendAndReceiveJsonObject() throws InterruptedException {
         KafkaConsumer<String, JsonObject> consumer =
-            createConsumer(JsonObject.class, JsonObjectDeserializer.class.getName());
-        AtomicReference<JsonObject> jsonContainer = new AtomicReference<>();
+            createConsumer(singletonMap(VALUE_DESERIALIZER, JSON_OBJECT_DESERIALIZER));
+        AtomicReference<JsonObject> result = new AtomicReference<>();
         String topic = "json-object-topic";
 
-        subscribe(consumer, topic, r -> jsonContainer.set(r.value()));
+        subscribe(consumer, topic, r -> result.set(r.value()));
         waitForAssignmentPropagation();
 
         KafkaProducer<String, JsonObject> producer =
-            createProducer(JsonObject.class, JsonObjectSerializer.class.getName());
+            createProducer(singletonMap(VALUE_SERIALIZER, JSON_OBJECT_SERIALIZER));
         sendToTopic(producer, topic, JsonObject.mapFrom(singletonMap("k1", "v1")));
 
         await()
             .atMost(Duration.ofSeconds(5))
-            .untilAtomic(jsonContainer, is(notNullValue()));
+            .untilAtomic(result, is(notNullValue()));
 
-        assertThat(jsonContainer.get().getString("k1")).isEqualTo("v1");
+        assertThat(result.get().getString("k1")).isEqualTo("v1");
     }
 
     @Test
     public void shouldSendAndReceiveJsonArray() throws InterruptedException {
         KafkaConsumer<String, JsonArray> consumer =
-            createConsumer(JsonArray.class, JsonArrayDeserializer.class.getName());
-        AtomicReference<JsonArray> jsonContainer = new AtomicReference<>();
+            createConsumer(singletonMap(VALUE_DESERIALIZER, JSON_ARRAY_DESERIALIZER));
+        AtomicReference<JsonArray> result = new AtomicReference<>();
         String topic = "json-array-topic";
 
-        subscribe(consumer, topic, r -> jsonContainer.set(r.value()));
+        subscribe(consumer, topic, r -> result.set(r.value()));
         waitForAssignmentPropagation();
 
         KafkaProducer<String, JsonArray> producer =
-            createProducer(JsonArray.class, JsonArraySerializer.class.getName());
+            createProducer(singletonMap(VALUE_SERIALIZER, JSON_ARRAY_SERIALIZER));
         sendToTopic(producer, topic, new JsonArray(singletonList("v1")));
 
         await()
             .atMost(Duration.ofSeconds(5))
-            .untilAtomic(jsonContainer, is(notNullValue()));
+            .untilAtomic(result, is(notNullValue()));
 
-        assertThat(jsonContainer.get().getString(0)).isEqualTo("v1");
+        assertThat(result.get().getString(0)).isEqualTo("v1");
     }
 
     @Test
     public void shouldSendAndReceiveBuffer() throws InterruptedException {
-        KafkaConsumer<String, Buffer> consumer = createConsumer(Buffer.class, BufferDeserializer.class.getName());
-        AtomicReference<Buffer> jsonContainer = new AtomicReference<>();
+        KafkaConsumer<String, Buffer> consumer = createConsumer(singletonMap(VALUE_DESERIALIZER, BUFFER_DESERIALIZER));
+        AtomicReference<Buffer> result = new AtomicReference<>();
         String topic = "json-buffer-topic";
 
-        subscribe(consumer, topic, r -> jsonContainer.set(r.value()));
+        subscribe(consumer, topic, r -> result.set(r.value()));
         waitForAssignmentPropagation();
 
-        KafkaProducer<String, Buffer> producer =
-            createProducer(Buffer.class, BufferSerializer.class.getName());
+        KafkaProducer<String, Buffer> producer = createProducer(singletonMap(VALUE_SERIALIZER, BUFFER_SERIALIZER));
         sendToTopic(producer, topic, Buffer.buffer("v1"));
 
         await()
             .atMost(Duration.ofSeconds(5))
-            .untilAtomic(jsonContainer, is(notNullValue()));
+            .untilAtomic(result, is(notNullValue()));
 
-        assertThat(jsonContainer.get()).isEqualTo(Buffer.buffer("v1"));
-    }
-
-    private <V> KafkaProducer<String, V> createProducer(Class<V> valueType, String valueSerializer) {
-        KafkaProducer<String, V> producer =
-            producerFactory.create(singletonMap("value.serializer", valueSerializer));
-        // Preserve the producer for cleanup after a test
-        producersToCleanup.add(producer);
-
-        return producer;
-    }
-
-    private <V> KafkaConsumer<String, V> createConsumer(Class<V> valueType, String valueDeserializer) {
-        KafkaConsumer<String, V> consumer =
-            consumerFactory.create(singletonMap("value.deserializer", valueDeserializer));
-        // Preserve the consumer for cleanup after a test
-        consumersToCleanup.add(consumer);
-
-        return consumer;
-    }
-
-    private <V> void subscribe(KafkaConsumer<String, V> consumer, String topic,
-        Consumer<ConsumerRecord<String, V>> handler) {
-        consumer
-            .flux()
-            .log(consumer + " receiving")
-            .subscribe(handler);
-        consumer
-            .subscribe(topic)
-            .block();
-    }
-
-    private <V> void sendToTopic(KafkaProducer<String, V> producer, String topic, V value) {
-        producer
-            .send(ProducerRecord.<String, V>builder(topic, value).build())
-            .block();
-    }
-
-    private void waitForAssignmentPropagation() throws InterruptedException {
-        // Give Kafka some time to execute partition assignment
-        Thread.sleep(2000);
-    }
-
-    private void setBootstrapServers(String bootstrapServers) {
-        // Workaround for Spring Kafka 2.2.11. In 2.3.x property can be injected automatically
-        Map<String, String> producerConfig = properties.getProducer();
-        producerConfig.put("bootstrap.servers", bootstrapServers);
-        properties.setProducer(producerConfig);
-
-        Map<String, String> consumerConfig = properties.getConsumer();
-        consumerConfig.put("bootstrap.servers", bootstrapServers);
-        properties.setConsumer(consumerConfig);
+        assertThat(result.get()).isEqualTo(Buffer.buffer("v1"));
     }
 }

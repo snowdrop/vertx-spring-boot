@@ -1,9 +1,7 @@
 package dev.snowdrop.vertx.kafka.it;
 
 import java.time.Duration;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
@@ -23,7 +21,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.junit4.SpringRunner;
-import reactor.core.publisher.Mono;
 
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,7 +34,9 @@ import static org.awaitility.Awaitility.await;
     "vertx.kafka.consumer.value.deserializer=org.apache.kafka.common.serialization.StringDeserializer"
 })
 @EmbeddedKafka(partitions = 1)
-public class SinglePartitionE2EIT {
+public class SinglePartitionE2EIT extends AbstractIT {
+
+    private static final String GROUP_ID = "group.id";
 
     @Autowired
     private EmbeddedKafkaBroker broker;
@@ -51,34 +50,26 @@ public class SinglePartitionE2EIT {
     @Autowired
     private KafkaConsumerFactory consumerFactory;
 
-    private KafkaProducer<String, String> producer;
-
-    private List<KafkaConsumer<String, String>> consumersToCleanup = new LinkedList<>();
-
     @Before
     public void setUp() {
-        setBootstrapServers(broker.getBrokersAsString());
-        producer = producerFactory.create();
+        super.setUp(producerFactory, consumerFactory, properties, broker);
     }
 
     @After
     public void tearDown() {
-        producer.close().block(Duration.ofSeconds(5));
-
-        consumersToCleanup.stream()
-            .map(KafkaConsumer::close)
-            .forEach(Mono::block);
+        super.tearDown();
     }
 
     @Test
     public void shouldSendAndReceiveWithSingleConsumer() throws InterruptedException {
-        KafkaConsumer<String, String> consumer = createConsumer("single-consumer-main");
+        KafkaConsumer<String, String> consumer = createConsumer(singletonMap(GROUP_ID, "single-consumer-main"));
         List<ConsumerRecord<String, String>> records = new CopyOnWriteArrayList<>();
         String topic = "single-consumer";
 
         subscribe(consumer, topic, records::add);
         waitForAssignmentPropagation();
 
+        KafkaProducer<String, String> producer = createProducer();
         sendToTopic(producer, topic, "k1", "v1");
         sendToTopic(producer, topic, "k2", "v2");
 
@@ -92,8 +83,8 @@ public class SinglePartitionE2EIT {
 
     @Test
     public void shouldSendAndReceiveWithTwoConsumerGroups() throws InterruptedException {
-        KafkaConsumer<String, String> firstConsumer = createConsumer("two-groups-main");
-        KafkaConsumer<String, String> secondConsumer = createConsumer("two-groups-alternative");
+        KafkaConsumer<String, String> firstConsumer = createConsumer(singletonMap(GROUP_ID, "two-groups-main"));
+        KafkaConsumer<String, String> secondConsumer = createConsumer(singletonMap(GROUP_ID, "two-groups-alternative"));
         List<ConsumerRecord<String, String>> firstConsumerRecords = new CopyOnWriteArrayList<>();
         List<ConsumerRecord<String, String>> secondConsumerRecords = new CopyOnWriteArrayList<>();
         String topic = "two-groups";
@@ -103,6 +94,7 @@ public class SinglePartitionE2EIT {
 
         waitForAssignmentPropagation();
 
+        KafkaProducer<String, String> producer = createProducer();
         sendToTopic(producer, topic, "k1", "v1");
         sendToTopic(producer, topic, "k2", "v2");
 
@@ -119,14 +111,6 @@ public class SinglePartitionE2EIT {
         assertConsumerRecord(firstConsumerRecords.get(1), topic, "k2", "v2", 1);
     }
 
-    private KafkaConsumer<String, String> createConsumer(String groupId) {
-        KafkaConsumer<String, String> consumer = consumerFactory.create(singletonMap("group.id", groupId));
-        // Preserve the consumer for cleanup after a test
-        consumersToCleanup.add(consumer);
-
-        return consumer;
-    }
-
     private void assertConsumerRecord(ConsumerRecord<String, String> record, String topic, String key,
         String value, int offset) {
 
@@ -135,39 +119,5 @@ public class SinglePartitionE2EIT {
         assertThat(record.key()).isEqualTo(key);
         assertThat(record.value()).isEqualTo(value);
         assertThat(record.offset()).isEqualTo(offset);
-    }
-
-    private void subscribe(KafkaConsumer<String, String> consumer, String topic,
-        Consumer<ConsumerRecord<String, String>> handler) {
-
-        consumer
-            .flux()
-            .log(consumer + " receiving")
-            .subscribe(handler);
-        consumer
-            .subscribe(topic)
-            .block();
-    }
-
-    private void sendToTopic(KafkaProducer<String, String> producer, String topic, String key, String value) {
-        producer
-            .send(ProducerRecord.builder(topic, value, key).build())
-            .block();
-    }
-
-    private void waitForAssignmentPropagation() throws InterruptedException {
-        // Give Kafka some time to execute partition assignment
-        Thread.sleep(2000);
-    }
-
-    private void setBootstrapServers(String bootstrapServers) {
-        // Workaround for Spring Kafka 2.2.11. In 2.3.x property can be injected automatically
-        Map<String, String> producerConfig = properties.getProducer();
-        producerConfig.put("bootstrap.servers", bootstrapServers);
-        properties.setProducer(producerConfig);
-
-        Map<String, String> consumerConfig = properties.getConsumer();
-        consumerConfig.put("bootstrap.servers", bootstrapServers);
-        properties.setConsumer(consumerConfig);
     }
 }
