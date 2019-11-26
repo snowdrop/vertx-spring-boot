@@ -86,10 +86,10 @@ public class VertxSerializationIT extends AbstractIT {
 
     @Test
     public void shouldSendAndReceiveJsonObject() throws InterruptedException {
+        String topic = "json-object-topic";
         KafkaConsumer<String, JsonObject> consumer =
             createConsumer(singletonMap(VALUE_DESERIALIZER, JSON_OBJECT_DESERIALIZER));
         AtomicReference<JsonObject> result = new AtomicReference<>();
-        String topic = "json-object-topic";
 
         subscribe(consumer, topic, r -> result.set(r.value()));
         waitForAssignmentPropagation();
@@ -102,15 +102,16 @@ public class VertxSerializationIT extends AbstractIT {
             .atMost(Duration.ofSeconds(5))
             .untilAtomic(result, is(notNullValue()));
 
-        assertThat(result.get().getString("k1")).isEqualTo("v1");
+        assertThat(result.get())
+            .isEqualTo(JsonObject.mapFrom(singletonMap("k1", "v1")));
     }
 
     @Test
     public void shouldSendAndReceiveJsonArray() throws InterruptedException {
+        String topic = "json-array-topic";
         KafkaConsumer<String, JsonArray> consumer =
             createConsumer(singletonMap(VALUE_DESERIALIZER, JSON_ARRAY_DESERIALIZER));
         AtomicReference<JsonArray> result = new AtomicReference<>();
-        String topic = "json-array-topic";
 
         subscribe(consumer, topic, r -> result.set(r.value()));
         waitForAssignmentPropagation();
@@ -123,14 +124,15 @@ public class VertxSerializationIT extends AbstractIT {
             .atMost(Duration.ofSeconds(5))
             .untilAtomic(result, is(notNullValue()));
 
-        assertThat(result.get().getString(0)).isEqualTo("v1");
+        assertThat(result.get())
+            .isEqualTo(new JsonArray(singletonList("v1")));
     }
 
     @Test
     public void shouldSendAndReceiveBuffer() throws InterruptedException {
+        String topic = "json-buffer-topic";
         KafkaConsumer<String, Buffer> consumer = createConsumer(singletonMap(VALUE_DESERIALIZER, BUFFER_DESERIALIZER));
         AtomicReference<Buffer> result = new AtomicReference<>();
-        String topic = "json-buffer-topic";
 
         subscribe(consumer, topic, r -> result.set(r.value()));
         waitForAssignmentPropagation();
@@ -142,6 +144,7 @@ public class VertxSerializationIT extends AbstractIT {
             .atMost(Duration.ofSeconds(5))
             .untilAtomic(result, is(notNullValue()));
 
-        assertThat(result.get()).isEqualTo(Buffer.buffer("v1"));
+        assertThat(result.get())
+            .isEqualTo(Buffer.buffer("v1"));
     }
 }

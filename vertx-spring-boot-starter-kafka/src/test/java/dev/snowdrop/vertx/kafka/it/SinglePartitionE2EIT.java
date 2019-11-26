@@ -62,9 +62,9 @@ public class SinglePartitionE2EIT extends AbstractIT {
 
     @Test
     public void shouldSendAndReceiveWithSingleConsumer() throws InterruptedException {
+        String topic = "single-consumer";
         KafkaConsumer<String, String> consumer = createConsumer(singletonMap(GROUP_ID, "single-consumer-main"));
         List<ConsumerRecord<String, String>> records = new CopyOnWriteArrayList<>();
-        String topic = "single-consumer";
 
         subscribe(consumer, topic, records::add);
         waitForAssignmentPropagation();
@@ -83,11 +83,11 @@ public class SinglePartitionE2EIT extends AbstractIT {
 
     @Test
     public void shouldSendAndReceiveWithTwoConsumerGroups() throws InterruptedException {
+        String topic = "two-groups";
         KafkaConsumer<String, String> firstConsumer = createConsumer(singletonMap(GROUP_ID, "two-groups-main"));
         KafkaConsumer<String, String> secondConsumer = createConsumer(singletonMap(GROUP_ID, "two-groups-alternative"));
         List<ConsumerRecord<String, String>> firstConsumerRecords = new CopyOnWriteArrayList<>();
         List<ConsumerRecord<String, String>> secondConsumerRecords = new CopyOnWriteArrayList<>();
-        String topic = "two-groups";
 
         subscribe(firstConsumer, topic, firstConsumerRecords::add);
         subscribe(secondConsumer, topic, secondConsumerRecords::add);
