@@ -1,0 +1,11 @@
+vertx:
+  amqp:
+    ssl: true
+    jksKeyStore:
+      enabled: true
+      path: tls/client-keystore.jks
+      password: wibble
+    jksTrustStore:
+      enabled: true
+      path: tls/client-truststore.jks
+      password: wibble

@@ -225,7 +225,7 @@ public class AmqpProperties {
     private SslStore jksTrustStore = new SslStore();
 
     /**
-     * JFX key store properties.
+     * PFX key store properties.
      */
     private SslStore pfxKeyStore = new SslStore();
 
