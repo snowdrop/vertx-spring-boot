@@ -45,9 +45,9 @@ HTTP/1.1 200 OK
 Content-Type: text/event-stream;charset=UTF-8
 transfer-encoding: chunked
 
-data:HELLO, WORLD
+data:Hello, World
 
-data:HELLO AGAIN
+data:Hello again
 ```
 
 ### TLS configuration
