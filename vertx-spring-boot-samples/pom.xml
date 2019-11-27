@@ -30,5 +30,6 @@
     <module>vertx-spring-boot-sample-sse</module>
     <module>vertx-spring-boot-sample-amqp</module>
     <module>vertx-spring-boot-sample-amqp-tls</module>
+    <module>vertx-spring-boot-sample-kafka</module>
   </modules>
 </project>
