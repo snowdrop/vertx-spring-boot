@@ -52,7 +52,7 @@
     <scala-library.version>2.12.8</scala-library.version>
     <smallrye-axle.version>0.0.10</smallrye-axle.version>
     <spring-boot.version>2.1.10.RELEASE</spring-boot.version>
-    <vertx.version>3.8.2</vertx.version>
+    <vertx.version>3.8.3</vertx.version>
 
     <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
