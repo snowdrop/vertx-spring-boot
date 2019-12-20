@@ -8,6 +8,7 @@ Following starters are available at the moment.
 * [Vert.x actuator starter](./vertx-spring-boot-starter-actuator)
 * [Vert.x mail starter](./vertx-spring-boot-starter-mail)
 * [Vert.x AMQP starter](./vertx-spring-boot-starter-amqp)
+* [Vert.x Kafka starter](./vertx-spring-boot-starter-kafka)
 
 ## Samples
 
@@ -17,6 +18,7 @@ Following starters are available at the moment.
 * [HTTP Security](./vertx-spring-boot-samples/vertx-spring-boot-sample-http-security) - demonstrates basic and form authentication.
 * [Mail](./vertx-spring-boot-samples/vertx-spring-boot-sample-mail) - demonstrates mail client usage.
 * [AMQP](./vertx-spring-boot-samples/vertx-spring-boot-sample-amqp) - demonstrates AMQP client usage.
+* [Kafka](./vertx-spring-boot-samples/vertx-spring-boot-sample-kafka) - demonstrates Kafka client usage.
 
 ## Building the project from source
 
