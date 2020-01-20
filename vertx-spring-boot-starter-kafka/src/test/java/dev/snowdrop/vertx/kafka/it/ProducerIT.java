@@ -1,6 +1,6 @@
 package dev.snowdrop.vertx.kafka.it;
 
-import java.util.Collections;
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import dev.snowdrop.vertx.kafka.KafkaProducer;
@@ -19,6 +19,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import reactor.test.StepVerifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = {
@@ -104,6 +105,8 @@ public class ProducerIT extends AbstractIT {
         StepVerifier.create(producer.write(record))
             .verifyErrorMessage("Cannot perform operation after producer has been closed");
 
-        assertThat(wasExceptionHandled.get()).isTrue();
+        await()
+            .atMost(Duration.ofSeconds(2))
+            .untilTrue(wasExceptionHandled);
     }
 }
