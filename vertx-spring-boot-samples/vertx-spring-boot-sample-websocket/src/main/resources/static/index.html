@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>WebSocket Example</title>
+  <script>
+  const socket = new WebSocket("ws://localhost:8080/echo-upper");
+
+  socket.onmessage = function(e) {
+    console.log("Received a value: " + e.data);
+    const messages = document.getElementById("messages");
+    const message = document.createElement("li");
+    message.innerHTML = e.data;
+    messages.append(message);
+  }
+
+  window.onbeforeunload = function(e) {
+    console.log("Closing socket");
+    socket.close();
+  }
+
+  function send(event) {
+    event.preventDefault();
+
+    const value = document.getElementById("value-to-send").value.trim();
+    if (value.length > 0) {
+      console.log("Sending value to socket: " + value);
+      socket.send(value);
+    }
+  }
+  </script>
+</head>
+<body>
+<div>
+  <h1>Vert.x Spring Boot WebSocket example</h1>
+  <p>
+    Enter a value to the form below and click submit. The value will be sent via socket to a backend service.
+    The service will then uppercase the value and send it back via the same socket.
+  </p>
+</div>
+<div>
+  <form onsubmit="send(event)">
+    <input type="text" id="value-to-send" placeholder="A value to be sent"/>
+    <input type="submit"/>
+  </form>
+</div>
+<div>
+  <ol id="messages"></ol>
+</div>
+</body>
+</html>
