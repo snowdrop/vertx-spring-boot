@@ -47,7 +47,7 @@
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
-      <version>${scala-library.version}</version><!-- TODO move to parent -->
+      <version>${scala-library.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
