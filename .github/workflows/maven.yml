@@ -20,6 +20,8 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 11
+    - name: Install
+      run: ./mvnw install -DskipTests
     - name: Unit tests
       run: ./mvnw surefire:test
     - name: Integration tests
