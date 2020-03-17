@@ -1,7 +1,0 @@
-language: java
-jdk:
-  - openjdk8
-  - openjdk11
-script:
-  - ./mvnw surefire:test
-  - ./mvnw failsafe:integration-test
