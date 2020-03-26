@@ -1,8 +1,8 @@
-## vertx-spring-boot-starter-kafka
+# vertx-spring-boot-starter-kafka
 
 Vert.x Spring Boot Kafka starter implements a Reactor API for the Vert.x Kafka client.
 
-### Usage
+## <a name="usage"></a> Usage
 
 Add the starter dependency to your `pom.xml`.
 ```xml
@@ -12,55 +12,144 @@ Add the starter dependency to your `pom.xml`.
 </dependency>
 ```
 
-#### Sending messages
+> Note on a reactive API. Many of the methods demonstrated below return either Mono or Flux. Therefore, in order to
+> execute the functionality provided by a method you'll need to subscribe to the returned publisher (Mono or Flux).
 
-Use a `ProducerRecord` builder to create a producer record.
-```java
-ProducerRecord<String, String> record = ProducerRecord
-    .builder("my-topic", "my-record-body", "my-record-key")
-    .withHeader(Header.create("my-header", "my-header-value"))
-    .build();
-```
+## Producer
 
-Inject a `KafkaProducerFactory` to your bean and use it to create a producer.
+### Creating a producer
+
+To create a producer, inject a `KafkaProducerFactory` to your bean and call its `create` method.
 ```java
 KafkaProducer<String, String> producer = producerFactory.create();
 ```
 
-Then send your record with the producer.
+Pass a `Map<String, String>` in order to override any producer properties.
+```java
+Map<String, String> config = new HashMap<>();
+config.put("key.deserializer", StringDeserializer.class.getName());
+config.put("value.deserializer", StringDeserializer.class.getName());
+
+KafkaProducer<String, String> producer = producerFactory.create(config);
+```
+
+### Creating producer record
+
+Use a `ProducerRecord` builder to create a producer record.
+```java
+ProducerRecord<String, String> record = ProducerRecord
+        .builder("my-topic", "my-record-body", "my-record-key")
+        .withHeader(Header.create("my-header", "my-header-value"))
+        .build();
+```
+
+If a record doesn't have a key, you'll have to specify generic types for the builder.
+```java
+ProducerRecord<String, String> record = ProducerRecord.
+        <String, String>builder("my-topic", "my-record-body")
+        .build();
+```
+
+### Sending messages
+
+To send a message simply invoke a `send` method with a producer record.
 ```java
 producer.send(record);
 ```
 
-Producer send method returns a `Mono<RecordMetadata>`. This means that a record will not be sent until you subscribe to this
-`Mono`. Once the send operations will end, `Mono` will be completed with a `RecordMetadata` containing your record information 
-such as its partition, offset, checksum etc. 
+Send method returns a `Mono<RecordMetadata>`. On completion, `RecordMetadata` will contain the record information such
+as its partition, offset, checksum etc.
 
-#### Receiving messages
+## Consumer
 
-Inject a `KafkaConsumerFactory` to your bean and use it to create a consumer.
+### Creating a consumer
+
+To create a consumer, inject a `KafkaConsumerFactory` to your bean and call its `create` method.
 ```java
 KafkaConsumer<String, String> consumer = consumerFactory.create();
 ```
 
-There are two steps needed to start receiving the messages. First you need to subscribe to a topic and then to a messages
-`Flux`.
+Pass a `Map<String, String>` in order to override any consumer properties.
 ```java
-Disposable consumerDisposer = consumer
-    .subscribe("my-topic")
-    .thenMany(consumer.flux())
-    .subscribe(record -> System.out.printon("Received a message: " + record.value()));
+Map<String, String> config = new HashMap<>();
+config.put("group.id", "my-group");
+config.put("key.deserializer", StringDeserializer.class.getName());
+config.put("value.deserializer", StringDeserializer.class.getName());
+
+KafkaConsumer<String, String> consumer = consumerFactory.create(config);
 ```
 
-To stop receiving messages - dispose a `Flux` subscription using the `consumerDisposer`.
-If you want to fully unsubscribe - use `consumer.unsubscribe()` method. This method returns `Mono<Void>`, which means that you
-need to subscribe to this `Mono` in order to execute the command. E.g.
+### Subscribing to a topic
+
+To subscribe to a topic(s) as part of a consumer group (configured in consumer properties) use a `subscribe` method.
+```java
+consumer.subsribe("my-topic");
+```
+or
+```java
+consumer.subscribe(Arrays.asList("my-topic", "another-topic"));
+```
+
+This will tell a Kafka cluster to assign a partition to this consumer. No messages will be consumed yet, however.
+Read below about how to start consuming the messages.
+
+### Assigning a specific topic
+
+If you want to assign a specific partition to your consumer instead of relying on a Kafka cluster to do that for you as
+part of a consumer group rebalancing, you can use an `assign` method.
+```java
+consumer.assign(Partition.create("my-topic", 0));
+```
+
+### Seeking in a partition
+
+A Kafka broker provides an easy way to move back and forth through the partition message history. For that you can use
+`seekToBeginning` (to reset an offset to 0) or `seek` (to set an offset to a specific value) methods.
+```java
+consumer.seekToBeginning(Partition.create("my-topic", 0));
+```
+or
+```java
+consumer.seek(Partition.create("my-topic", 0), 10);
+```
+
+
+For example, if you would like to receive all the messages whenever a consumer subscribes, you could do something like this.
+
+```java
+// Register a handler to be invoked once a number of partitions are assigned
+consumer.partitionsAssignedHandler(partitions -> {
+    Flux.fromIterable(partitions)
+            .flatMap(consumer::seekToBeginning)
+            // Time out in case this takes too long
+            .take(Duration.ofSeconds(2))
+            .subscribe();
+});
+consumer.subscribe("my-topic").block();
+```
+
+### Receiving messages
+
+Even though a consumer has subscribed to a topic and got a partition(s) assigned it will not start consuming messages
+until told to do so explicitly. To do that, subscribe to the consumer's message stream.
+```java
+Disposable consumerDisposer = consumer.flux()
+        .subscribe(this::doSomething);
+```
+
+Later once you want to stop consuming the messages you can use the disposer.
 ```java
 consumerDisposer.dispose();
-consumer.unsubscribe().block();
 ```
 
-### Configuration
+### Unsubscribing from a topic
+
+To leave a consumer group, consumer can unsubscribe from a topic.
+```java
+consumer.unsubscribe();
+```
+
+# Configuration
 
 To enable/disable Kafka starter, set a `vertx.kafka.enabled` property to `true/false` (`true` is a default value).
 
