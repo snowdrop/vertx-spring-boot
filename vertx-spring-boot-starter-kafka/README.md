@@ -2,7 +2,21 @@
 
 Vert.x Spring Boot Kafka starter implements a Reactor API for the Vert.x Kafka client.
 
-## <a name="usage"></a> Usage
+# Background
+
+Vert.x Spring Boot Kafka starter integrates the Vert.x Kafka client into a Spring Boot ecosystem by providing a Reactor API for
+it and implementing the configuration and beans to make it usable in a Spring Boot way.
+`KafkaProducerFactory` and `KafkaConsumerFactory` are the two Spring beans that can be injected into a Spring Boot application
+in order to send and receive Kafka messages.
+
+Before going any further, though, it is important that you understand the main concepts of the Kafka broker. Check out the official
+Kafka [documentation](https://kafka.apache.org/documentation) which is a great resource to start with. It is very informative
+while at the same time easy to understand.
+
+If you would like to learn more about the original Vert.x Kafka Client, check out its
+[documentation](https://vertx.io/docs/vertx-kafka-client/java), which has a vast number of examples and use cases.
+
+# Usage
 
 Add the starter dependency to your `pom.xml`.
 ```xml
