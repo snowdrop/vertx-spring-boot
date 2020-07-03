@@ -22,7 +22,5 @@ jobs:
         java-version: 11
     - name: Install
       run: ./mvnw install -DskipTests
-    - name: Unit tests
-      run: ./mvnw surefire:test
-    - name: Integration tests
-      run: ./mvnw failsafe:integration-test
+    - name: Test
+      run: ./mvnw verify
