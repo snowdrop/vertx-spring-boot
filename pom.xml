@@ -51,7 +51,7 @@
     <awaitility.version>4.0.1</awaitility.version>
     <scala-library.version>2.12.8</scala-library.version>
     <smallrye-axle.version>0.0.10</smallrye-axle.version>
-    <spring-boot.version>2.1.10.RELEASE</spring-boot.version>
+    <spring-boot.version>2.1.15.RELEASE</spring-boot.version>
     <vertx.version>3.8.3</vertx.version>
 
     <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
