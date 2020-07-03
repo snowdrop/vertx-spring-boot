@@ -1,0 +1,30 @@
+name: Release
+on: create
+jobs:
+  release:
+    if: ${{startsWith(github.ref, 'refs/tags/release-')}}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: master
+      - name: Set up JDK 11 and Maven
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+          server-id: jboss-releases-repository
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+      - name: Set release version
+        run: |
+          releaseVersion=$(echo $GITHUB_REF | sed 's/refs\/tags\/release-//')
+          echo "::set-env name=RELEASE_VERSION::${releaseVersion}"
+      - name: Release
+        uses: gytis/maven-release-action@master
+        with:
+          email: gytis@redhat.com
+          profiles: release
+          releaseVersion: ${{env.RELEASE_VERSION}}
+        env:
+          MAVEN_USERNAME: ${{secrets.MAVEN_USERNAME}}
+          MAVEN_PASSWORD: ${{secrets.MAVEN_PASSWORD}}
