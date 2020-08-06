@@ -8,7 +8,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
-import static org.springframework.web.reactive.function.BodyInserters.fromObject;
+import static org.springframework.web.reactive.function.BodyInserters.fromValue;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 
@@ -33,6 +33,6 @@ public class HttpSampleApplication {
         String message = String.format("Hello, %s!", name);
 
         return ok()
-            .body(fromObject(message));
+            .body(fromValue(message));
     }
 }
