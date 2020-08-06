@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.vertx.core.http.WebsocketRejectedException;
+import io.vertx.core.http.UpgradeRejectedException;
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
@@ -64,8 +64,8 @@ public class WebSocketIT extends TestBase {
     @Test
     public void shouldSendAndReceiveMultiFrameTextMessage() {
         Properties properties = new Properties();
-        properties.setProperty("vertx.http.client.maxWebsocketFrameSize", "5");
-        properties.setProperty("vertx.http.server.maxWebsocketFrameSize", "5");
+        properties.setProperty("vertx.http.client.maxWebSocketFrameSize", "5");
+        properties.setProperty("vertx.http.server.maxWebSocketFrameSize", "5");
         startServerWithoutSecurity(properties, Handlers.class);
 
         AtomicReference<String> expectedMessage = new AtomicReference<>();
@@ -117,8 +117,8 @@ public class WebSocketIT extends TestBase {
     @Test
     public void shouldSendAndReceiveMultiFrameBinaryMessage() {
         Properties properties = new Properties();
-        properties.setProperty("vertx.http.client.maxWebsocketFrameSize", "5");
-        properties.setProperty("vertx.http.server.maxWebsocketFrameSize", "5");
+        properties.setProperty("vertx.http.client.maxWebSocketFrameSize", "5");
+        properties.setProperty("vertx.http.server.maxWebSocketFrameSize", "5");
         startServerWithoutSecurity(properties, Handlers.class);
 
         AtomicReference<String> expectedMessage = new AtomicReference<>();
@@ -242,7 +242,7 @@ public class WebSocketIT extends TestBase {
             .block(Duration.ofSeconds(2));
     }
 
-    @Test(expected = WebsocketRejectedException.class)
+    @Test(expected = UpgradeRejectedException.class)
     public void testNotAllowedCorsOrigin() {
         startServerWithoutSecurity(Handlers.class);
 

@@ -33,7 +33,7 @@ public class HttpServerProperties {
 
     /**
      * @return the port
-     * @see HttpServerProperties#getPort()
+     * @see HttpServerOptions#getPort()
      */
     public int getPort() {
         return delegate.getPort();
@@ -45,7 +45,7 @@ public class HttpServerProperties {
 
     /**
      * @return the host
-     * @see HttpServerProperties#getHost()
+     * @see HttpServerOptions#getHost()
      */
     public String getHost() {
         return delegate.getHost();
@@ -57,7 +57,7 @@ public class HttpServerProperties {
 
     /**
      * @return the value of accept backlog
-     * @see HttpServerProperties#getAcceptBacklog()
+     * @see HttpServerOptions#getAcceptBacklog()
      */
     public int getAcceptBacklog() {
         return delegate.getAcceptBacklog();
@@ -73,7 +73,7 @@ public class HttpServerProperties {
      * it won't mandate the certificate to be presented, basically make it optional.
      *
      * @return client auth value
-     * @see HttpServerProperties#getClientAuth()
+     * @see HttpServerOptions#getClientAuth()
      */
     public ClientAuth getClientAuth() {
         return delegate.getClientAuth();
@@ -85,7 +85,7 @@ public class HttpServerProperties {
 
     /**
      * @return whether the server supports Server Name Indication
-     * @see HttpServerProperties#isSni()
+     * @see HttpServerOptions#isSni()
      */
     public boolean isSni() {
         return delegate.isSni();
@@ -99,7 +99,7 @@ public class HttpServerProperties {
 
     /**
      * @return {@code true} if the server supports gzip/deflate compression
-     * @see HttpServerProperties#isCompressionSupported()
+     * @see HttpServerOptions#isCompressionSupported()
      */
     public boolean isCompressionSupported() {
         return delegate.isCompressionSupported();
@@ -111,7 +111,7 @@ public class HttpServerProperties {
 
     /**
      * @return the server gzip/deflate 'compression level' to be used in responses when client and server support is turned on
-     * @see HttpServerProperties#getCompressionLevel()
+     * @see HttpServerOptions#getCompressionLevel()
      */
     public int getCompressionLevel() {
         return delegate.getCompressionLevel();
@@ -123,7 +123,7 @@ public class HttpServerProperties {
 
     /**
      * @return whether server accepts unmasked frames
-     * @see HttpServerProperties#isAcceptUnmaskedFrames()
+     * @see HttpServerOptions#isAcceptUnmaskedFrames()
      */
     public boolean isAcceptUnmaskedFrames() {
         return delegate.isAcceptUnmaskedFrames();
@@ -135,43 +135,88 @@ public class HttpServerProperties {
 
     /**
      * @return the maximum WebSocket frame size
-     * @see HttpServerProperties#getMaxWebsocketFrameSize()
+     * @see HttpServerOptions#getMaxWebSocketFrameSize()
+     * @deprecated see {@link #getMaxWebSocketFrameSize()}
      */
+    @Deprecated
     public int getMaxWebsocketFrameSize() {
-        return delegate.getMaxWebsocketFrameSize();
+        return delegate.getMaxWebSocketFrameSize();
     }
 
-    public void setMaxWebsocketFrameSize(int maxWebsocketFrameSize) {
-        delegate.setMaxWebsocketFrameSize(maxWebsocketFrameSize);
+    /**
+     * @return the maximum WebSocket frame size
+     * @see HttpServerOptions#getMaxWebSocketFrameSize()
+     */
+    public int getMaxWebSocketFrameSize() {
+        return delegate.getMaxWebSocketFrameSize();
+    }
+
+    @Deprecated
+    public void setMaxWebsocketFrameSize(int maxWebSocketFrameSize) {
+        delegate.setMaxWebSocketFrameSize(maxWebSocketFrameSize);
+    }
+
+    public void setMaxWebSocketFrameSize(int maxWebSocketFrameSize) {
+        delegate.setMaxWebSocketFrameSize(maxWebSocketFrameSize);
     }
 
     /**
      * @return the maximum WebSocket message size
-     * @see HttpServerProperties#getMaxWebsocketMessageSize()
+     * @see HttpServerOptions#getMaxWebSocketMessageSize()
+     * @deprecated use {@link #getMaxWebSocketMessageSize()}
      */
+    @Deprecated
     public int getMaxWebsocketMessageSize() {
-        return delegate.getMaxWebsocketMessageSize();
+        return delegate.getMaxWebSocketMessageSize();
     }
 
-    public void setMaxWebsocketMessageSize(int maxWebsocketMessageSize) {
-        delegate.setMaxWebsocketMessageSize(maxWebsocketMessageSize);
+    /**
+     * @return the maximum WebSocket message size
+     * @see HttpServerOptions#getMaxWebSocketMessageSize()
+     */
+    public int getMaxWebSocketMessageSize() {
+        return delegate.getMaxWebSocketMessageSize();
+    }
+
+    @Deprecated
+    public void setMaxWebsocketMessageSize(int maxWebSocketMessageSize) {
+        delegate.setMaxWebSocketMessageSize(maxWebSocketMessageSize);
+    }
+
+    public void setMaxWebSocketMessageSize(int maxWebSocketMessageSize) {
+        delegate.setMaxWebSocketMessageSize(maxWebSocketMessageSize);
     }
 
     /**
      * @return Get the WebSocket sub-protocols
-     * @see HttpServerProperties#getWebsocketSubProtocols()
+     * @see HttpServerOptions#getWebsocketSubProtocols()
+     * @deprecated use {@link #getWebSocketSubProtocols()}
      */
+    @Deprecated
     public String getWebsocketSubProtocols() {
         return delegate.getWebsocketSubProtocols();
     }
 
+    /**
+     * @return Get the WebSocket sub-protocols
+     * @see HttpServerOptions#getWebSocketSubProtocols()
+     */
+    public List<String> getWebSocketSubProtocols() {
+        return delegate.getWebSocketSubProtocols();
+    }
+
+    @Deprecated
     public void setWebsocketSubProtocols(String subProtocols) {
         delegate.setWebsocketSubProtocols(subProtocols);
     }
 
+    public void setWebSocketSubProtocols(List<String> subProtocols) {
+        delegate.setWebSocketSubProtocols(subProtocols);
+    }
+
     /**
      * @return whether 100 Continue should be handled automatically
-     * @see HttpServerProperties#isHandle100ContinueAutomatically()
+     * @see HttpServerOptions#isHandle100ContinueAutomatically()
      */
     public boolean isHandle100ContinueAutomatically() {
         return delegate.isHandle100ContinueAutomatically();
@@ -183,7 +228,7 @@ public class HttpServerProperties {
 
     /**
      * @return the maximum HTTP chunk size
-     * @see HttpServerProperties#getMaxChunkSize()
+     * @see HttpServerOptions#getMaxChunkSize()
      */
     public int getMaxChunkSize() {
         return delegate.getMaxChunkSize();
@@ -195,7 +240,7 @@ public class HttpServerProperties {
 
     /**
      * @return the maximum length of the initial line for HTTP/1.x (e.g. {@code "GET / HTTP/1.0"})
-     * @see HttpServerProperties#getMaxInitialLineLength()
+     * @see HttpServerOptions#getMaxInitialLineLength()
      */
     public int getMaxInitialLineLength() {
         return delegate.getMaxInitialLineLength();
@@ -207,7 +252,7 @@ public class HttpServerProperties {
 
     /**
      * @return Returns the maximum length of all headers for HTTP/1.x
-     * @see HttpServerProperties#getMaxHeaderSize()
+     * @see HttpServerOptions#getMaxHeaderSize()
      */
     public int getMaxHeaderSize() {
         return delegate.getMaxHeaderSize();
@@ -219,7 +264,7 @@ public class HttpServerProperties {
 
     /**
      * @return the list of protocol versions to provide during the Application-Layer Protocol Negotiatiation
-     * @see HttpServerProperties#getAlpnVersions()
+     * @see HttpServerOptions#getAlpnVersions()
      */
     public List<HttpVersion> getAlpnVersions() {
         return delegate.getAlpnVersions();
@@ -231,7 +276,7 @@ public class HttpServerProperties {
 
     /**
      * @return the default HTTP/2 connection window size
-     * @see HttpServerProperties#getHttp2ConnectionWindowSize()
+     * @see HttpServerOptions#getHttp2ConnectionWindowSize()
      */
     public int getHttp2ConnectionWindowSize() {
         return delegate.getHttp2ConnectionWindowSize();
@@ -243,7 +288,7 @@ public class HttpServerProperties {
 
     /**
      * @return {@code true} if the server supports decompression
-     * @see HttpServerProperties#isDecompressionSupported()
+     * @see HttpServerOptions#isDecompressionSupported()
      */
     public boolean isDecompressionSupported() {
         return delegate.isDecompressionSupported();
@@ -255,7 +300,7 @@ public class HttpServerProperties {
 
     /**
      * @return the initial buffer size for the HTTP decoder
-     * @see HttpServerProperties#getDecoderInitialBufferSize()
+     * @see HttpServerOptions#getDecoderInitialBufferSize()
      */
     public int getDecoderInitialBufferSize() {
         return delegate.getDecoderInitialBufferSize();
@@ -269,66 +314,147 @@ public class HttpServerProperties {
      * Get whether WebSocket the per-frame deflate compression extension is supported.
      *
      * @return {@code true} if the http server will accept the per-frame deflate compression extension
-     * @see HttpServerProperties#isPerFrameWebsocketCompressionSupported()
+     * @see HttpServerOptions#getPerFrameWebSocketCompressionSupported()
+     * @deprecated use {@link #isPerFrameWebSocketCompressionSupported()}
      */
+    @Deprecated
     public boolean isPerFrameWebsocketCompressionSupported() {
-        return delegate.getPerFrameWebsocketCompressionSupported();
+        return delegate.getPerFrameWebSocketCompressionSupported();
     }
 
-    public void setPerFrameWebsocketCompressionSupported(boolean perFrameWebsocketCompressionSupported) {
-        delegate.setPerFrameWebsocketCompressionSupported(perFrameWebsocketCompressionSupported);
+    /**
+     * Get whether WebSocket the per-frame deflate compression extension is supported.
+     *
+     * @return {@code true} if the http server will accept the per-frame deflate compression extension
+     * @see HttpServerOptions#getPerFrameWebSocketCompressionSupported()
+     */
+    public boolean isPerFrameWebSocketCompressionSupported() {
+        return delegate.getPerFrameWebSocketCompressionSupported();
+    }
+
+    @Deprecated
+    public void setPerFrameWebsocketCompressionSupported(boolean perFrameWebSocketCompressionSupported) {
+        delegate.setPerFrameWebSocketCompressionSupported(perFrameWebSocketCompressionSupported);
+    }
+
+    public void setPerFrameWebSocketCompressionSupported(boolean perFrameWebSocketCompressionSupported) {
+        delegate.setPerFrameWebSocketCompressionSupported(perFrameWebSocketCompressionSupported);
     }
 
     /**
      * Get whether WebSocket per-message deflate compression extension is supported.
      *
      * @return {@code true} if the http server will accept the per-message deflate compression extension
-     * @see HttpServerProperties#isPerMessageWebsocketCompressionSupported()
+     * @see HttpServerOptions#getPerMessageWebSocketCompressionSupported()
+     * @deprecated use {@link #isPerFrameWebSocketCompressionSupported()}
      */
+    @Deprecated
     public boolean isPerMessageWebsocketCompressionSupported() {
-        return delegate.getPerMessageWebsocketCompressionSupported();
+        return delegate.getPerMessageWebSocketCompressionSupported();
     }
 
-    public void setPerMessageWebsocketCompressionSupported(boolean perMessageWebsocketCompressionSupported) {
-        delegate.setPerMessageWebsocketCompressionSupported(perMessageWebsocketCompressionSupported);
+    /**
+     * Get whether WebSocket per-message deflate compression extension is supported.
+     *
+     * @return {@code true} if the http server will accept the per-message deflate compression extension
+     * @see HttpServerOptions#getPerMessageWebSocketCompressionSupported()
+     */
+    public boolean isPerMessageWebSocketCompressionSupported() {
+        return delegate.getPerMessageWebSocketCompressionSupported();
+    }
+
+    @Deprecated
+    public void setPerMessageWebsocketCompressionSupported(boolean perMessageWebSocketCompressionSupported) {
+        delegate.setPerMessageWebSocketCompressionSupported(perMessageWebSocketCompressionSupported);
+    }
+
+    public void setPerMessageWebSocketCompressionSupported(boolean perMessageWebSocketCompressionSupported) {
+        delegate.setPerMessageWebSocketCompressionSupported(perMessageWebSocketCompressionSupported);
     }
 
     /**
      * @return the current WebSocket deflate compression level
-     * @see HttpServerProperties#getWebsocketCompressionLevel()
+     * @see HttpServerOptions#getWebSocketCompressionLevel()
+     * @deprecated use {@link #getWebSocketCompressionLevel()}
      */
+    @Deprecated
     public int getWebsocketCompressionLevel() {
-        return delegate.getWebsocketCompressionLevel();
+        return delegate.getWebSocketCompressionLevel();
     }
 
-    public void setWebsocketCompressionLevel(int websocketCompressionLevel) {
-        delegate.setWebsocketCompressionLevel(websocketCompressionLevel);
+    /**
+     * @return the current WebSocket deflate compression level
+     * @see HttpServerOptions#getWebSocketCompressionLevel()
+     */
+    public int getWebSocketCompressionLevel() {
+        return delegate.getWebSocketCompressionLevel();
+    }
+
+    @Deprecated
+    public void setWebsocketCompressionLevel(int webSocketCompressionLevel) {
+        delegate.setWebSocketCompressionLevel(webSocketCompressionLevel);
+    }
+
+    public void setWebSocketCompressionLevel(int webSocketCompressionLevel) {
+        delegate.setWebSocketCompressionLevel(webSocketCompressionLevel);
     }
 
     /**
      * @return {@code true} when the WebSocket server will accept the {@code server_no_context_takeover} parameter for the per-message
      * deflate compression extension offered by the client
-     * @see HttpServerProperties#isWebsocketAllowServerNoContext()
+     * @see HttpServerOptions#getWebSocketAllowServerNoContext()
+     * @deprecated use {@link #isWebSocketAllowServerNoContext()}
      */
+    @Deprecated
     public boolean isWebsocketAllowServerNoContext() {
-        return delegate.getWebsocketAllowServerNoContext();
+        return delegate.getWebSocketAllowServerNoContext();
     }
 
+    /**
+     * @return {@code true} when the WebSocket server will accept the {@code server_no_context_takeover} parameter for the per-message
+     * deflate compression extension offered by the client
+     * @see HttpServerOptions#getWebSocketAllowServerNoContext()
+     */
+    public boolean isWebSocketAllowServerNoContext() {
+        return delegate.getWebSocketAllowServerNoContext();
+    }
+
+    @Deprecated
     public void setWebsocketAllowServerNoContext(boolean allowServerNoContext) {
-        delegate.setWebsocketAllowServerNoContext(allowServerNoContext);
+        delegate.setWebSocketAllowServerNoContext(allowServerNoContext);
+    }
+
+    public void setWebSocketAllowServerNoContext(boolean allowServerNoContext) {
+        delegate.setWebSocketAllowServerNoContext(allowServerNoContext);
     }
 
     /**
      * @return {@code true} when the WebSocket server will accept the {@code client_no_context_takeover} parameter for the per-message
      * deflate compression extension offered by the client
-     * @see HttpServerProperties#isWebsocketPreferredClientNoContext()
+     * @see HttpServerOptions#getWebSocketPreferredClientNoContext()
+     * @deprecated use {@link #isWebSocketPreferredClientNoContext()}
      */
+    @Deprecated
     public boolean isWebsocketPreferredClientNoContext() {
-        return delegate.getWebsocketPreferredClientNoContext();
+        return delegate.getWebSocketPreferredClientNoContext();
     }
 
+    /**
+     * @return {@code true} when the WebSocket server will accept the {@code client_no_context_takeover} parameter for the per-message
+     * deflate compression extension offered by the client
+     * @see HttpServerOptions#getWebSocketPreferredClientNoContext()
+     */
+    public boolean isWebSocketPreferredClientNoContext() {
+        return delegate.getWebSocketPreferredClientNoContext();
+    }
+
+    @Deprecated
     public void setWebsocketPreferredClientNoContext(boolean preferredClientNoContext) {
-        delegate.setWebsocketPreferredClientNoContext(preferredClientNoContext);
+        delegate.setWebSocketPreferredClientNoContext(preferredClientNoContext);
+    }
+
+    public void setWebSocketPreferredClientNoContext(boolean preferredClientNoContext) {
+        delegate.setWebSocketPreferredClientNoContext(preferredClientNoContext);
     }
 
     /**
@@ -419,7 +545,7 @@ public class HttpServerProperties {
 
     /**
      * @return TCP no delay enabled ?
-     * @see HttpServerProperties#isTcpNoDelay()
+     * @see HttpServerOptions#isTcpNoDelay()
      */
     public boolean isTcpNoDelay() {
         return delegate.isTcpNoDelay();
@@ -431,7 +557,7 @@ public class HttpServerProperties {
 
     /**
      * @return is TCP keep alive enabled?
-     * @see HttpServerProperties#isTcpKeepAlive()
+     * @see HttpServerOptions#isTcpKeepAlive()
      */
     public boolean isTcpKeepAlive() {
         return delegate.isTcpKeepAlive();
@@ -443,7 +569,7 @@ public class HttpServerProperties {
 
     /**
      * @return is SO_linger enabled
-     * @see HttpServerProperties#getSoLinger()
+     * @see HttpServerOptions#getSoLinger()
      */
     public int getSoLinger() {
         return delegate.getSoLinger();
@@ -455,7 +581,7 @@ public class HttpServerProperties {
 
     /**
      * @return the idle timeout, in time unit specified by {@link #getIdleTimeoutUnit()}.
-     * @see HttpServerProperties#getIdleTimeout()
+     * @see HttpServerOptions#getIdleTimeout()
      */
     public int getIdleTimeout() {
         return delegate.getIdleTimeout();
@@ -467,7 +593,7 @@ public class HttpServerProperties {
 
     /**
      * @return the idle timeout unit.
-     * @see HttpServerProperties#getIdleTimeoutUnit()
+     * @see HttpServerOptions#getIdleTimeoutUnit()
      */
     public TimeUnit getIdleTimeoutUnit() {
         return delegate.getIdleTimeoutUnit();
@@ -479,7 +605,7 @@ public class HttpServerProperties {
 
     /**
      * @return is SSL/TLS enabled?
-     * @see HttpServerProperties#isSsl()
+     * @see HttpServerOptions#isSsl()
      */
     public boolean isSsl() {
         return delegate.isSsl();
@@ -491,7 +617,7 @@ public class HttpServerProperties {
 
     /**
      * @return the enabled cipher suites
-     * @see HttpServerProperties#getEnabledCipherSuites()
+     * @see HttpServerOptions#getEnabledCipherSuites()
      */
     public Set<String> getEnabledCipherSuites() {
         return delegate.getEnabledCipherSuites();
@@ -505,7 +631,7 @@ public class HttpServerProperties {
 
     /**
      * @return whether to use or not Application-Layer Protocol Negotiation
-     * @see HttpServerProperties#isUseAlpn()
+     * @see HttpServerOptions#isUseAlpn()
      */
     public boolean isUseAlpn() {
         return delegate.isUseAlpn();
@@ -519,7 +645,7 @@ public class HttpServerProperties {
      * Returns the enabled SSL/TLS protocols
      *
      * @return the enabled protocols
-     * @see HttpServerProperties#getEnabledSecureTransportProtocols()
+     * @see HttpServerOptions#getEnabledSecureTransportProtocols()
      */
     public Set<String> getEnabledSecureTransportProtocols() {
         return delegate.getEnabledSecureTransportProtocols();
@@ -531,7 +657,7 @@ public class HttpServerProperties {
 
     /**
      * @return wether {@code TCP_FASTOPEN} option is enabled
-     * @see HttpServerProperties#isTcpFastOpen()
+     * @see HttpServerOptions#isTcpFastOpen()
      */
     public boolean isTcpFastOpen() {
         return delegate.isTcpFastOpen();
@@ -543,7 +669,7 @@ public class HttpServerProperties {
 
     /**
      * @return wether {@code TCP_CORK} option is enabled
-     * @see HttpServerProperties#isTcpCork()
+     * @see HttpServerOptions#isTcpCork()
      */
     public boolean isTcpCork() {
         return delegate.isTcpCork();
@@ -555,7 +681,7 @@ public class HttpServerProperties {
 
     /**
      * @return wether {@code TCP_QUICKACK} option is enabled
-     * @see HttpServerProperties#isTcpQuickAck()
+     * @see HttpServerOptions#isTcpQuickAck()
      */
     public boolean isTcpQuickAck() {
         return delegate.isTcpQuickAck();
@@ -571,7 +697,7 @@ public class HttpServerProperties {
      * Return the TCP send buffer size, in bytes.
      *
      * @return the send buffer size
-     * @see HttpServerProperties#getSendBufferSize()
+     * @see HttpServerOptions#getSendBufferSize()
      */
     public int getSendBufferSize() {
         return delegate.getSendBufferSize();
@@ -585,7 +711,7 @@ public class HttpServerProperties {
      * Return the TCP receive buffer size, in bytes
      *
      * @return the receive buffer size
-     * @see HttpServerProperties#getReceiveBufferSize()
+     * @see HttpServerOptions#getReceiveBufferSize()
      */
     public int getReceiveBufferSize() {
         return delegate.getReceiveBufferSize();
@@ -597,7 +723,7 @@ public class HttpServerProperties {
 
     /**
      * @return the value of traffic class
-     * @see HttpServerProperties#getTrafficClass()
+     * @see HttpServerOptions#getTrafficClass()
      */
     public int getTrafficClass() {
         return delegate.getTrafficClass();
@@ -609,7 +735,7 @@ public class HttpServerProperties {
 
     /**
      * @return the value of reuse address
-     * @see HttpServerProperties#isReuseAddress()
+     * @see HttpServerOptions#isReuseAddress()
      */
     public boolean isReuseAddress() {
         return delegate.isReuseAddress();
@@ -621,7 +747,7 @@ public class HttpServerProperties {
 
     /**
      * @return true when network activity logging is enabled
-     * @see HttpServerProperties#getLogActivity()
+     * @see HttpServerOptions#getLogActivity()
      */
     public boolean getLogActivity() {
         return delegate.getLogActivity();
@@ -633,7 +759,7 @@ public class HttpServerProperties {
 
     /**
      * @return the value of reuse address - only supported by native transports
-     * @see HttpServerProperties#isReusePort()
+     * @see HttpServerOptions#isReusePort()
      */
     public boolean isReusePort() {
         return delegate.isReusePort();
