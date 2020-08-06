@@ -467,28 +467,62 @@ public class HttpClientProperties {
      * Get the maximum WebSocket frame size to use
      *
      * @return the max WebSocket frame size
-     * @see HttpClientOptions#getMaxWebsocketFrameSize()
+     * @see HttpClientOptions#getMaxWebSocketFrameSize()
+     * @deprecated use {@link #getMaxWebSocketFrameSize()}
      */
+    @Deprecated
     public int getMaxWebsocketFrameSize() {
-        return delegate.getMaxWebsocketFrameSize();
+        return delegate.getMaxWebSocketFrameSize();
     }
 
-    public void setMaxWebsocketFrameSize(int maxWebsocketFrameSize) {
-        delegate.setMaxWebsocketFrameSize(maxWebsocketFrameSize);
+    /**
+     * Get the maximum WebSocket frame size to use
+     *
+     * @return the max WebSocket frame size
+     * @see HttpClientOptions#getMaxWebSocketFrameSize()
+     */
+    public int getMaxWebSocketFrameSize() {
+        return delegate.getMaxWebSocketFrameSize();
+    }
+
+    @Deprecated
+    public void setMaxWebsocketFrameSize(int maxWebSocketFrameSize) {
+        delegate.setMaxWebSocketFrameSize(maxWebSocketFrameSize);
+    }
+
+    public void setMaxWebSocketFrameSize(int maxWebSocketFrameSize) {
+        delegate.setMaxWebSocketFrameSize(maxWebSocketFrameSize);
     }
 
     /**
      * Get the maximum WebSocket message size to use
      *
      * @return the max WebSocket message size
-     * @see HttpClientOptions#getMaxWebsocketMessageSize()
+     * @see HttpClientOptions#getMaxWebSocketMessageSize()
+     * @deprecated use {@link #getMaxWebSocketMessageSize()}
      */
+    @Deprecated
     public int getMaxWebsocketMessageSize() {
-        return delegate.getMaxWebsocketMessageSize();
+        return delegate.getMaxWebSocketMessageSize();
     }
 
-    public void setMaxWebsocketMessageSize(int maxWebsocketMessageSize) {
-        delegate.setMaxWebsocketMessageSize(maxWebsocketMessageSize);
+    /**
+     * Get the maximum WebSocket message size to use
+     *
+     * @return the max WebSocket message size
+     * @see HttpClientOptions#getMaxWebSocketMessageSize()
+     */
+    public int getMaxWebSocketMessageSize() {
+        return delegate.getMaxWebSocketMessageSize();
+    }
+
+    @Deprecated
+    public void setMaxWebsocketMessageSize(int maxWebSocketMessageSize) {
+        delegate.setMaxWebSocketMessageSize(maxWebSocketMessageSize);
+    }
+
+    public void setMaxWebSocketMessageSize(int maxWebSocketMessageSize) {
+        delegate.setMaxWebSocketMessageSize(maxWebSocketMessageSize);
     }
 
     /**
@@ -744,63 +778,140 @@ public class HttpClientProperties {
 
     /**
      * @return {@code true} when the WebSocket per-frame deflate compression extension will be offered
-     * @see HttpClientOptions#getTryWebsocketDeflateFrameCompression
+     * @see HttpClientOptions#getTryWebSocketDeflateFrameCompression
+     * @deprecated use {@link #isTryWebSocketDeflateFrameCompression()}
      */
+    @Deprecated
     public boolean isTryWebsocketDeflateFrameCompression() {
-        return delegate.getTryWebsocketDeflateFrameCompression();
+        return delegate.getTryWebSocketDeflateFrameCompression();
     }
 
-    public void setTryUsePerFrameWebsocketCompression(boolean tryWebsocketDeflateFrameCompression) {
-        delegate.setTryUsePerFrameWebsocketCompression(tryWebsocketDeflateFrameCompression);
+    /**
+     * @return {@code true} when the WebSocket per-frame deflate compression extension will be offered
+     * @see HttpClientOptions#getTryWebSocketDeflateFrameCompression
+     */
+    public boolean isTryWebSocketDeflateFrameCompression() {
+        return delegate.getTryWebSocketDeflateFrameCompression();
+    }
+
+    @Deprecated
+    public void setTryUsePerFrameWebsocketCompression(boolean tryWebSocketDeflateFrameCompression) {
+        delegate.setTryUsePerFrameWebSocketCompression(tryWebSocketDeflateFrameCompression);
+    }
+
+    public void setTryUsePerFrameWebSocketCompression(boolean tryWebSocketDeflateFrameCompression) {
+        delegate.setTryUsePerFrameWebSocketCompression(tryWebSocketDeflateFrameCompression);
     }
 
     /**
      * @return {@code true} when the WebSocket per-message deflate compression extension will be offered
-     * @see HttpClientOptions#getTryUsePerMessageWebsocketCompression()
+     * @see HttpClientOptions#getTryUsePerMessageWebSocketCompression()
+     * @deprecated use {@link #isTryUsePerMessageWebSocketCompression()}
      */
+    @Deprecated
     public boolean isTryUsePerMessageWebsocketCompression() {
-        return delegate.getTryUsePerMessageWebsocketCompression();
-    }
-
-    public void setTryUsePerMessageWebsocketCompression(boolean tryUsePerMessageWebsocketCompression) {
-        delegate.setTryUsePerMessageWebsocketCompression(tryUsePerMessageWebsocketCompression);
+        return delegate.getTryUsePerMessageWebSocketCompression();
     }
 
     /**
-     * @return the Websocket deflate compression level
-     * @see HttpClientOptions#getWebsocketCompressionLevel()
+     * @return {@code true} when the WebSocket per-message deflate compression extension will be offered
+     * @see HttpClientOptions#getTryUsePerMessageWebSocketCompression()
      */
-    public int getWebsocketCompressionLevel() {
-        return delegate.getWebsocketCompressionLevel();
+    public boolean isTryUsePerMessageWebSocketCompression() {
+        return delegate.getTryUsePerMessageWebSocketCompression();
     }
 
-    public void setWebsocketCompressionLevel(int websocketCompressionLevel) {
-        delegate.setWebsocketCompressionLevel(websocketCompressionLevel);
+    @Deprecated
+    public void setTryUsePerMessageWebsocketCompression(boolean tryUsePerMessageWebSocketCompression) {
+        delegate.setTryUsePerMessageWebSocketCompression(tryUsePerMessageWebSocketCompression);
+    }
+
+    public void setTryUsePerMessageWebSocketCompression(boolean tryUsePerMessageWebSocketCompression) {
+        delegate.setTryUsePerMessageWebSocketCompression(tryUsePerMessageWebSocketCompression);
+    }
+
+    /**
+     * @return the WebSocket deflate compression level
+     * @see HttpClientOptions#getWebSocketCompressionLevel()
+     * @deprecated use {@link #getWebSocketCompressionLevel()}
+     */
+    @Deprecated
+    public int getWebsocketCompressionLevel() {
+        return delegate.getWebSocketCompressionLevel();
+    }
+
+    /**
+     * @return the WebSocket deflate compression level
+     * @see HttpClientOptions#getWebSocketCompressionLevel()
+     */
+    public int getWebSocketCompressionLevel() {
+        return delegate.getWebSocketCompressionLevel();
+    }
+
+    @Deprecated
+    public void setWebsocketCompressionLevel(int webSocketCompressionLevel) {
+        delegate.setWebSocketCompressionLevel(webSocketCompressionLevel);
+    }
+
+    public void setWebSocketCompressionLevel(int webSocketCompressionLevel) {
+        delegate.setWebSocketCompressionLevel(webSocketCompressionLevel);
     }
 
     /**
      * @return {@code true} when the {@code client_no_context_takeover} parameter for the WebSocket per-message
      * deflate compression extension will be offered
-     * @see HttpClientOptions#getWebsocketCompressionAllowClientNoContext()
+     * @see HttpClientOptions#getWebSocketCompressionAllowClientNoContext()
+     * @deprecated use {@link #isWebSocketCompressionAllowClientNoContext()}
      */
+    @Deprecated
     public boolean isWebsocketCompressionAllowClientNoContext() {
-        return delegate.getWebsocketCompressionAllowClientNoContext();
-    }
-
-    public void setWebsocketCompressionAllowClientNoContext(boolean websocketCompressionAllowClientNoContext) {
-        delegate.setWebsocketCompressionAllowClientNoContext(websocketCompressionAllowClientNoContext);
+        return delegate.getWebSocketCompressionAllowClientNoContext();
     }
 
     /**
-     * @return {@code true} when the {@code server_no_context_takeover} parameter for the Websocket per-message
+     * @return {@code true} when the {@code client_no_context_takeover} parameter for the WebSocket per-message
      * deflate compression extension will be offered
-     * @see HttpClientOptions#getWebsocketCompressionRequestServerNoContext()
+     * @see HttpClientOptions#getWebSocketCompressionAllowClientNoContext()
      */
-    public boolean isWebsocketCompressionRequestServerNoContext() {
-        return delegate.getWebsocketCompressionRequestServerNoContext();
+    public boolean isWebSocketCompressionAllowClientNoContext() {
+        return delegate.getWebSocketCompressionAllowClientNoContext();
     }
 
-    public void setWebsocketCompressionRequestServerNoContext(boolean websocketCompressionRequestServerNoContext) {
-        delegate.setWebsocketCompressionRequestServerNoContext(websocketCompressionRequestServerNoContext);
+    @Deprecated
+    public void setWebsocketCompressionAllowClientNoContext(boolean webSocketCompressionAllowClientNoContext) {
+        delegate.setWebSocketCompressionAllowClientNoContext(webSocketCompressionAllowClientNoContext);
+    }
+
+    public void setWebSocketCompressionAllowClientNoContext(boolean webSocketCompressionAllowClientNoContext) {
+        delegate.setWebSocketCompressionAllowClientNoContext(webSocketCompressionAllowClientNoContext);
+    }
+
+    /**
+     * @return {@code true} when the {@code server_no_context_takeover} parameter for the WebSocket per-message
+     * deflate compression extension will be offered
+     * @see HttpClientOptions#getWebSocketCompressionRequestServerNoContext()
+     * @deprecated use {@link #isWebSocketCompressionRequestServerNoContext()}
+     */
+    @Deprecated
+    public boolean isWebsocketCompressionRequestServerNoContext() {
+        return delegate.getWebSocketCompressionRequestServerNoContext();
+    }
+
+    /**
+     * @return {@code true} when the {@code server_no_context_takeover} parameter for the WebSocket per-message
+     * deflate compression extension will be offered
+     * @see HttpClientOptions#getWebSocketCompressionRequestServerNoContext()
+     */
+    public boolean isWebSocketCompressionRequestServerNoContext() {
+        return delegate.getWebSocketCompressionRequestServerNoContext();
+    }
+
+    @Deprecated
+    public void setWebsocketCompressionRequestServerNoContext(boolean webSocketCompressionRequestServerNoContext) {
+        delegate.setWebSocketCompressionRequestServerNoContext(webSocketCompressionRequestServerNoContext);
+    }
+
+    public void setWebSocketCompressionRequestServerNoContext(boolean webSocketCompressionRequestServerNoContext) {
+        delegate.setWebSocketCompressionRequestServerNoContext(webSocketCompressionRequestServerNoContext);
     }
 }
