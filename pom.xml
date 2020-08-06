@@ -48,7 +48,7 @@
   </developers>
 
   <properties>
-    <awaitility.version>4.0.2</awaitility.version>
+    <awaitility.version>4.0.3</awaitility.version>
     <scala-library.version>2.12.8</scala-library.version>
     <smallrye-axle.version>0.0.14</smallrye-axle.version>
     <spring-boot.version>2.2.5.RELEASE</spring-boot.version>
