@@ -23,7 +23,7 @@ final class AmqpLogger {
             .build();
 
         return client.createSender(QUEUE)
-            .map(sender -> sender.send(message))
+            .flatMap(sender -> sender.sendWithAck(message).thenReturn(sender))
             .flatMap(AmqpSender::close);
     }
 }

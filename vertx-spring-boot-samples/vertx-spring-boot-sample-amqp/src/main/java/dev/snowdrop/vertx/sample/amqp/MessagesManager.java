@@ -81,7 +81,7 @@ public class MessagesManager implements InitializingBean, DisposableBean {
             .build();
 
         return client.createSender(PROCESSING_REQUESTS_QUEUE)
-            .map(sender -> sender.send(message))
+            .flatMap(sender -> sender.sendWithAck(message).thenReturn(sender))
             .flatMap(AmqpSender::close);
     }
 
