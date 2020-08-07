@@ -3,7 +3,6 @@ package dev.snowdrop.vertx.kafka.it;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Consumer;
 
 import dev.snowdrop.vertx.kafka.ConsumerRecord;
 import dev.snowdrop.vertx.kafka.KafkaConsumer;
@@ -11,7 +10,6 @@ import dev.snowdrop.vertx.kafka.KafkaConsumerFactory;
 import dev.snowdrop.vertx.kafka.KafkaProducer;
 import dev.snowdrop.vertx.kafka.KafkaProducerFactory;
 import dev.snowdrop.vertx.kafka.KafkaProperties;
-import dev.snowdrop.vertx.kafka.ProducerRecord;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -105,7 +103,7 @@ public class SinglePartitionE2EIT extends AbstractIT {
                 assertThat(secondConsumerRecords).hasSize(2);
             });
 
-        assertThat(firstConsumerRecords).containsOnlyElementsOf(secondConsumerRecords);
+        assertThat(firstConsumerRecords).containsAll(secondConsumerRecords);
 
         assertConsumerRecord(firstConsumerRecords.get(0), topic, "k1", "v1", 0);
         assertConsumerRecord(firstConsumerRecords.get(1), topic, "k2", "v2", 1);

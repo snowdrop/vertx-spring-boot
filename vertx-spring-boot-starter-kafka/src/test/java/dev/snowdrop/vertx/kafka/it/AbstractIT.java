@@ -16,7 +16,6 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import reactor.core.publisher.Mono;
 
 import static java.util.Collections.emptyMap;
-import static java.util.Collections.singletonMap;
 
 public abstract class AbstractIT {
 

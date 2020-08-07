@@ -17,7 +17,7 @@ public class MailAutoConfiguration {
     public MailClient mailClient(Vertx vertx, MailProperties properties) {
         io.vertx.axle.core.Vertx axleVertx = new io.vertx.axle.core.Vertx(vertx);
         io.vertx.axle.ext.mail.MailClient axleMailClient =
-            io.vertx.axle.ext.mail.MailClient.createNonShared(axleVertx, properties.getMailConfig());
+            io.vertx.axle.ext.mail.MailClient.create(axleVertx, properties.getMailConfig());
 
         return new VertxMailClient(axleMailClient, getMailMessageConverter(axleVertx), new MailResultConverter());
     }

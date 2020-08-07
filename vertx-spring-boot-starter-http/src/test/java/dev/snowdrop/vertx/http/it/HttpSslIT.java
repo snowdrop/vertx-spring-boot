@@ -288,10 +288,10 @@ public class HttpSslIT extends TestBase {
 
                     System.out.println(vertxRequest.sslSession());
                     if (!HttpVersion.HTTP_2.equals(vertxRequest.version())) {
-                        return status(HttpStatus.BAD_REQUEST).syncBody("Not HTTP2 request");
+                        return status(HttpStatus.BAD_REQUEST).bodyValue("Not HTTP2 request");
                     }
                     if (!vertxRequest.isSSL()) {
-                        return status(HttpStatus.BAD_REQUEST).syncBody("Not SSL request");
+                        return status(HttpStatus.BAD_REQUEST).bodyValue("Not SSL request");
                     }
                     return noContent().build();
                 })
@@ -312,10 +312,10 @@ public class HttpSslIT extends TestBase {
                     HttpServerRequest vertxRequest = getHttpServerRequest(request);
 
                     if (!HttpVersion.HTTP_1_1.equals(vertxRequest.version())) {
-                        return status(HttpStatus.BAD_REQUEST).syncBody("Not HTTP1.1 request");
+                        return status(HttpStatus.BAD_REQUEST).bodyValue("Not HTTP1.1 request");
                     }
                     if (!vertxRequest.isSSL()) {
-                        return status(HttpStatus.BAD_REQUEST).syncBody("Not SSL request");
+                        return status(HttpStatus.BAD_REQUEST).bodyValue("Not SSL request");
                     }
                     return noContent().build();
                 })

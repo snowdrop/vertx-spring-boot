@@ -2,11 +2,11 @@ package dev.snowdrop.vertx.http.it;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,7 +45,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.http.HttpHeaders.ACCEPT_ENCODING;
 import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
@@ -90,7 +90,7 @@ public class HttpIT extends TestBase {
 
         getWebTestClient()
             .post()
-            .syncBody("test")
+            .bodyValue("test")
             .exchange()
             .expectBody(String.class)
             .isEqualTo("TEST");
@@ -144,9 +144,7 @@ public class HttpIT extends TestBase {
             .get()
             .cookie("text", "test")
             .exchange()
-            .map(ClientResponse::cookies)
-            .map(cookies -> cookies.getFirst("text"))
-            .map(ResponseCookie::getValue)
+            .map(response -> Objects.requireNonNull(response.cookies().getFirst("text")).getValue())
             .block(Duration.ofSeconds(2));
 
         assertThat(text).isEqualTo("TEST");
@@ -170,7 +168,7 @@ public class HttpIT extends TestBase {
 
         ClientResponse response = getWebClient()
             .post()
-            .syncBody("test")
+            .bodyValue("test")
             .exchange()
             .blockOptional(Duration.ofSeconds(2))
             .orElseThrow(() -> new AssertionError("Did not receive a response"));
@@ -202,7 +200,7 @@ public class HttpIT extends TestBase {
             .expectStatus()
             .isOk()
             .expectBody(String.class)
-            .value(not(isEmptyOrNullString()));
+            .value(not(emptyOrNullString()));
     }
 
     @Test
@@ -349,14 +347,14 @@ public class HttpIT extends TestBase {
 
         client.post()
             .header(HttpHeaders.ORIGIN, "http://snowdrop.dev")
-            .syncBody("test")
+            .bodyValue("test")
             .exchange()
             .expectBody(String.class)
             .isEqualTo("TEST");
 
         client.post()
             .header(HttpHeaders.ORIGIN, "http://example.com")
-            .syncBody("test")
+            .bodyValue("test")
             .exchange()
             .expectStatus()
             .isForbidden();
@@ -437,9 +435,7 @@ public class HttpIT extends TestBase {
             return route()
                 .POST("/", accept(MediaType.APPLICATION_FORM_URLENCODED), request -> {
                     Mono<String> body = request.exchange().getFormData()
-                        .map(map -> map.get("text"))
-                        .map(list -> list.get(0))
-                        .map(String::toUpperCase);
+                        .map(map -> map.get("text").get(0).toUpperCase());
 
                     return ok().body(body, String.class);
                 })
@@ -452,7 +448,7 @@ public class HttpIT extends TestBase {
         @Bean
         public RouterFunction<ServerResponse> forwardedHeadersRouter() {
             return route()
-                .GET("/", request -> ok().syncBody(request.exchange().getRequest().getURI().toASCIIString()))
+                .GET("/", request -> ok().bodyValue(request.exchange().getRequest().getURI().toASCIIString()))
                 .build();
         }
 

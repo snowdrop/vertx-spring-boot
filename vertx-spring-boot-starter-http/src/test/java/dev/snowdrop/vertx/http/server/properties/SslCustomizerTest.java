@@ -21,7 +21,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SslCustomizerTest {
@@ -50,7 +50,7 @@ public class SslCustomizerTest {
 
         customizer.apply(mockHttpServerOptions);
 
-        verifyZeroInteractions(mockHttpServerOptions);
+        verifyNoInteractions(mockHttpServerOptions);
     }
 
     @Test

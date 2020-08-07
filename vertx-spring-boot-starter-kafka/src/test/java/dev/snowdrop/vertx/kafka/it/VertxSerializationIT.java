@@ -2,15 +2,12 @@ package dev.snowdrop.vertx.kafka.it;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
-import dev.snowdrop.vertx.kafka.ConsumerRecord;
 import dev.snowdrop.vertx.kafka.KafkaConsumer;
 import dev.snowdrop.vertx.kafka.KafkaConsumerFactory;
 import dev.snowdrop.vertx.kafka.KafkaProducer;
 import dev.snowdrop.vertx.kafka.KafkaProducerFactory;
 import dev.snowdrop.vertx.kafka.KafkaProperties;
-import dev.snowdrop.vertx.kafka.ProducerRecord;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
