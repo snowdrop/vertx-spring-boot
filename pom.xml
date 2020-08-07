@@ -270,7 +270,6 @@
     <module>vertx-spring-boot-starter-http-test</module>
     <module>vertx-spring-boot-starter-mail</module>
     <module>vertx-spring-boot-starter-amqp</module>
-    <module>vertx-spring-boot-starter-postgres</module>
     <module>vertx-spring-boot-starter-kafka</module>
   </modules>
 </project>
