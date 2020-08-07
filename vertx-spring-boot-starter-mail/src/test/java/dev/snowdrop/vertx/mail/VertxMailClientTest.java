@@ -209,9 +209,7 @@ public class VertxMailClientTest {
     private void assertData(Flux<DataBuffer> expected, Buffer actual) {
         byte[] expectedBytes = expected
             .collectList()
-            .map(dataBufferFactory::join)
-            .map(DataBuffer::asByteBuffer)
-            .map(ByteBuffer::array)
+            .map(list -> dataBufferFactory.join(list).asByteBuffer().array())
             .block();
 
         assertThat(actual.getBytes()).containsExactly(expectedBytes);

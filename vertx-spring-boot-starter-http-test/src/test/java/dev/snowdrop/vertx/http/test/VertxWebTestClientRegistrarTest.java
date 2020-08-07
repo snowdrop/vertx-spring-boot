@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @RunWith(MockitoJUnitRunner.class)
 public class VertxWebTestClientRegistrarTest {
@@ -69,6 +69,6 @@ public class VertxWebTestClientRegistrarTest {
             .willReturn(new String[]{ WebTestClient.class.getName() });
 
         registrar.postProcessBeanDefinitionRegistry(mockRegistry);
-        verifyZeroInteractions(mockRegistry);
+        verifyNoInteractions(mockRegistry);
     }
 }
