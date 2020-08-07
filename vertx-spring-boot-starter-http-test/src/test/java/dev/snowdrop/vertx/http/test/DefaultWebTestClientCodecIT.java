@@ -102,7 +102,7 @@ public class DefaultWebTestClientCodecIT {
     static class CustomWebTestClientConfiguration {
         @Bean
         public CodecCustomizer codecCustomizer() {
-            return configurer -> configurer.customCodecs().decoder(new CustomTypeDecoder());
+            return configurer -> configurer.customCodecs().register(new CustomTypeDecoder());
         }
     }
 }

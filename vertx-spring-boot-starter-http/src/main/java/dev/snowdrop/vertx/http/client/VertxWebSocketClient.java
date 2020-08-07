@@ -8,6 +8,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.WebSocket;
+import io.vertx.core.http.WebSocketConnectOptions;
 import io.vertx.core.http.impl.headers.VertxHttpHeaders;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.Assert;
@@ -53,14 +54,22 @@ public class VertxWebSocketClient implements WebSocketClient {
 
     private void connect(URI uri, VertxHttpHeaders headers, WebSocketHandler handler, MonoSink<Void> callback) {
         HttpClient client = vertx.createHttpClient(clientOptions);
-        client.websocket(uri.getPort(), uri.getHost(), uri.getPath(), headers,
-            socket -> handler.handle(initSession(uri, socket))
-                .doOnSuccess(callback::success)
-                .doOnError(callback::error)
-                .doFinally(ignore -> client.close())
-                .subscribe(),
-            callback::error
-        );
+        WebSocketConnectOptions options = new WebSocketConnectOptions()
+            .setPort(uri.getPort())
+            .setHost(uri.getHost())
+            .setURI(uri.getPath())
+            .setHeaders(headers);
+        client.webSocket(options, result -> {
+            if (result.failed()) {
+                callback.error(result.cause());
+            } else {
+                handler.handle(initSession(uri, result.result()))
+                    .doOnSuccess(callback::success)
+                    .doOnError(callback::error)
+                    .doFinally(ignore -> client.close())
+                    .subscribe();
+            }
+        });
     }
 
     private VertxHttpHeaders convertHeaders(HttpHeaders headers) {
