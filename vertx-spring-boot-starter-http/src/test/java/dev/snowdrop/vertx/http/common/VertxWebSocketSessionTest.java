@@ -47,7 +47,7 @@ public class VertxWebSocketSessionTest {
             return mockServerWebSocket;
         });
 
-        session = new VertxWebSocketSession(mockServerWebSocket, mockHandshakeInfo, bufferConverter);
+        session = new VertxWebSocketSession(mockServerWebSocket, mockHandshakeInfo, bufferConverter, 1, 1);
     }
 
     @Test

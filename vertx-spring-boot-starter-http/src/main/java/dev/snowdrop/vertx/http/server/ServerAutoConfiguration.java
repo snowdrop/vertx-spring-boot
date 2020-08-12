@@ -2,9 +2,9 @@ package dev.snowdrop.vertx.http.server;
 
 import java.util.Set;
 
-import io.vertx.core.Vertx;
 import dev.snowdrop.vertx.http.server.properties.HttpServerOptionsCustomizer;
 import dev.snowdrop.vertx.http.server.properties.HttpServerProperties;
+import io.vertx.core.Vertx;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -39,8 +39,9 @@ public class ServerAutoConfiguration {
     }
 
     @Bean
-    public WebSocketService webSocketService() {
-        VertxRequestUpgradeStrategy requestUpgradeStrategy = new VertxRequestUpgradeStrategy();
+    public WebSocketService webSocketService(HttpServerProperties properties) {
+        VertxRequestUpgradeStrategy requestUpgradeStrategy = new VertxRequestUpgradeStrategy(
+            properties.getMaxWebSocketFrameSize(), properties.getMaxWebSocketMessageSize());
         return new HandshakeWebSocketService(requestUpgradeStrategy);
     }
 

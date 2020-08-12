@@ -2,10 +2,10 @@ package dev.snowdrop.vertx.http.server;
 
 import java.util.function.Supplier;
 
+import dev.snowdrop.vertx.http.common.VertxWebSocketSession;
 import dev.snowdrop.vertx.http.utils.BufferConverter;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.ServerWebSocket;
-import dev.snowdrop.vertx.http.common.VertxWebSocketSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.server.reactive.AbstractServerHttpRequest;
@@ -23,8 +23,14 @@ public class VertxRequestUpgradeStrategy implements RequestUpgradeStrategy {
 
     private final BufferConverter bufferConverter;
 
-    public VertxRequestUpgradeStrategy() {
+    private final int maxWebSocketFrameSize;
+
+    private final int maxWebSocketMessageSize;
+
+    public VertxRequestUpgradeStrategy(int maxWebSocketFrameSize, int maxWebSocketMessageSize) {
         this.bufferConverter = new BufferConverter();
+        this.maxWebSocketFrameSize = maxWebSocketFrameSize;
+        this.maxWebSocketMessageSize = maxWebSocketMessageSize;
     }
 
     @Override
@@ -37,8 +43,8 @@ public class VertxRequestUpgradeStrategy implements RequestUpgradeStrategy {
         HttpServerRequest vertxRequest = ((AbstractServerHttpRequest) request).getNativeRequest();
 
         ServerWebSocket webSocket = vertxRequest.upgrade();
-        VertxWebSocketSession session =
-            new VertxWebSocketSession(webSocket, handshakeInfoFactory.get(), bufferConverter);
+        VertxWebSocketSession session = new VertxWebSocketSession(webSocket, handshakeInfoFactory.get(),
+            bufferConverter, maxWebSocketFrameSize, maxWebSocketMessageSize);
 
         return handler.handle(session);
     }
