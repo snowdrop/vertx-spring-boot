@@ -1,6 +1,7 @@
 package dev.snowdrop.vertx.http.common;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 
 import io.vertx.core.streams.WriteStream;
@@ -21,12 +22,18 @@ public class WriteStreamSubscriber<T extends WriteStream<?>, U> extends BaseSubs
 
     private final MonoSink<Void> endHook;
 
+    private final long requestLimit;
+
+    private AtomicLong pendingCount = new AtomicLong();
+
     private final String logPrefix;
 
-    private WriteStreamSubscriber(T writeStream, BiConsumer<T, U> nextHandler, MonoSink<Void> endHook) {
+    private WriteStreamSubscriber(T writeStream, BiConsumer<T, U> nextHandler, MonoSink<Void> endHook,
+        long requestLimit) {
         this.writeStream = writeStream;
         this.nextHandler = nextHandler;
         this.endHook = endHook;
+        this.requestLimit = requestLimit;
         this.logPrefix = "[" + ObjectUtils.getIdentityHexString(writeStream) + "] ";
 
         writeStream.exceptionHandler(this::exceptionHandler);
@@ -43,6 +50,7 @@ public class WriteStreamSubscriber<T extends WriteStream<?>, U> extends BaseSubs
     protected void hookOnNext(U value) {
         logger.debug("{}Next: {}", logPrefix, value);
         nextHandler.accept(writeStream, value);
+        pendingCount.decrementAndGet();
         requestIfNotFull();
     }
 
@@ -69,9 +77,9 @@ public class WriteStreamSubscriber<T extends WriteStream<?>, U> extends BaseSubs
     }
 
     private void requestIfNotFull() {
-        if (!writeStream.writeQueueFull()) {
+        if (!writeStream.writeQueueFull() && pendingCount.get() < requestLimit) {
             logger.debug("{}Requesting more data", logPrefix);
-            request(1);
+            request(requestLimit - pendingCount.getAndSet(requestLimit));
         }
     }
 
@@ -82,6 +90,8 @@ public class WriteStreamSubscriber<T extends WriteStream<?>, U> extends BaseSubs
         private BiConsumer<T, U> nextHandler;
 
         private MonoSink<Void> endHook;
+
+        private long requestLimit = 1L;
 
         public Builder<T, U> writeStream(T writeStream) {
             this.writeStream = writeStream;
@@ -98,12 +108,17 @@ public class WriteStreamSubscriber<T extends WriteStream<?>, U> extends BaseSubs
             return this;
         }
 
+        public Builder<T, U> requestLimit(long requestLimit) {
+            this.requestLimit = requestLimit;
+            return this;
+        }
+
         public WriteStreamSubscriber<T, U> build() {
             Objects.requireNonNull(writeStream, "Write stream is required");
             Objects.requireNonNull(nextHandler, "Next handler is required");
             Objects.requireNonNull(endHook, "End hook is required");
 
-            return new WriteStreamSubscriber<>(writeStream, nextHandler, endHook);
+            return new WriteStreamSubscriber<>(writeStream, nextHandler, endHook, requestLimit);
         }
     }
 }

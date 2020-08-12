@@ -42,7 +42,7 @@ public class VertxRequestUpgradeStrategyTest {
         given(mockVertxServerHttpRequest.getNativeRequest()).willReturn(mockHttpServerRequest);
         given(mockHttpServerRequest.upgrade()).willReturn(mockServerWebSocket);
 
-        VertxRequestUpgradeStrategy strategy = new VertxRequestUpgradeStrategy();
+        VertxRequestUpgradeStrategy strategy = new VertxRequestUpgradeStrategy(1, 1);
         strategy.upgrade(mockServerWebExchange, mockWebSocketHandler, null, () -> mockHandshakeInfo);
 
         verify(mockHttpServerRequest).upgrade();

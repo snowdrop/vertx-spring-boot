@@ -83,6 +83,7 @@ public class VertxWebSocketClient implements WebSocketClient {
         // Vert.x handshake doesn't return headers so passing an empty collection
         HandshakeInfo handshakeInfo = new HandshakeInfo(uri, new HttpHeaders(), Mono.empty(), socket.subProtocol());
 
-        return new VertxWebSocketSession(socket, handshakeInfo, bufferConverter);
+        return new VertxWebSocketSession(socket, handshakeInfo, bufferConverter,
+            clientOptions.getMaxWebSocketFrameSize(), clientOptions.getMaxWebSocketMessageSize());
     }
 }
