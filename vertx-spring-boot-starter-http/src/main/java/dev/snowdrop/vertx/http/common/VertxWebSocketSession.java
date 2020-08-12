@@ -22,10 +22,17 @@ public class VertxWebSocketSession extends AbstractWebSocketSession<WebSocketBas
 
     private final BufferConverter bufferConverter;
 
-    public VertxWebSocketSession(WebSocketBase delegate, HandshakeInfo handshakeInfo, BufferConverter bufferConverter) {
+    private final int requestLimit;
+
+    public VertxWebSocketSession(WebSocketBase delegate, HandshakeInfo handshakeInfo, BufferConverter bufferConverter,
+        int maxWebSocketFrameSize, int maxWebSocketMessageSize) {
         super(delegate, ObjectUtils.getIdentityHexString(delegate), handshakeInfo,
             bufferConverter.getDataBufferFactory());
         this.bufferConverter = bufferConverter;
+        if (maxWebSocketMessageSize < 1 || maxWebSocketFrameSize < 1) {
+            throw new IllegalArgumentException("Max web socket frame and message sizes cannot be less than 1");
+        }
+        this.requestLimit = maxWebSocketMessageSize / maxWebSocketFrameSize + 1;
     }
 
     @Override
@@ -71,6 +78,7 @@ public class VertxWebSocketSession extends AbstractWebSocketSession<WebSocketBas
                     .writeStream(getDelegate())
                     .nextHandler(this::messageHandler)
                     .endHook(sink)
+                    .requestLimit(requestLimit)
                     .build();
             messages.subscribe(subscriber);
         });

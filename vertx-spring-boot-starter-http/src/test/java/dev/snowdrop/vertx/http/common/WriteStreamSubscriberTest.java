@@ -97,6 +97,36 @@ public class WriteStreamSubscriberTest {
     }
 
     @Test
+    public void shouldWriteMultipleAndNotRequestIfFull() {
+        given(mockWriteStream.writeQueueFull()).willReturn(false, false, true);
+        subscriber = new WriteStreamSubscriber.Builder<WriteStream<String>, String>()
+            .writeStream(mockWriteStream)
+            .nextHandler(WriteStream::write)
+            .endHook(mockMonoSink)
+            .requestLimit(2)
+            .build();
+
+        TestPublisher<String> publisher = TestPublisher.create();
+        publisher.subscribe(subscriber);
+
+        publisher.assertMinRequested(2);
+        publisher.assertMaxRequested(2);
+        publisher.next("test1");
+        publisher.assertMinRequested(2);
+        publisher.assertMaxRequested(2);
+        publisher.next("test2");
+        publisher.assertMinRequested(1);
+        publisher.assertMaxRequested(1);
+        publisher.next("test3");
+        publisher.assertMinRequested(0);
+        publisher.assertMaxRequested(0);
+
+        verify(mockWriteStream).write("test1");
+        verify(mockWriteStream).write("test2");
+        verify(mockWriteStream).write("test3");
+    }
+
+    @Test
     public void shouldHandleComplete() {
         TestPublisher<String> publisher = TestPublisher.create();
         publisher.subscribe(subscriber);
