@@ -2,7 +2,7 @@ package dev.snowdrop.vertx.kafka;
 
 import java.nio.charset.StandardCharsets;
 
-import io.vertx.axle.kafka.client.producer.KafkaHeader;
+import io.vertx.mutiny.kafka.client.producer.KafkaHeader;
 import org.junit.Test;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
@@ -31,7 +31,7 @@ public class SnowdropHeaderTest {
     }
 
     @Test
-    public void shouldCreateHeaderFromAxleHeader() {
+    public void shouldCreateHeaderFromMutinyHeader() {
         DataBuffer value = new DefaultDataBufferFactory().wrap("value".getBytes(StandardCharsets.UTF_8));
         SnowdropHeader header = new SnowdropHeader(KafkaHeader.header("key", "value"));
 

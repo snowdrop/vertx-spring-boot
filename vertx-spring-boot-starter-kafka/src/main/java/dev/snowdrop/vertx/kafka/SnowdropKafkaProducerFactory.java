@@ -2,7 +2,7 @@ package dev.snowdrop.vertx.kafka;
 
 import java.util.Map;
 
-import io.vertx.axle.core.Vertx;
+import io.vertx.mutiny.core.Vertx;
 
 final class SnowdropKafkaProducerFactory implements KafkaProducerFactory {
 
@@ -21,6 +21,6 @@ final class SnowdropKafkaProducerFactory implements KafkaProducerFactory {
         producerConfig.putAll(config);
 
         return new SnowdropKafkaProducer<>(
-            io.vertx.axle.kafka.client.producer.KafkaProducer.create(vertx, producerConfig));
+            io.vertx.mutiny.kafka.client.producer.KafkaProducer.create(vertx, producerConfig));
     }
 }

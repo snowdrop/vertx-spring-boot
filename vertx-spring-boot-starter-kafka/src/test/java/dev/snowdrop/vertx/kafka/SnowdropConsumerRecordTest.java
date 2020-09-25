@@ -2,7 +2,7 @@ package dev.snowdrop.vertx.kafka;
 
 import java.util.Arrays;
 
-import io.vertx.axle.kafka.client.producer.KafkaHeader;
+import io.vertx.mutiny.kafka.client.producer.KafkaHeader;
 import org.apache.kafka.common.record.TimestampType;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,24 +20,24 @@ public class SnowdropConsumerRecordTest {
     private org.apache.kafka.clients.consumer.ConsumerRecord mockKafkaConsumerRecord;
 
     @Mock
-    private io.vertx.axle.kafka.client.consumer.KafkaConsumerRecord<Integer, String> mockAxleConsumerRecord;
+    private io.vertx.mutiny.kafka.client.consumer.KafkaConsumerRecord<Integer, String> mockMutinyConsumerRecord;
 
     private ConsumerRecord<Integer, String> record;
 
     @Before
     public void setUp() {
-        given(mockAxleConsumerRecord.topic()).willReturn("test-topic");
-        given(mockAxleConsumerRecord.partition()).willReturn(1);
-        given(mockAxleConsumerRecord.offset()).willReturn(2L);
-        given(mockAxleConsumerRecord.timestamp()).willReturn(3L);
-        given(mockAxleConsumerRecord.timestampType()).willReturn(TimestampType.CREATE_TIME);
-        given(mockAxleConsumerRecord.key()).willReturn(4);
-        given(mockAxleConsumerRecord.value()).willReturn("test-value");
-        given(mockAxleConsumerRecord.headers()).willReturn(Arrays.asList(
+        given(mockMutinyConsumerRecord.topic()).willReturn("test-topic");
+        given(mockMutinyConsumerRecord.partition()).willReturn(1);
+        given(mockMutinyConsumerRecord.offset()).willReturn(2L);
+        given(mockMutinyConsumerRecord.timestamp()).willReturn(3L);
+        given(mockMutinyConsumerRecord.timestampType()).willReturn(TimestampType.CREATE_TIME);
+        given(mockMutinyConsumerRecord.key()).willReturn(4);
+        given(mockMutinyConsumerRecord.value()).willReturn("test-value");
+        given(mockMutinyConsumerRecord.headers()).willReturn(Arrays.asList(
             KafkaHeader.header("h1", "v1"),
             KafkaHeader.header("h2", "v2")
         ));
-        record = new SnowdropConsumerRecord<>(mockAxleConsumerRecord);
+        record = new SnowdropConsumerRecord<>(mockMutinyConsumerRecord);
     }
 
     @Test

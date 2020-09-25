@@ -8,6 +8,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import io.vertx.kafka.client.common.PartitionInfo;
 import io.vertx.kafka.client.common.TopicPartition;
 import io.vertx.kafka.client.consumer.OffsetAndMetadata;
@@ -17,11 +19,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
 import static java.util.Arrays.asList;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
@@ -37,22 +37,22 @@ public class SnowdropKafkaConsumerTest {
     private io.vertx.kafka.client.consumer.KafkaConsumer<Integer, String> mockVertxConsumer;
 
     @Mock
-    private io.vertx.axle.kafka.client.consumer.KafkaConsumer<Integer, String> mockAxleConsumer;
+    private io.vertx.mutiny.kafka.client.consumer.KafkaConsumer<Integer, String> mockMutinyConsumer;
 
     @Mock
-    private io.vertx.axle.kafka.client.consumer.KafkaConsumerRecord<Integer, String> mockAxleConsumerRecord;
+    private io.vertx.mutiny.kafka.client.consumer.KafkaConsumerRecord<Integer, String> mockMutinyConsumerRecord;
 
     private SnowdropKafkaConsumer<Integer, String> consumer;
 
     @Before
     public void setUp() {
-        consumer = new SnowdropKafkaConsumer<>(mockAxleConsumer);
+        consumer = new SnowdropKafkaConsumer<>(mockMutinyConsumer);
     }
 
     @Test
     public void shouldSubscribeToSingleTopic() {
-        given(mockAxleConsumer.subscribe("test-topic"))
-            .willReturn(completedFuture(null));
+        given(mockMutinyConsumer.subscribe("test-topic"))
+            .willReturn(Uni.createFrom().voidItem());
 
         StepVerifier.create(consumer.subscribe("test-topic"))
             .verifyComplete();
@@ -60,8 +60,8 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldSubscribeToMultipleTopics() {
-        given(mockAxleConsumer.subscribe(toSet("test-topic-1", "test-topic-2")))
-            .willReturn(completedFuture(null));
+        given(mockMutinyConsumer.subscribe(toSet("test-topic-1", "test-topic-2")))
+            .willReturn(Uni.createFrom().voidItem());
 
         StepVerifier.create(consumer.subscribe(asList("test-topic-1", "test-topic-2")))
             .verifyComplete();
@@ -69,8 +69,8 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldAssignSinglePartition() {
-        given(mockAxleConsumer.assign(new TopicPartition("test-topic", 1)))
-            .willReturn(completedFuture(null));
+        given(mockMutinyConsumer.assign(new TopicPartition("test-topic", 1)))
+            .willReturn(Uni.createFrom().voidItem());
 
         StepVerifier.create(consumer.assign(Partition.create("test-topic", 1)))
             .verifyComplete();
@@ -82,8 +82,8 @@ public class SnowdropKafkaConsumerTest {
             new TopicPartition("test-topic-1", 0),
             new TopicPartition("test-topic-2", 1)
         );
-        given(mockAxleConsumer.assign(vertxPartitions))
-            .willReturn(completedFuture(null));
+        given(mockMutinyConsumer.assign(vertxPartitions))
+            .willReturn(Uni.createFrom().voidItem());
 
         Collection<Partition> partitions = asList(
             Partition.create("test-topic-1", 0),
@@ -95,8 +95,8 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldUnsubscribe() {
-        given(mockAxleConsumer.unsubscribe())
-            .willReturn(completedFuture(null));
+        given(mockMutinyConsumer.unsubscribe())
+            .willReturn(Uni.createFrom().voidItem());
 
         StepVerifier.create(consumer.unsubscribe())
             .verifyComplete();
@@ -104,8 +104,8 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldGetSubscriptions() {
-        given(mockAxleConsumer.subscription())
-            .willReturn(completedFuture(toSet("test-topic-1", "test-topic-2")));
+        given(mockMutinyConsumer.subscription())
+            .willReturn(Uni.createFrom().item(toSet("test-topic-1", "test-topic-2")));
 
         StepVerifier.create(consumer.subscriptions())
             .expectNext("test-topic-1")
@@ -119,8 +119,8 @@ public class SnowdropKafkaConsumerTest {
             new TopicPartition("test-topic-1", 0),
             new TopicPartition("test-topic-2", 1)
         );
-        given(mockAxleConsumer.assignment())
-            .willReturn(completedFuture(vertxPartitions));
+        given(mockMutinyConsumer.assignment())
+            .willReturn(Uni.createFrom().item(vertxPartitions));
 
         StepVerifier.create(consumer.assignments())
             .expectNext(Partition.create("test-topic-1", 0))
@@ -133,8 +133,8 @@ public class SnowdropKafkaConsumerTest {
         PartitionInfo firstPartition = mock(PartitionInfo.class);
         PartitionInfo secondPartition = mock(PartitionInfo.class);
 
-        given(mockAxleConsumer.partitionsFor("test-topic"))
-            .willReturn(completedFuture(asList(firstPartition, secondPartition)));
+        given(mockMutinyConsumer.partitionsFor("test-topic"))
+            .willReturn(Uni.createFrom().item(asList(firstPartition, secondPartition)));
 
         StepVerifier.create(consumer.partitionsFor("test-topic"))
             .expectNext(new SnowdropPartitionInfo(firstPartition))
@@ -144,14 +144,14 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldAddPartitionsRevokedHandler() {
-        given(mockAxleConsumer.partitionsRevokedHandler(any()))
+        given(mockMutinyConsumer.partitionsRevokedHandler(any()))
             .will(a -> {
                 Consumer<Set<TopicPartition>> handler = a.getArgument(0);
                 handler.accept(toSet(
                     new TopicPartition("test-topic", 1),
                     new TopicPartition("test-topic", 2)
                 ));
-                return mockAxleConsumer;
+                return mockMutinyConsumer;
             });
 
         AtomicReference<Set<Partition>> partitions = new AtomicReference<>();
@@ -169,14 +169,14 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldAddPartitionsAssignedHandler() {
-        given(mockAxleConsumer.partitionsAssignedHandler(any()))
+        given(mockMutinyConsumer.partitionsAssignedHandler(any()))
             .will(a -> {
                 Consumer<Set<TopicPartition>> handler = a.getArgument(0);
                 handler.accept(toSet(
                     new TopicPartition("test-topic", 1),
                     new TopicPartition("test-topic", 2)
                 ));
-                return mockAxleConsumer;
+                return mockMutinyConsumer;
             });
 
         AtomicReference<Set<Partition>> partitions = new AtomicReference<>();
@@ -194,8 +194,8 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldSeek() {
-        given(mockAxleConsumer.seek(new TopicPartition("test-topic", 1), 2))
-            .willReturn(completedFuture(null));
+        given(mockMutinyConsumer.seek(new TopicPartition("test-topic", 1), 2))
+            .willReturn(Uni.createFrom().voidItem());
 
         StepVerifier.create(consumer.seek(Partition.create("test-topic", 1), 2))
             .verifyComplete();
@@ -203,8 +203,8 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldSeekToBeginningOfSinglePartition() {
-        given(mockAxleConsumer.seekToBeginning(new TopicPartition("test-topic", 1)))
-            .willReturn(completedFuture(null));
+        given(mockMutinyConsumer.seekToBeginning(new TopicPartition("test-topic", 1)))
+            .willReturn(Uni.createFrom().voidItem());
 
         StepVerifier.create(consumer.seekToBeginning(Partition.create("test-topic", 1)))
             .verifyComplete();
@@ -212,10 +212,10 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldSeekToBeginningOfMultiplePartitions() {
-        given(mockAxleConsumer.seekToBeginning(toSet(
+        given(mockMutinyConsumer.seekToBeginning(toSet(
             new TopicPartition("test-topic", 1),
             new TopicPartition("test-topic", 2)))
-        ).willReturn(completedFuture(null));
+        ).willReturn(Uni.createFrom().voidItem());
 
         StepVerifier
             .create(consumer.seekToBeginning(asList(
@@ -226,8 +226,8 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldSeekToEndOfSinglePartition() {
-        given(mockAxleConsumer.seekToEnd(new TopicPartition("test-topic", 1)))
-            .willReturn(completedFuture(null));
+        given(mockMutinyConsumer.seekToEnd(new TopicPartition("test-topic", 1)))
+            .willReturn(Uni.createFrom().voidItem());
 
         StepVerifier.create(consumer.seekToEnd(Partition.create("test-topic", 1)))
             .verifyComplete();
@@ -235,10 +235,10 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldSeekToEndOfMultiplePartitions() {
-        given(mockAxleConsumer.seekToEnd(toSet(
+        given(mockMutinyConsumer.seekToEnd(toSet(
             new TopicPartition("test-topic", 1),
             new TopicPartition("test-topic", 2)))
-        ).willReturn(completedFuture(null));
+        ).willReturn(Uni.createFrom().voidItem());
 
         StepVerifier
             .create(consumer.seekToEnd(asList(
@@ -249,8 +249,8 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldGetPosition() {
-        given(mockAxleConsumer.position(new TopicPartition("test-topic", 1)))
-            .willReturn(completedFuture(1L));
+        given(mockMutinyConsumer.position(new TopicPartition("test-topic", 1)))
+            .willReturn(Uni.createFrom().item(1L));
 
         StepVerifier.create(consumer.position(Partition.create("test-topic", 1)))
             .expectNext(1L)
@@ -259,8 +259,8 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldGetCommitted() {
-        given(mockAxleConsumer.committed(new TopicPartition("test-topic", 1)))
-            .willReturn(completedFuture(new OffsetAndMetadata(2, "test-metadata")));
+        given(mockMutinyConsumer.committed(new TopicPartition("test-topic", 1)))
+            .willReturn(Uni.createFrom().item(new OffsetAndMetadata(2, "test-metadata")));
 
         StepVerifier.create(consumer.committed(Partition.create("test-topic", 1)))
             .expectNext(2L)
@@ -269,8 +269,8 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldGetBeginningOffset() {
-        given(mockAxleConsumer.beginningOffsets(new TopicPartition("test-topic", 1)))
-            .willReturn(completedFuture(2L));
+        given(mockMutinyConsumer.beginningOffsets(new TopicPartition("test-topic", 1)))
+            .willReturn(Uni.createFrom().item(2L));
 
         StepVerifier.create(consumer.beginningOffset(Partition.create("test-topic", 1)))
             .expectNext(2L)
@@ -279,8 +279,8 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldGetEndOffset() {
-        given(mockAxleConsumer.endOffsets(new TopicPartition("test-topic", 1)))
-            .willReturn(completedFuture(2L));
+        given(mockMutinyConsumer.endOffsets(new TopicPartition("test-topic", 1)))
+            .willReturn(Uni.createFrom().item(2L));
 
         StepVerifier.create(consumer.endOffset(Partition.create("test-topic", 1)))
             .expectNext(2L)
@@ -289,8 +289,8 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldGetTimeOffset() {
-        given(mockAxleConsumer.offsetsForTimes(new TopicPartition("test-topic", 1), 2L))
-            .willReturn(completedFuture(new OffsetAndTimestamp(2L, 3L)));
+        given(mockMutinyConsumer.offsetsForTimes(new TopicPartition("test-topic", 1), 2L))
+            .willReturn(Uni.createFrom().item(new OffsetAndTimestamp(2L, 3L)));
 
         StepVerifier.create(consumer.timeOffset(Partition.create("test-topic", 1), 2L))
             .expectNext(2L)
@@ -299,8 +299,8 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldCommit() {
-        given(mockAxleConsumer.commit())
-            .willReturn(completedFuture(null));
+        given(mockMutinyConsumer.commit())
+            .willReturn(Uni.createFrom().voidItem());
 
         StepVerifier.create(consumer.commit())
             .verifyComplete();
@@ -308,8 +308,8 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldClose() {
-        given(mockAxleConsumer.close())
-            .willReturn(completedFuture(null));
+        given(mockMutinyConsumer.close())
+            .willReturn(Uni.createFrom().voidItem());
 
         StepVerifier.create(consumer.close())
             .verifyComplete();
@@ -317,7 +317,7 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldDoOnVertxConsumer() {
-        given(mockAxleConsumer.getDelegate())
+        given(mockMutinyConsumer.getDelegate())
             .willReturn(mockVertxConsumer);
 
         AtomicReference<io.vertx.kafka.client.consumer.KafkaConsumer<Integer, String>> vertxConsumer =
@@ -335,25 +335,25 @@ public class SnowdropKafkaConsumerTest {
 
     @Test
     public void shouldGetMono() {
-        given(mockAxleConsumer.toPublisher()).willReturn(Flux.just(mockAxleConsumerRecord));
+        given(mockMutinyConsumer.toMulti()).willReturn(Multi.createFrom().item(mockMutinyConsumerRecord));
 
         StepVerifier.create(consumer.mono())
-            .expectNext(new SnowdropConsumerRecord<>(mockAxleConsumerRecord))
+            .expectNext(new SnowdropConsumerRecord<>(mockMutinyConsumerRecord))
             .verifyComplete();
     }
 
     @Test
     public void shouldGetFlux() {
-        given(mockAxleConsumer.toPublisher()).willReturn(Flux.just(mockAxleConsumerRecord));
+        given(mockMutinyConsumer.toMulti()).willReturn(Multi.createFrom().item(mockMutinyConsumerRecord));
 
         StepVerifier.create(consumer.flux())
-            .expectNext(new SnowdropConsumerRecord<>(mockAxleConsumerRecord))
+            .expectNext(new SnowdropConsumerRecord<>(mockMutinyConsumerRecord))
             .verifyComplete();
     }
 
     @Test
     public void shouldGetVertxReadStream() {
-        given(mockAxleConsumer.getDelegate()).willReturn(mockVertxConsumer);
+        given(mockMutinyConsumer.getDelegate()).willReturn(mockVertxConsumer);
 
         assertThat(consumer.vertxReadStream()).isEqualTo(mockVertxConsumer);
     }

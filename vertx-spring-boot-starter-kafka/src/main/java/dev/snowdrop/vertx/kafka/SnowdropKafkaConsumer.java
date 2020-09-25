@@ -8,6 +8,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import io.smallrye.mutiny.converters.multi.MultiReactorConverters;
+import io.smallrye.mutiny.converters.uni.UniReactorConverters;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.kafka.client.common.TopicPartition;
 import io.vertx.kafka.client.consumer.OffsetAndMetadata;
@@ -18,9 +20,9 @@ import reactor.core.publisher.Mono;
 
 final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
 
-    private final io.vertx.axle.kafka.client.consumer.KafkaConsumer<K, V> delegate;
+    private final io.vertx.mutiny.kafka.client.consumer.KafkaConsumer<K, V> delegate;
 
-    SnowdropKafkaConsumer(io.vertx.axle.kafka.client.consumer.KafkaConsumer<K, V> delegate) {
+    SnowdropKafkaConsumer(io.vertx.mutiny.kafka.client.consumer.KafkaConsumer<K, V> delegate) {
         this.delegate = delegate;
     }
 
@@ -30,21 +32,21 @@ final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
             throw new IllegalArgumentException("Topic cannot be empty");
         }
 
-        return Mono.fromCompletionStage(() -> delegate.subscribe(topic));
+        return delegate.subscribe(topic).convert().with(UniReactorConverters.toMono());
     }
 
     @Override
     public Mono<Void> subscribe(Collection<String> topics) {
         Objects.requireNonNull(topics, "Topics cannot be null");
 
-        return Mono.fromCompletionStage(() -> delegate.subscribe(new HashSet<>(topics)));
+        return delegate.subscribe(new HashSet<>(topics)).convert().with(UniReactorConverters.toMono());
     }
 
     @Override
     public Mono<Void> assign(Partition partition) {
         Objects.requireNonNull(partition, "Partition cannot be null");
 
-        return Mono.fromCompletionStage(() -> delegate.assign(toVertxTopicPartition(partition)));
+        return delegate.assign(toVertxTopicPartition(partition)).convert().with(UniReactorConverters.toMono());
     }
 
     @Override
@@ -56,23 +58,25 @@ final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
             .map(this::toVertxTopicPartition)
             .collect(Collectors.toSet());
 
-        return Mono.fromCompletionStage(() -> delegate.assign(vertxPartitions));
+        return delegate.assign(vertxPartitions).convert().with(UniReactorConverters.toMono());
     }
 
     @Override
     public Mono<Void> unsubscribe() {
-        return Mono.fromCompletionStage(delegate::unsubscribe);
+        return delegate.unsubscribe().convert().with(UniReactorConverters.toMono());
     }
 
     @Override
     public Flux<String> subscriptions() {
-        return Mono.fromCompletionStage(delegate::subscription)
+        return UniReactorConverters.<Set<String>>toMono().apply(delegate.subscription())
             .flatMapMany(Flux::fromIterable);
     }
 
     @Override
     public Flux<Partition> assignments() {
-        return Mono.fromCompletionStage(delegate::assignment)
+        return delegate.assignment()
+            .convert()
+            .with(UniReactorConverters.toMono())
             .flatMapMany(Flux::fromIterable)
             .map(SnowdropPartition::new);
     }
@@ -83,7 +87,9 @@ final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
             throw new IllegalArgumentException("Topic cannot be empty");
         }
 
-        return Mono.fromCompletionStage(() -> delegate.partitionsFor(topic))
+        return delegate.partitionsFor(topic)
+            .convert()
+            .with(UniReactorConverters.toMono())
             .flatMapMany(Flux::fromIterable)
             .map(SnowdropPartitionInfo::new);
     }
@@ -92,8 +98,8 @@ final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
     public void partitionsRevokedHandler(Consumer<Set<Partition>> handler) {
         Objects.requireNonNull(handler, "Handler cannot be null");
 
-        delegate.partitionsRevokedHandler(axleTopicPartitions -> {
-            Set<Partition> partitions = axleTopicPartitions
+        delegate.partitionsRevokedHandler(mutinyTopicPartitions -> {
+            Set<Partition> partitions = mutinyTopicPartitions
                 .stream()
                 .map(SnowdropPartition::new)
                 .collect(Collectors.toSet());
@@ -106,8 +112,8 @@ final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
     public void partitionsAssignedHandler(Consumer<Set<Partition>> handler) {
         Objects.requireNonNull(handler, "Handler cannot be null");
 
-        delegate.partitionsAssignedHandler(axleTopicPartitions -> {
-            Set<Partition> partitions = axleTopicPartitions
+        delegate.partitionsAssignedHandler(mutinyTopicPartitions -> {
+            Set<Partition> partitions = mutinyTopicPartitions
                 .stream()
                 .map(SnowdropPartition::new)
                 .collect(Collectors.toSet());
@@ -123,14 +129,14 @@ final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
             throw new IllegalArgumentException("Offset cannot be negative");
         }
 
-        return Mono.fromCompletionStage(() -> delegate.seek(toVertxTopicPartition(partition), offset));
+        return delegate.seek(toVertxTopicPartition(partition), offset).convert().with(UniReactorConverters.toMono());
     }
 
     @Override
     public Mono<Void> seekToBeginning(Partition partition) {
         Objects.requireNonNull(partition, "Partition cannot be null");
 
-        return Mono.fromCompletionStage(() -> delegate.seekToBeginning(toVertxTopicPartition(partition)));
+        return delegate.seekToBeginning(toVertxTopicPartition(partition)).convert().with(UniReactorConverters.toMono());
     }
 
     @Override
@@ -142,14 +148,14 @@ final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
             .map(this::toVertxTopicPartition)
             .collect(Collectors.toSet());
 
-        return Mono.fromCompletionStage(() -> delegate.seekToBeginning(vertxPartitions));
+        return delegate.seekToBeginning(vertxPartitions).convert().with(UniReactorConverters.toMono());
     }
 
     @Override
     public Mono<Void> seekToEnd(Partition partition) {
         Objects.requireNonNull(partition, "Partition cannot be null");
 
-        return Mono.fromCompletionStage(() -> delegate.seekToEnd(toVertxTopicPartition(partition)));
+        return delegate.seekToEnd(toVertxTopicPartition(partition)).convert().with(UniReactorConverters.toMono());
     }
 
     @Override
@@ -161,21 +167,23 @@ final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
             .map(this::toVertxTopicPartition)
             .collect(Collectors.toSet());
 
-        return Mono.fromCompletionStage(() -> delegate.seekToEnd(vertxPartitions));
+        return delegate.seekToEnd(vertxPartitions).convert().with(UniReactorConverters.toMono());
     }
 
     @Override
     public Mono<Long> position(Partition partition) {
         Objects.requireNonNull(partition, "Partition cannot be null");
 
-        return Mono.fromCompletionStage(() -> delegate.position(toVertxTopicPartition(partition)));
+        return delegate.position(toVertxTopicPartition(partition)).convert().with(UniReactorConverters.toMono());
     }
 
     @Override
     public Mono<Long> committed(Partition partition) {
         Objects.requireNonNull(partition, "Partition cannot be null");
 
-        return Mono.fromCompletionStage(() -> delegate.committed(toVertxTopicPartition(partition)))
+        return delegate.committed(toVertxTopicPartition(partition))
+            .convert()
+            .with(UniReactorConverters.toMono())
             .map(OffsetAndMetadata::getOffset);
     }
 
@@ -183,14 +191,16 @@ final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
     public Mono<Long> beginningOffset(Partition partition) {
         Objects.requireNonNull(partition, "Partition cannot be null");
 
-        return Mono.fromCompletionStage(() -> delegate.beginningOffsets(toVertxTopicPartition(partition)));
+        return delegate.beginningOffsets(toVertxTopicPartition(partition))
+            .convert()
+            .with(UniReactorConverters.toMono());
     }
 
     @Override
     public Mono<Long> endOffset(Partition partition) {
         Objects.requireNonNull(partition, "Partition cannot be null");
 
-        return Mono.fromCompletionStage(() -> delegate.endOffsets(toVertxTopicPartition(partition)));
+        return delegate.endOffsets(toVertxTopicPartition(partition)).convert().with(UniReactorConverters.toMono());
     }
 
     @Override
@@ -200,22 +210,24 @@ final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
             throw new IllegalArgumentException("Timestamp cannot be negative");
         }
 
-        return Mono.fromCompletionStage(() -> delegate.offsetsForTimes(toVertxTopicPartition(partition), timestamp))
+        return delegate.offsetsForTimes(toVertxTopicPartition(partition), timestamp)
+            .convert()
+            .with(UniReactorConverters.toMono())
             .map(OffsetAndTimestamp::getOffset);
     }
 
     @Override
     public Mono<Void> commit() {
-        return Mono.fromCompletionStage(delegate::commit);
+        return delegate.commit().convert().with(UniReactorConverters.toMono());
     }
 
     @Override
     public Mono<Void> close() {
-        return Mono.fromCompletionStage(delegate::close);
+        return delegate.close().convert().with(UniReactorConverters.toMono());
     }
 
     @Override
-    @SuppressWarnings("unchecked") // Axle API returns KafkaConsumer without generics
+    @SuppressWarnings("unchecked") // SmallRye API returns KafkaConsumer without generics
     public <T> Mono<T> doOnVertxConsumer(Function<io.vertx.kafka.client.consumer.KafkaConsumer<K, V>, T> function) {
         Objects.requireNonNull(function, "Function cannot be null");
 
@@ -231,13 +243,17 @@ final class SnowdropKafkaConsumer<K, V> implements KafkaConsumer<K, V> {
 
     @Override
     public Mono<ConsumerRecord<K, V>> mono() {
-        return Mono.from(delegate.toPublisher())
+        return delegate.toMulti()
+            .convert()
+            .with(MultiReactorConverters.toMono())
             .map(SnowdropConsumerRecord::new);
     }
 
     @Override
     public Flux<ConsumerRecord<K, V>> flux() {
-        return Flux.from(delegate.toPublisher())
+        return delegate.toMulti()
+            .convert()
+            .with(MultiReactorConverters.toFlux())
             .map(SnowdropConsumerRecord::new);
     }
 
