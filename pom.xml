@@ -108,8 +108,8 @@
       </dependency>
       <dependency>
         <groupId>io.smallrye.reactive</groupId>
-        <artifactId>smallrye-axle-amqp-client</artifactId>
-        <version>${smallrye-axle.version}</version>
+        <artifactId>smallrye-mutiny-vertx-amqp-client</artifactId>
+        <version>${mutiny-vertx.version}</version>
       </dependency>
       <dependency>
         <groupId>io.smallrye.reactive</groupId>
