@@ -15,11 +15,11 @@ public class KafkaAutoConfiguration {
 
     @Bean
     public KafkaProducerFactory kafkaProducerFactory(KafkaProperties properties, Vertx vertx) {
-        return new SnowdropKafkaProducerFactory(io.vertx.axle.core.Vertx.newInstance(vertx), properties);
+        return new SnowdropKafkaProducerFactory(io.vertx.mutiny.core.Vertx.newInstance(vertx), properties);
     }
 
     @Bean
     public KafkaConsumerFactory kafkaConsumerFactory(KafkaProperties properties, Vertx vertx) {
-        return new SnowdropKafkaConsumerFactory(io.vertx.axle.core.Vertx.newInstance(vertx), properties);
+        return new SnowdropKafkaConsumerFactory(io.vertx.mutiny.core.Vertx.newInstance(vertx), properties);
     }
 }

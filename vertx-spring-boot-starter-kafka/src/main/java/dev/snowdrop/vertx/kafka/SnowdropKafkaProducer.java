@@ -6,19 +6,20 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import io.vertx.axle.core.buffer.Buffer;
-import io.vertx.axle.kafka.client.producer.KafkaHeader;
-import io.vertx.axle.kafka.client.producer.KafkaProducerRecord;
+import io.smallrye.mutiny.converters.uni.UniReactorConverters;
 import io.vertx.core.streams.WriteStream;
+import io.vertx.mutiny.core.buffer.Buffer;
+import io.vertx.mutiny.kafka.client.producer.KafkaHeader;
+import io.vertx.mutiny.kafka.client.producer.KafkaProducerRecord;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
 
-    private final io.vertx.axle.kafka.client.producer.KafkaProducer<K, V> delegate;
+    private final io.vertx.mutiny.kafka.client.producer.KafkaProducer<K, V> delegate;
 
-    SnowdropKafkaProducer(io.vertx.axle.kafka.client.producer.KafkaProducer<K, V> delegate) {
+    SnowdropKafkaProducer(io.vertx.mutiny.kafka.client.producer.KafkaProducer<K, V> delegate) {
         this.delegate = delegate;
     }
 
@@ -26,7 +27,9 @@ final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
     public Mono<RecordMetadata> send(ProducerRecord<K, V> record) {
         Objects.requireNonNull(record, "Record cannot be null");
 
-        return Mono.fromCompletionStage(() -> delegate.send(toAxleProducerRecord(record)))
+        return delegate.send(toMutinyProducerRecord(record))
+            .convert()
+            .with(UniReactorConverters.toMono())
             .map(SnowdropRecordMetadata::new);
     }
 
@@ -36,7 +39,9 @@ final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
             throw new IllegalArgumentException("Topic cannot be empty");
         }
 
-        return Mono.fromCompletionStage(() -> delegate.partitionsFor(topic))
+        return delegate.partitionsFor(topic)
+            .convert()
+            .with(UniReactorConverters.toMono())
             .flatMapMany(Flux::fromIterable)
             .map(SnowdropPartitionInfo::new);
     }
@@ -54,16 +59,16 @@ final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
 
     @Override
     public Mono<Void> close() {
-        return Mono.fromCompletionStage(delegate::close);
+        return delegate.close().convert().with(UniReactorConverters.toMono());
     }
 
     @Override
     public Mono<Void> close(long timeout) {
-        return Mono.fromCompletionStage(() -> delegate.close(timeout));
+        return delegate.close(timeout).convert().with(UniReactorConverters.toMono());
     }
 
     @Override
-    @SuppressWarnings("unchecked") // Axle API returns KafkaProducer without generics
+    @SuppressWarnings("unchecked") // Mutiny API returns KafkaProducer without generics
     public <T> Mono<T> doOnVertxProducer(Function<io.vertx.kafka.client.producer.KafkaProducer<K, V>, T> function) {
         Objects.requireNonNull(function, "Function cannot be null");
 
@@ -104,12 +109,12 @@ final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
     public Mono<Void> write(ProducerRecord<K, V> record) {
         Objects.requireNonNull(record, "Record cannot be null");
 
-        return Mono.fromCompletionStage(() -> delegate.write(toAxleProducerRecord(record)));
+        return delegate.write(toMutinyProducerRecord(record)).convert().with(UniReactorConverters.toMono());
     }
 
     @Override
     public Mono<Void> end() {
-        return Mono.fromCompletionStage(delegate::end);
+        return delegate.end().convert().with(UniReactorConverters.toMono());
     }
 
     @Override
@@ -117,19 +122,19 @@ final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
         return delegate.getDelegate();
     }
 
-    private KafkaProducerRecord<K, V> toAxleProducerRecord(ProducerRecord<K, V> record) {
-        List<KafkaHeader> axleHeaders = record
+    private KafkaProducerRecord<K, V> toMutinyProducerRecord(ProducerRecord<K, V> record) {
+        List<KafkaHeader> mutinyHeaders = record
             .headers()
             .stream()
-            .map(this::toAxleHeader)
+            .map(this::toMutinyHeader)
             .collect(Collectors.toList());
 
         return KafkaProducerRecord
             .create(record.topic(), record.key(), record.value(), record.timestamp(), record.partition())
-            .addHeaders(axleHeaders);
+            .addHeaders(mutinyHeaders);
     }
 
-    private KafkaHeader toAxleHeader(Header header) {
+    private KafkaHeader toMutinyHeader(Header header) {
         return KafkaHeader.header(header.key(), Buffer.buffer(header.value().asByteBuffer().array()));
     }
 }

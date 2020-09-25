@@ -3,8 +3,8 @@ package dev.snowdrop.vertx.kafka;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import io.vertx.axle.core.buffer.Buffer;
-import io.vertx.axle.kafka.client.producer.KafkaHeader;
+import io.vertx.mutiny.core.buffer.Buffer;
+import io.vertx.mutiny.kafka.client.producer.KafkaHeader;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.util.StringUtils;
@@ -27,8 +27,8 @@ final class SnowdropHeader implements Header {
         this(key, toDataBuffer(value));
     }
 
-    SnowdropHeader(KafkaHeader axelHeader) {
-        this(axelHeader.key(), toDataBuffer(axelHeader.value()));
+    SnowdropHeader(KafkaHeader mutinyHeader) {
+        this(mutinyHeader.key(), toDataBuffer(mutinyHeader.value()));
     }
 
     @Override
