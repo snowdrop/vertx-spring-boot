@@ -2,15 +2,16 @@ package dev.snowdrop.vertx.amqp;
 
 import java.util.function.Consumer;
 
+import io.smallrye.mutiny.converters.uni.UniReactorConverters;
 import reactor.core.publisher.Mono;
 
 class SnowdropAmqpSender implements AmqpSender {
 
-    private final io.vertx.axle.amqp.AmqpSender delegate;
+    private final io.vertx.mutiny.amqp.AmqpSender delegate;
 
     private final MessageConverter messageConverter;
 
-    SnowdropAmqpSender(io.vertx.axle.amqp.AmqpSender delegate, MessageConverter messageConverter) {
+    SnowdropAmqpSender(io.vertx.mutiny.amqp.AmqpSender delegate, MessageConverter messageConverter) {
         this.delegate = delegate;
         this.messageConverter = messageConverter;
     }
@@ -48,29 +49,37 @@ class SnowdropAmqpSender implements AmqpSender {
 
     @Override
     public Mono<Void> write(AmqpMessage message) {
-        return Mono.fromCompletionStage(() -> delegate.write(messageConverter.toAxleMessage(message)));
+        return delegate.write(messageConverter.toMutinyMessage(message))
+            .convert()
+            .with(UniReactorConverters.toMono());
     }
 
     @Override
     public Mono<Void> end() {
-        return Mono.fromCompletionStage(delegate::end);
+        return delegate.end()
+            .convert()
+            .with(UniReactorConverters.toMono());
     }
 
     @Override
     public Mono<Void> end(AmqpMessage message) {
-        return Mono.fromCompletionStage(() -> delegate.end(messageConverter.toAxleMessage(message)));
+        return delegate.end(messageConverter.toMutinyMessage(message))
+            .convert()
+            .with(UniReactorConverters.toMono());
     }
 
     @Override
     public AmqpSender send(AmqpMessage message) {
-        delegate.send(messageConverter.toAxleMessage(message));
+        delegate.send(messageConverter.toMutinyMessage(message));
 
         return this;
     }
 
     @Override
     public Mono<Void> sendWithAck(AmqpMessage message) {
-        return Mono.fromCompletionStage(() -> delegate.sendWithAck(messageConverter.toAxleMessage(message)));
+        return delegate.sendWithAck(messageConverter.toMutinyMessage(message))
+            .convert()
+            .with(UniReactorConverters.toMono());
     }
 
     @Override
@@ -85,6 +94,8 @@ class SnowdropAmqpSender implements AmqpSender {
 
     @Override
     public Mono<Void> close() {
-        return Mono.fromCompletionStage(delegate::close);
+        return delegate.close()
+            .convert()
+            .with(UniReactorConverters.toMono());
     }
 }

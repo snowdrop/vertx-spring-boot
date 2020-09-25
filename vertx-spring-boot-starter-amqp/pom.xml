@@ -27,7 +27,11 @@
     </dependency>
     <dependency>
       <groupId>io.smallrye.reactive</groupId>
-      <artifactId>smallrye-axle-amqp-client</artifactId>
+      <artifactId>smallrye-mutiny-vertx-amqp-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>mutiny-reactor</artifactId>
     </dependency>
     <dependency>
       <groupId>javax.json</groupId>
