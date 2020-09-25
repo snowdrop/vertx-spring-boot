@@ -2,15 +2,16 @@ package dev.snowdrop.vertx.amqp;
 
 import java.util.function.Consumer;
 
+import io.smallrye.mutiny.converters.uni.UniReactorConverters;
 import reactor.core.publisher.Mono;
 
 class SnowdropAmqpConnection implements AmqpConnection {
 
-    private final io.vertx.axle.amqp.AmqpConnection delegate;
+    private final io.vertx.mutiny.amqp.AmqpConnection delegate;
 
     private final MessageConverter messageConverter;
 
-    SnowdropAmqpConnection(io.vertx.axle.amqp.AmqpConnection delegate, MessageConverter messageConverter) {
+    SnowdropAmqpConnection(io.vertx.mutiny.amqp.AmqpConnection delegate, MessageConverter messageConverter) {
         this.delegate = delegate;
         this.messageConverter = messageConverter;
     }
@@ -23,42 +24,56 @@ class SnowdropAmqpConnection implements AmqpConnection {
 
     @Override
     public Mono<AmqpSender> createSender(String address) {
-        return Mono.fromCompletionStage(() -> delegate.createSender(address))
+        return delegate.createSender(address)
+            .convert()
+            .with(UniReactorConverters.toMono())
             .map(delegateSender -> new SnowdropAmqpSender(delegateSender, messageConverter));
     }
 
     @Override
     public Mono<AmqpSender> createSender(String address, AmqpSenderOptions options) {
-        return Mono.fromCompletionStage(() -> delegate.createSender(address, options.toVertxAmqpSenderOptions()))
+        return delegate.createSender(address, options.toVertxAmqpSenderOptions())
+            .convert()
+            .with(UniReactorConverters.toMono())
             .map(delegateSender -> new SnowdropAmqpSender(delegateSender, messageConverter));
     }
 
     @Override
     public Mono<AmqpSender> createAnonymousSender() {
-        return Mono.fromCompletionStage(delegate::createAnonymousSender)
+        return delegate.createAnonymousSender()
+            .convert()
+            .with(UniReactorConverters.toMono())
             .map(delegateSender -> new SnowdropAmqpSender(delegateSender, messageConverter));
     }
 
     @Override
     public Mono<AmqpReceiver> createReceiver(String address) {
-        return Mono.fromCompletionStage(() -> delegate.createReceiver(address))
+        return delegate.createReceiver(address)
+            .convert()
+            .with(UniReactorConverters.toMono())
             .map(delegateReceiver -> new SnowdropAmqpReceiver(delegateReceiver, messageConverter));
     }
 
     @Override
     public Mono<AmqpReceiver> createReceiver(String address, AmqpReceiverOptions options) {
-        return Mono.fromCompletionStage(() -> delegate.createReceiver(address, options.toVertxAmqpReceiverOptions()))
+        return delegate.createReceiver(address, options.toVertxAmqpReceiverOptions())
+            .convert()
+            .with(UniReactorConverters.toMono())
             .map(delegateReceiver -> new SnowdropAmqpReceiver(delegateReceiver, messageConverter));
     }
 
     @Override
     public Mono<AmqpReceiver> createDynamicReceiver() {
-        return Mono.fromCompletionStage(delegate::createDynamicReceiver)
+        return delegate.createDynamicReceiver()
+            .convert()
+            .with(UniReactorConverters.toMono())
             .map(delegateReceiver -> new SnowdropAmqpReceiver(delegateReceiver, messageConverter));
     }
 
     @Override
     public Mono<Void> close() {
-        return Mono.fromCompletionStage(delegate::close);
+        return delegate.close()
+            .convert()
+            .with(UniReactorConverters.toMono());
     }
 }

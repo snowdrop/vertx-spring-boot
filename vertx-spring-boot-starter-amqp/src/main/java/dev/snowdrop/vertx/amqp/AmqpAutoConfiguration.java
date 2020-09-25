@@ -19,14 +19,14 @@ public class AmqpAutoConfiguration {
         AmqpPropertiesConverter propertiesConverter = new AmqpPropertiesConverter();
         AmqpClientOptions options = propertiesConverter.toAmqpClientOptions(properties);
 
-        return new SnowdropAmqpClient(getAxleAmqpClient(vertx, options), new MessageConverter());
+        return new SnowdropAmqpClient(getMutinyAmqpClient(vertx, options), new MessageConverter());
     }
 
-    private io.vertx.axle.core.Vertx getAxleVertx(Vertx vertx) {
-        return new io.vertx.axle.core.Vertx(vertx);
+    private io.vertx.mutiny.core.Vertx getMutinyVertx(Vertx vertx) {
+        return new io.vertx.mutiny.core.Vertx(vertx);
     }
 
-    private io.vertx.axle.amqp.AmqpClient getAxleAmqpClient(Vertx vertx, AmqpClientOptions options) {
-        return io.vertx.axle.amqp.AmqpClient.create(getAxleVertx(vertx), options);
+    private io.vertx.mutiny.amqp.AmqpClient getMutinyAmqpClient(Vertx vertx, AmqpClientOptions options) {
+        return io.vertx.mutiny.amqp.AmqpClient.create(getMutinyVertx(vertx), options);
     }
 }
