@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import io.vertx.axle.kafka.client.consumer.KafkaConsumerRecord;
+import io.vertx.mutiny.kafka.client.consumer.KafkaConsumerRecord;
 
 final class SnowdropConsumerRecord<K, V> implements ConsumerRecord<K, V> {
 

@@ -2,7 +2,7 @@ package dev.snowdrop.vertx.kafka;
 
 import java.util.Map;
 
-import io.vertx.axle.core.Vertx;
+import io.vertx.mutiny.core.Vertx;
 
 final class SnowdropKafkaConsumerFactory implements KafkaConsumerFactory {
 
@@ -21,6 +21,6 @@ final class SnowdropKafkaConsumerFactory implements KafkaConsumerFactory {
         consumerConfig.putAll(config);
 
         return new SnowdropKafkaConsumer<>(
-            io.vertx.axle.kafka.client.consumer.KafkaConsumer.create(vertx, consumerConfig));
+            io.vertx.mutiny.kafka.client.consumer.KafkaConsumer.create(vertx, consumerConfig));
     }
 }

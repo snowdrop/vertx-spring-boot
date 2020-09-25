@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import io.smallrye.mutiny.Uni;
 import io.vertx.kafka.client.common.PartitionInfo;
 import io.vertx.kafka.client.producer.RecordMetadata;
 import org.junit.Before;
@@ -15,7 +16,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import reactor.test.StepVerifier;
 
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.verify;
 public class SnowdropKafkaProducerTest {
 
     @Mock
-    private io.vertx.axle.kafka.client.producer.KafkaProducer<Integer, String> mockAxleProducer;
+    private io.vertx.mutiny.kafka.client.producer.KafkaProducer<Integer, String> mockMutinyProducer;
 
     @Mock
     private io.vertx.kafka.client.producer.KafkaProducer<Integer, String> mockVertxProducer;
@@ -35,16 +35,16 @@ public class SnowdropKafkaProducerTest {
 
     @Before
     public void setUp() {
-        producer = new SnowdropKafkaProducer<>(mockAxleProducer);
+        producer = new SnowdropKafkaProducer<>(mockMutinyProducer);
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void shouldSend() {
-        // Setup a response to be returned by Axle producer
+        // Setup a response to be returned by Mutiny producer
         RecordMetadata vertxRecordMetadata = new RecordMetadata(1, 2, 3, 4, "t");
-        given(mockAxleProducer.send(any()))
-            .willReturn(completedFuture(vertxRecordMetadata));
+        given(mockMutinyProducer.send(any()))
+            .willReturn(Uni.createFrom().item(vertxRecordMetadata));
 
         // Create snowdrop producer record and send it
         ProducerRecord<Integer, String> record = ProducerRecord
@@ -57,22 +57,22 @@ public class SnowdropKafkaProducerTest {
             .expectNext(new SnowdropRecordMetadata(vertxRecordMetadata))
             .verifyComplete();
 
-        // Capture axle producer record submitted by snowdrop producer
-        ArgumentCaptor<io.vertx.axle.kafka.client.producer.KafkaProducerRecord<Integer, String>> axleRecordCaptor =
-            ArgumentCaptor.forClass(io.vertx.axle.kafka.client.producer.KafkaProducerRecord.class);
-        verify(mockAxleProducer).send(axleRecordCaptor.capture());
-        io.vertx.axle.kafka.client.producer.KafkaProducerRecord<Integer, String> axleRecord =
-            axleRecordCaptor.getValue();
+        // Capture Mutiny producer record submitted by snowdrop producer
+        ArgumentCaptor<io.vertx.mutiny.kafka.client.producer.KafkaProducerRecord<Integer, String>> mutinyRecordCaptor =
+            ArgumentCaptor.forClass(io.vertx.mutiny.kafka.client.producer.KafkaProducerRecord.class);
+        verify(mockMutinyProducer).send(mutinyRecordCaptor.capture());
+        io.vertx.mutiny.kafka.client.producer.KafkaProducerRecord<Integer, String> mutinyRecord =
+            mutinyRecordCaptor.getValue();
 
         // Verify that snowdrop producer converted records correctly
-        assertThat(axleRecord.topic()).isEqualTo("topic");
-        assertThat(axleRecord.value()).isEqualTo("value");
-        assertThat(axleRecord.key()).isEqualTo(1);
-        assertThat(axleRecord.timestamp()).isEqualTo(2);
-        assertThat(axleRecord.partition()).isEqualTo(3);
-        assertThat(axleRecord.headers()).hasSize(1);
-        assertThat(axleRecord.headers().get(0).key()).isEqualTo("h1");
-        assertThat(axleRecord.headers().get(0).value().toString()).isEqualTo("v1");
+        assertThat(mutinyRecord.topic()).isEqualTo("topic");
+        assertThat(mutinyRecord.value()).isEqualTo("value");
+        assertThat(mutinyRecord.key()).isEqualTo(1);
+        assertThat(mutinyRecord.timestamp()).isEqualTo(2);
+        assertThat(mutinyRecord.partition()).isEqualTo(3);
+        assertThat(mutinyRecord.headers()).hasSize(1);
+        assertThat(mutinyRecord.headers().get(0).key()).isEqualTo("h1");
+        assertThat(mutinyRecord.headers().get(0).value().toString()).isEqualTo("v1");
     }
 
     @Test
@@ -80,8 +80,8 @@ public class SnowdropKafkaProducerTest {
         PartitionInfo firstPartitionInfo = mock(PartitionInfo.class);
         PartitionInfo secondPartitionInfo = mock(PartitionInfo.class);
 
-        given(mockAxleProducer.partitionsFor("test-topic"))
-            .willReturn(completedFuture(Arrays.asList(firstPartitionInfo, secondPartitionInfo)));
+        given(mockMutinyProducer.partitionsFor("test-topic"))
+            .willReturn(Uni.createFrom().item(Arrays.asList(firstPartitionInfo, secondPartitionInfo)));
 
         StepVerifier.create(producer.partitionsFor("test-topic"))
             .expectNext(new SnowdropPartitionInfo(firstPartitionInfo))
@@ -92,10 +92,10 @@ public class SnowdropKafkaProducerTest {
     @Test
     @SuppressWarnings("unchecked")
     public void shouldFlush() {
-        given(mockAxleProducer.flush(any()))
+        given(mockMutinyProducer.flush(any()))
             .will(a -> {
                 ((Consumer<Void>) a.getArgument(0)).accept(null);
-                return mockAxleProducer;
+                return mockMutinyProducer;
             });
 
         StepVerifier.create(producer.flush())
@@ -104,7 +104,7 @@ public class SnowdropKafkaProducerTest {
 
     @Test
     public void shouldHandleFlushFailure() {
-        given(mockAxleProducer.flush(any()))
+        given(mockMutinyProducer.flush(any()))
             .willThrow(new RuntimeException("test"));
 
         StepVerifier.create(producer.flush())
@@ -113,8 +113,8 @@ public class SnowdropKafkaProducerTest {
 
     @Test
     public void shouldClose() {
-        given(mockAxleProducer.close())
-            .willReturn(completedFuture(null));
+        given(mockMutinyProducer.close())
+            .willReturn(Uni.createFrom().voidItem());
 
         StepVerifier.create(producer.close())
             .verifyComplete();
@@ -122,8 +122,8 @@ public class SnowdropKafkaProducerTest {
 
     @Test
     public void shouldCloseWithTimeout() {
-        given(mockAxleProducer.close(1L))
-            .willReturn(completedFuture(null));
+        given(mockMutinyProducer.close(1L))
+            .willReturn(Uni.createFrom().voidItem());
 
         StepVerifier.create(producer.close(1L))
             .verifyComplete();
@@ -131,7 +131,7 @@ public class SnowdropKafkaProducerTest {
 
     @Test
     public void shouldDoOnVertxProducer() {
-        given(mockAxleProducer.getDelegate())
+        given(mockMutinyProducer.getDelegate())
             .willReturn(mockVertxProducer);
 
         AtomicReference<io.vertx.kafka.client.producer.KafkaProducer<Integer, String>> vertxConsumer =
@@ -153,7 +153,7 @@ public class SnowdropKafkaProducerTest {
 
         producer.exceptionHandler(handler);
 
-        verify(mockAxleProducer).exceptionHandler(handler);
+        verify(mockMutinyProducer).exceptionHandler(handler);
     }
 
     @Test
@@ -162,19 +162,19 @@ public class SnowdropKafkaProducerTest {
 
         producer.drainHandler(handler);
 
-        verify(mockAxleProducer).drainHandler(handler);
+        verify(mockMutinyProducer).drainHandler(handler);
     }
 
     @Test
     public void shouldWriteQueueMaxSize() {
         producer.setWriteQueueMaxSize(1);
 
-        verify(mockAxleProducer).setWriteQueueMaxSize(1);
+        verify(mockMutinyProducer).setWriteQueueMaxSize(1);
     }
 
     @Test
     public void shouldCheckIfWriteQueueIsFull() {
-        given(mockAxleProducer.writeQueueFull()).willReturn(true);
+        given(mockMutinyProducer.writeQueueFull()).willReturn(true);
 
         assertThat(producer.writeQueueFull()).isTrue();
     }
@@ -182,8 +182,8 @@ public class SnowdropKafkaProducerTest {
     @Test
     @SuppressWarnings("unchecked")
     public void shouldWrite() {
-        given(mockAxleProducer.write(any()))
-            .willReturn(completedFuture(null));
+        given(mockMutinyProducer.write(any()))
+            .willReturn(Uni.createFrom().voidItem());
 
         // Create snowdrop producer record and write it
         ProducerRecord<Integer, String> record = ProducerRecord
@@ -195,28 +195,28 @@ public class SnowdropKafkaProducerTest {
         StepVerifier.create(producer.write(record))
             .verifyComplete();
 
-        // Capture axle producer record submitted by snowdrop producer
-        ArgumentCaptor<io.vertx.axle.kafka.client.producer.KafkaProducerRecord<Integer, String>> axleRecordCaptor =
-            ArgumentCaptor.forClass(io.vertx.axle.kafka.client.producer.KafkaProducerRecord.class);
-        verify(mockAxleProducer).write(axleRecordCaptor.capture());
-        io.vertx.axle.kafka.client.producer.KafkaProducerRecord<Integer, String> axleRecord =
-            axleRecordCaptor.getValue();
+        // Capture mutiny producer record submitted by snowdrop producer
+        ArgumentCaptor<io.vertx.mutiny.kafka.client.producer.KafkaProducerRecord<Integer, String>> mutinyRecordCaptor =
+            ArgumentCaptor.forClass(io.vertx.mutiny.kafka.client.producer.KafkaProducerRecord.class);
+        verify(mockMutinyProducer).write(mutinyRecordCaptor.capture());
+        io.vertx.mutiny.kafka.client.producer.KafkaProducerRecord<Integer, String> mutinyRecord =
+            mutinyRecordCaptor.getValue();
 
         // Verify that snowdrop producer converted records correctly
-        assertThat(axleRecord.topic()).isEqualTo("topic");
-        assertThat(axleRecord.value()).isEqualTo("value");
-        assertThat(axleRecord.key()).isEqualTo(1);
-        assertThat(axleRecord.timestamp()).isEqualTo(2);
-        assertThat(axleRecord.partition()).isEqualTo(3);
-        assertThat(axleRecord.headers()).hasSize(1);
-        assertThat(axleRecord.headers().get(0).key()).isEqualTo("h1");
-        assertThat(axleRecord.headers().get(0).value().toString()).isEqualTo("v1");
+        assertThat(mutinyRecord.topic()).isEqualTo("topic");
+        assertThat(mutinyRecord.value()).isEqualTo("value");
+        assertThat(mutinyRecord.key()).isEqualTo(1);
+        assertThat(mutinyRecord.timestamp()).isEqualTo(2);
+        assertThat(mutinyRecord.partition()).isEqualTo(3);
+        assertThat(mutinyRecord.headers()).hasSize(1);
+        assertThat(mutinyRecord.headers().get(0).key()).isEqualTo("h1");
+        assertThat(mutinyRecord.headers().get(0).value().toString()).isEqualTo("v1");
     }
 
     @Test
     public void shouldEnd() {
-        given(mockAxleProducer.end())
-            .willReturn(completedFuture(null));
+        given(mockMutinyProducer.end())
+            .willReturn(Uni.createFrom().voidItem());
 
         StepVerifier.create(producer.end())
             .verifyComplete();
@@ -224,7 +224,7 @@ public class SnowdropKafkaProducerTest {
 
     @Test
     public void shouldGetVertxWriteStream() {
-        given(mockAxleProducer.getDelegate())
+        given(mockMutinyProducer.getDelegate())
             .willReturn(mockVertxProducer);
 
         assertThat(producer.vertxWriteStream()).isEqualTo(mockVertxProducer);
