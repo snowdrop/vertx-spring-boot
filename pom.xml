@@ -50,11 +50,11 @@
 
   <properties>
     <awaitility.version>4.0.3</awaitility.version>
-    <mutiny-reactor.version>0.8.1</mutiny-reactor.version>
-    <mutiny-vertx.version>1.1.0</mutiny-vertx.version>
+    <mutiny-reactor.version>0.7.0</mutiny-reactor.version><!-- Align with SmallRye Reactive Utils -->
     <scala-library.version>2.12.8</scala-library.version>
     <spring-boot.version>2.2.5.RELEASE</spring-boot.version>
     <vertx.version>3.9.2</vertx.version>
+    <vertx-mutiny-clients.version>1.1.0</vertx-mutiny-clients.version><!-- Align with Vert.x -->
 
     <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -95,26 +95,32 @@
         <groupId>io.smallrye.reactive</groupId>
         <artifactId>mutiny-reactor</artifactId>
         <version>${mutiny-reactor.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>io.smallrye.reactive</groupId>
         <artifactId>smallrye-mutiny-vertx-core</artifactId>
-        <version>${mutiny-vertx.version}</version>
+        <version>${vertx-mutiny-clients.version}</version>
       </dependency>
       <dependency>
         <groupId>io.smallrye.reactive</groupId>
         <artifactId>smallrye-mutiny-vertx-mail-client</artifactId>
-        <version>${mutiny-vertx.version}</version>
+        <version>${vertx-mutiny-clients.version}</version>
       </dependency>
       <dependency>
         <groupId>io.smallrye.reactive</groupId>
         <artifactId>smallrye-mutiny-vertx-amqp-client</artifactId>
-        <version>${mutiny-vertx.version}</version>
+        <version>${vertx-mutiny-clients.version}</version>
       </dependency>
       <dependency>
         <groupId>io.smallrye.reactive</groupId>
         <artifactId>smallrye-mutiny-vertx-kafka-client</artifactId>
-        <version>${mutiny-vertx.version}</version>
+        <version>${vertx-mutiny-clients.version}</version>
       </dependency>
       <dependency>
         <groupId>org.awaitility</groupId>
