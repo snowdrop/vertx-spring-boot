@@ -1,13 +1,13 @@
 package dev.snowdrop.vertx.mail;
 
 import java.io.File;
-import java.util.concurrent.CompletionStage;
 
-import io.vertx.axle.core.Vertx;
-import io.vertx.axle.core.file.AsyncFile;
-import io.vertx.core.buffer.Buffer;
+import io.smallrye.mutiny.converters.multi.MultiReactorConverters;
+import io.smallrye.mutiny.converters.uni.UniReactorConverters;
 import io.vertx.core.file.OpenOptions;
-import org.eclipse.microprofile.reactive.streams.operators.ReactiveStreams;
+import io.vertx.mutiny.core.Vertx;
+import io.vertx.mutiny.core.buffer.Buffer;
+import io.vertx.mutiny.core.file.AsyncFile;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import reactor.core.publisher.Flux;
@@ -35,9 +35,11 @@ class MailAttachmentConverter {
 
         if (attachment.getFile() != null) {
             return fileAttachmentToBuffer(attachment.getFile())
+                .map(Buffer::getDelegate)
                 .map(delegateAttachment::setData);
         } else if (attachment.getData() != null) {
             return dataBufferAttachmentToBuffer(attachment.getData())
+                .map(Buffer::getDelegate)
                 .map(delegateAttachment::setData);
         }
 
@@ -52,17 +54,18 @@ class MailAttachmentConverter {
     }
 
     private Mono<Buffer> fileAttachmentToBuffer(File file) {
-        CompletionStage<AsyncFile> fileFuture = vertx.fileSystem()
-            .open(file.getAbsolutePath(), new OpenOptions().setRead(true).setCreate(false));
+        return vertx.fileSystem()
+            .open(file.getAbsolutePath(), new OpenOptions().setRead(true).setCreate(false))
+            .convert()
+            .with(UniReactorConverters.toMono())
+            .flatMap(this::readAndCloseFile);
+    }
 
-        CompletionStage<Buffer> bufferFuture = ReactiveStreams.fromCompletionStage(fileFuture)
-            .flatMap(asyncFile -> asyncFile
-                .toPublisherBuilder()
-                .map(io.vertx.axle.core.buffer.Buffer::getDelegate)
-                .onTerminate(asyncFile::close))
+    private Mono<Buffer> readAndCloseFile(AsyncFile asyncFile) {
+        return asyncFile.toMulti()
+            .convert()
+            .with(MultiReactorConverters.toFlux())
             .collect(Buffer::buffer, Buffer::appendBuffer)
-            .run();
-
-        return Mono.fromCompletionStage(bufferFuture);
+            .doOnTerminate(asyncFile::close);
     }
 }
