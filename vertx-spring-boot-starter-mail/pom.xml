@@ -27,7 +27,11 @@
     </dependency>
     <dependency>
       <groupId>io.smallrye.reactive</groupId>
-      <artifactId>smallrye-axle-mail-client</artifactId>
+      <artifactId>smallrye-mutiny-vertx-mail-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>mutiny-reactor</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>

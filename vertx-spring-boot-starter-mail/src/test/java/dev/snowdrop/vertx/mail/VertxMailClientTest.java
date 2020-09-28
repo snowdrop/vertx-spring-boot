@@ -2,16 +2,15 @@ package dev.snowdrop.vertx.mail;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
 import java.util.Arrays;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
-import io.vertx.axle.core.Vertx;
+import io.smallrye.mutiny.Uni;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.mutiny.core.Vertx;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,21 +34,21 @@ import static org.mockito.Mockito.verify;
 @RunWith(MockitoJUnitRunner.class)
 public class VertxMailClientTest {
 
+    private final DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
+
     @Mock
-    private io.vertx.axle.ext.mail.MailClient mockAxleMailClient;
+    private io.vertx.mutiny.ext.mail.MailClient mockMutinyMailClient;
 
     private Vertx vertx;
 
     private MailClient mailClient;
-
-    private DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
 
     @Before
     public void before() {
         io.vertx.ext.mail.MailResult vertxResult = new io.vertx.ext.mail.MailResult();
         vertxResult.setMessageID("1");
         vertxResult.setRecipients(Arrays.asList("to@example.com", "cc@example.com", "bcc@example.com"));
-        given(mockAxleMailClient.sendMail(any())).willReturn(CompletableFuture.completedFuture(vertxResult));
+        given(mockMutinyMailClient.sendMail(any())).willReturn(Uni.createFrom().item(vertxResult));
 
         vertx = Vertx.vertx();
 
@@ -59,7 +58,7 @@ public class VertxMailClientTest {
             new MailMessageConverter(mailAttachmentConverter, multiMapConverter);
         MailResultConverter mailResultConverter = new MailResultConverter();
 
-        mailClient = new VertxMailClient(mockAxleMailClient, mailMessageConverter, mailResultConverter);
+        mailClient = new VertxMailClient(mockMutinyMailClient, mailMessageConverter, mailResultConverter);
     }
 
     @Test
@@ -88,7 +87,7 @@ public class VertxMailClientTest {
 
         ArgumentCaptor<io.vertx.ext.mail.MailMessage> vertxMessageCaptor =
             ArgumentCaptor.forClass(io.vertx.ext.mail.MailMessage.class);
-        verify(mockAxleMailClient).sendMail(vertxMessageCaptor.capture());
+        verify(mockMutinyMailClient).sendMail(vertxMessageCaptor.capture());
 
         assertMessage(message, vertxMessageCaptor.getValue());
     }
@@ -119,17 +118,14 @@ public class VertxMailClientTest {
 
         ArgumentCaptor<io.vertx.ext.mail.MailMessage> vertxMessageCaptor =
             ArgumentCaptor.forClass(io.vertx.ext.mail.MailMessage.class);
-        verify(mockAxleMailClient).sendMail(vertxMessageCaptor.capture());
+        verify(mockMutinyMailClient).sendMail(vertxMessageCaptor.capture());
 
         assertMessage(message, vertxMessageCaptor.getValue());
     }
 
     @Test
     public void shouldFailToSend() {
-        CompletableFuture<io.vertx.ext.mail.MailResult> future = new CompletableFuture<>();
-        future.completeExceptionally(new RuntimeException("test"));
-
-        given(mockAxleMailClient.sendMail(any())).willReturn(future);
+        given(mockMutinyMailClient.sendMail(any())).willReturn(Uni.createFrom().failure(new RuntimeException("test")));
 
         Mono<MailResult> result = mailClient.send(new SimpleMailMessage());
         StepVerifier.create(result)
@@ -216,17 +212,12 @@ public class VertxMailClientTest {
     }
 
     private void assertData(File expected, Buffer actual) {
-        try {
-            Buffer expectedBuffer = vertx
-                .fileSystem()
-                .readFile(expected.getAbsolutePath())
-                .toCompletableFuture()
-                .get()
-                .getDelegate();
-
-            assertThat(actual).isEqualTo(expectedBuffer);
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
+        Buffer expectedBuffer = vertx
+            .fileSystem()
+            .readFile(expected.getAbsolutePath())
+            .await()
+            .atMost(Duration.ofSeconds(2))
+            .getDelegate();
+        assertThat(actual).isEqualTo(expectedBuffer);
     }
 }
