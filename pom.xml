@@ -50,10 +50,9 @@
 
   <properties>
     <awaitility.version>4.0.3</awaitility.version>
-    <scala-library.version>2.12.8</scala-library.version>
-    <smallrye-axle.version>1.1.0</smallrye-axle.version>
     <mutiny-reactor.version>0.8.1</mutiny-reactor.version>
     <mutiny-vertx.version>1.1.0</mutiny-vertx.version>
+    <scala-library.version>2.12.8</scala-library.version>
     <spring-boot.version>2.3.2.RELEASE</spring-boot.version>
     <vertx.version>3.9.2</vertx.version>
 
@@ -99,8 +98,8 @@
       </dependency>
       <dependency>
         <groupId>io.smallrye.reactive</groupId>
-        <artifactId>smallrye-axle-core</artifactId>
-        <version>${smallrye-axle.version}</version>
+        <artifactId>smallrye-mutiny-vertx-core</artifactId>
+        <version>${mutiny-vertx.version}</version>
       </dependency>
       <dependency>
         <groupId>io.smallrye.reactive</groupId>

@@ -1,14 +1,15 @@
 package dev.snowdrop.vertx.streams;
 
+import io.smallrye.mutiny.converters.uni.UniReactorConverters;
 import reactor.core.publisher.Mono;
 
 class SnowdropPipe<T> implements Pipe<T> {
 
-    private final io.vertx.axle.core.streams.Pipe<T> delegate;
+    private final io.vertx.mutiny.core.streams.Pipe<T> delegate;
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     SnowdropPipe(ReadStream<T> readStream) {
-        this.delegate = new io.vertx.axle.core.streams.Pipe<>(
+        this.delegate = new io.vertx.mutiny.core.streams.Pipe<>(
             new io.vertx.core.streams.impl.PipeImpl<>(readStream.vertxReadStream()));
     }
 
@@ -32,7 +33,9 @@ class SnowdropPipe<T> implements Pipe<T> {
 
     @Override
     public Mono<Void> to(WriteStream<T> destination) {
-        return Mono.fromCompletionStage(() -> delegate.to(toAxleWriteStream(destination)));
+        return delegate.to(toMutinyWriteStream(destination))
+            .convert()
+            .with(UniReactorConverters.toMono());
     }
 
     @Override
@@ -40,7 +43,7 @@ class SnowdropPipe<T> implements Pipe<T> {
         delegate.close();
     }
 
-    private io.vertx.axle.core.streams.WriteStream<T> toAxleWriteStream(WriteStream<T> writeStream) {
-        return io.vertx.axle.core.streams.WriteStream.newInstance(writeStream.vertxWriteStream());
+    private io.vertx.mutiny.core.streams.WriteStream<T> toMutinyWriteStream(WriteStream<T> writeStream) {
+        return io.vertx.mutiny.core.streams.WriteStream.newInstance(writeStream.vertxWriteStream());
     }
 }
