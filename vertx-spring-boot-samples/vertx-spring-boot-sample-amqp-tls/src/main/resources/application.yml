@@ -9,3 +9,7 @@ vertx:
       enabled: true
       path: tls/client-truststore.jks
       password: wibble
+spring:
+  artemis:
+    embedded:
+      enabled: false # We'll start an embedded broker with an AMQP acceptor ourselves

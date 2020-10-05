@@ -30,22 +30,17 @@
   </dependencyManagement>
 
   <dependencies>
+    <!-- Vert.x WebFlux starter used to handle HTTP requests -->
     <dependency>
       <groupId>dev.snowdrop</groupId>
       <artifactId>vertx-spring-boot-starter-http</artifactId>
     </dependency>
+    <!-- Vert.x AMQP starter used to send and receive messages from AMQP broker -->
     <dependency>
       <groupId>dev.snowdrop</groupId>
       <artifactId>vertx-spring-boot-starter-amqp</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-artemis</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.activemq</groupId>
-      <artifactId>artemis-jms-server</artifactId>
-    </dependency>
+    <!-- Embedded AMQP broker dependencies. Not needed with a standalone broker -->
     <dependency>
       <groupId>org.apache.activemq</groupId>
       <artifactId>artemis-amqp-protocol</artifactId>
@@ -56,6 +51,7 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <!-- Test dependencies -->
     <dependency>
       <groupId>dev.snowdrop</groupId>
       <artifactId>vertx-spring-boot-starter-http-test</artifactId>

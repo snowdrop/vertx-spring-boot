@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>dev.snowdrop</groupId>
@@ -40,16 +41,7 @@
       <groupId>dev.snowdrop</groupId>
       <artifactId>vertx-spring-boot-starter-amqp</artifactId>
     </dependency>
-
     <!-- Embedded AMQP broker dependencies. Not needed with a standalone broker -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-artemis</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.activemq</groupId>
-      <artifactId>artemis-jms-server</artifactId>
-    </dependency>
     <dependency>
       <groupId>org.apache.activemq</groupId>
       <artifactId>artemis-amqp-protocol</artifactId>
@@ -60,8 +52,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- END Embedded AMQP broker dependencies -->
-
     <!-- Test dependencies -->
     <dependency>
       <groupId>dev.snowdrop</groupId>
