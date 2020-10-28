@@ -2,7 +2,6 @@ package dev.snowdrop.vertx.sample.amqp;
 
 import dev.snowdrop.vertx.amqp.AmqpClient;
 import dev.snowdrop.vertx.amqp.AmqpMessage;
-import dev.snowdrop.vertx.amqp.AmqpSender;
 import reactor.core.publisher.Mono;
 
 import static dev.snowdrop.vertx.sample.amqp.AmqpSampleApplication.QUEUE;
@@ -23,7 +22,6 @@ final class AmqpLogger {
             .build();
 
         return client.createSender(QUEUE)
-            .map(sender -> sender.send(message))
-            .flatMap(AmqpSender::close);
+            .flatMap(sender -> sender.sendWithAck(message).then(sender.close()));
     }
 }

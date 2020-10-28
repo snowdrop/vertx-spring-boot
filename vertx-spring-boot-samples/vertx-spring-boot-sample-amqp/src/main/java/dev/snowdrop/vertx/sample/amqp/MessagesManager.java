@@ -5,7 +5,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import dev.snowdrop.vertx.amqp.AmqpClient;
 import dev.snowdrop.vertx.amqp.AmqpMessage;
-import dev.snowdrop.vertx.amqp.AmqpSender;
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,8 +80,7 @@ public class MessagesManager implements InitializingBean, DisposableBean {
             .build();
 
         return client.createSender(PROCESSING_REQUESTS_QUEUE)
-            .map(sender -> sender.send(message))
-            .flatMap(AmqpSender::close);
+            .flatMap(sender -> sender.sendWithAck(message).then(sender.close()));
     }
 
     private void handleMessage(AmqpMessage message) {
