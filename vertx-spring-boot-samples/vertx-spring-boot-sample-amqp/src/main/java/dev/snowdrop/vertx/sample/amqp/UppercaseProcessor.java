@@ -66,7 +66,6 @@ public class UppercaseProcessor implements InitializingBean, DisposableBean {
             .build();
 
         return client.createSender(PROCESSING_RESULTS_QUEUE)
-            .map(sender -> sender.send(processedMessage))
-            .flatMap(AmqpSender::close);
+            .flatMap(sender -> sender.sendWithAck(processedMessage).then(sender.close()));
     }
 }
