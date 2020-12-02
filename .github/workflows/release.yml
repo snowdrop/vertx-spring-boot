@@ -18,7 +18,7 @@ jobs:
       - name: Set release version
         run: |
           releaseVersion=$(echo $GITHUB_REF | sed 's/refs\/tags\/release-//')
-          echo "::set-env name=RELEASE_VERSION::${releaseVersion}"
+          echo "RELEASE_VERSION=${releaseVersion}" >> $GITHUB_ENV
       - name: Release
         uses: gytis/maven-release-action@master
         with:
