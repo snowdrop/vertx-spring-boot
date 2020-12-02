@@ -45,7 +45,7 @@ public class AmqpSampleApplicationTest {
 
     private void logMessage(String message) {
         client.post()
-            .syncBody(message)
+            .bodyValue(message)
             .exchange()
             .expectStatus()
             .isOk();

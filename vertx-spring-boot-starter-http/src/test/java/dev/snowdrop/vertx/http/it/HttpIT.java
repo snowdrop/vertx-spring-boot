@@ -67,6 +67,7 @@ public class HttpIT extends TestBase {
 
         getWebTestClient()
             .get()
+            .uri("/non-existent-resource")
             .exchange()
             .expectStatus()
             .isNotFound();
