@@ -4,7 +4,7 @@
   <parent>
     <groupId>dev.snowdrop</groupId>
     <artifactId>vertx-spring-boot-parent</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
   </parent>
 
   <artifactId>vertx-spring-boot-starter</artifactId>
