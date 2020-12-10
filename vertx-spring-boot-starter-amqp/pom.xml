@@ -28,6 +28,17 @@
     <dependency>
       <groupId>io.smallrye.reactive</groupId>
       <artifactId>smallrye-mutiny-vertx-amqp-client</artifactId>
+      <exclusions>
+        <!-- Avoid different Vert.x versions in the tree -->
+        <exclusion>
+          <groupId>io.vertx</groupId>
+          <artifactId>vertx-amqp-client</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-amqp-client</artifactId>
     </dependency>
     <dependency>
       <groupId>javax.json</groupId>

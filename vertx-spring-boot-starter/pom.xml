@@ -18,6 +18,13 @@
     <dependency>
       <groupId>io.smallrye.reactive</groupId>
       <artifactId>smallrye-mutiny-vertx-core</artifactId>
+      <exclusions>
+        <!-- Avoid different Vert.x versions in the tree -->
+        <exclusion>
+          <groupId>io.vertx</groupId>
+          <artifactId>vertx-codegen</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.smallrye.reactive</groupId>
