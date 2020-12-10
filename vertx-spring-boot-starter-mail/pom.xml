@@ -28,6 +28,17 @@
     <dependency>
       <groupId>io.smallrye.reactive</groupId>
       <artifactId>smallrye-mutiny-vertx-mail-client</artifactId>
+      <exclusions>
+        <!-- Avoid different Vert.x versions in the tree -->
+        <exclusion>
+          <groupId>io.vertx</groupId>
+          <artifactId>vertx-mail-client</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-mail-client</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
