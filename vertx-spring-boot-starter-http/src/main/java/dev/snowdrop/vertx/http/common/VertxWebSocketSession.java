@@ -85,6 +85,11 @@ public class VertxWebSocketSession extends AbstractWebSocketSession<WebSocketBas
     }
 
     @Override
+    public boolean isOpen() {
+        return !getDelegate().isClosed();
+    }
+
+    @Override
     public Mono<Void> close(CloseStatus status) {
         logger.debug("{}Closing web socket with status '{}'", getLogPrefix(), status);
         return Mono.create(sink -> getDelegate()
@@ -93,6 +98,21 @@ public class VertxWebSocketSession extends AbstractWebSocketSession<WebSocketBas
                 sink.success();
             })
             .close((short) status.getCode(), status.getReason()));
+    }
+
+    @Override
+    public Mono<CloseStatus> closeStatus() {
+        Short code = getDelegate().closeStatusCode();
+        if (code == null) {
+            return Mono.empty();
+        }
+
+        String reason = getDelegate().closeReason();
+        if (reason == null) {
+            return Mono.just(new CloseStatus(code));
+        }
+
+        return Mono.just(new CloseStatus(code, reason));
     }
 
     private void messageHandler(WebSocketBase socket, WebSocketMessage message) {
