@@ -14,11 +14,11 @@ import io.vertx.kafka.client.common.PartitionInfo;
 import io.vertx.kafka.client.common.TopicPartition;
 import io.vertx.kafka.client.consumer.OffsetAndMetadata;
 import io.vertx.kafka.client.consumer.OffsetAndTimestamp;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.StepVerifier;
 
 import static java.util.Arrays.asList;
@@ -30,7 +30,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SnowdropKafkaConsumerTest {
 
     @Mock
@@ -44,7 +44,7 @@ public class SnowdropKafkaConsumerTest {
 
     private SnowdropKafkaConsumer<Integer, String> consumer;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         consumer = new SnowdropKafkaConsumer<>(mockMutinyConsumer);
     }

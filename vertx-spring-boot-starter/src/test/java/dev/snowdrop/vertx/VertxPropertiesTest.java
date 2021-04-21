@@ -2,15 +2,12 @@ package dev.snowdrop.vertx;
 
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(
     classes = VertxAutoConfiguration.class,
     properties = {
@@ -38,5 +35,4 @@ public class VertxPropertiesTest {
         // Verify overwritten file system value
         assertThat(properties.getFileSystem().isFileCachingEnabled()).isFalse();
     }
-
 }

@@ -6,8 +6,8 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -56,7 +56,7 @@ import static org.springframework.web.reactive.function.server.ServerResponse.ok
 
 public class HttpIT extends TestBase {
 
-    @After
+    @AfterEach
     public void tearDown() {
         stopServer();
     }

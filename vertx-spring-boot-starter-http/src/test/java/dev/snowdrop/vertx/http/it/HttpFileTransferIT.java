@@ -12,11 +12,11 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
@@ -48,24 +48,24 @@ public class HttpFileTransferIT extends TestBase {
 
     private static final long FILE_SIZE = Integer.MAX_VALUE;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws IOException {
         Files.deleteIfExists(ORIGINAL_FILE);
         createTestFile();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         Files.deleteIfExists(EXPECTED_FILE);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         Files.deleteIfExists(EXPECTED_FILE);
         stopServer();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws IOException {
         Files.deleteIfExists(ORIGINAL_FILE);
     }

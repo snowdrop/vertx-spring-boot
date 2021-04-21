@@ -7,14 +7,14 @@ import java.util.concurrent.TimeUnit;
 import dev.snowdrop.vertx.http.server.properties.HttpServerProperties;
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpVersion;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class HttpServerPropertiesIT extends TestBase {
 
-    @After
+    @AfterEach
     public void tearDown() {
         stopServer();
     }

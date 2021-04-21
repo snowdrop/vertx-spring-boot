@@ -11,8 +11,8 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.vertx.core.http.UpgradeRejectedException;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -25,13 +25,14 @@ import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Mono;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 
 public class WebSocketIT extends TestBase {
 
-    @After
+    @AfterEach
     public void tearDown() {
         stopServer();
     }
@@ -242,16 +243,17 @@ public class WebSocketIT extends TestBase {
             .block(Duration.ofSeconds(2));
     }
 
-    @Test(expected = UpgradeRejectedException.class)
+    @Test
     public void testNotAllowedCorsOrigin() {
         startServerWithoutSecurity(Handlers.class);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.ORIGIN, "http://example.com");
 
-        getWebSocketClient()
-            .execute(URI.create(WS_BASE_URL + "/sink"), headers, session -> Mono.empty())
-            .block(Duration.ofSeconds(2));
+        assertThatExceptionOfType(UpgradeRejectedException.class)
+            .isThrownBy(
+                () -> getWebSocketClient().execute(URI.create(WS_BASE_URL + "/sink"), headers, session -> Mono.empty())
+                    .block(Duration.ofSeconds(2)));
     }
 
     @Configuration

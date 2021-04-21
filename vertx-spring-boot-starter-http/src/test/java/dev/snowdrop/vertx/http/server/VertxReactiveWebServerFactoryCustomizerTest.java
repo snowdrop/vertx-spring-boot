@@ -7,17 +7,17 @@ import dev.snowdrop.vertx.http.server.properties.CompressionCustomizer;
 import dev.snowdrop.vertx.http.server.properties.HttpServerOptionsCustomizer;
 import dev.snowdrop.vertx.http.server.properties.PortCustomizer;
 import dev.snowdrop.vertx.http.server.properties.SslCustomizer;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class VertxReactiveWebServerFactoryCustomizerTest {
 
     @Mock
@@ -28,7 +28,7 @@ public class VertxReactiveWebServerFactoryCustomizerTest {
 
     private VertxReactiveWebServerFactoryCustomizer customizer;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         customizer =
             new VertxReactiveWebServerFactoryCustomizer(Collections.singleton(mockHttpServerOptionsCustomizer));

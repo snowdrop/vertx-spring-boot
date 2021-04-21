@@ -5,12 +5,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import dev.snowdrop.vertx.http.client.VertxWebSocketClient;
 import dev.snowdrop.vertx.http.client.VertxClientHttpConnector;
-import org.junit.Rule;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
+import dev.snowdrop.vertx.http.client.VertxWebSocketClient;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.TestWatcher;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -24,6 +23,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.socket.client.WebSocketClient;
 
+@ExtendWith(TestBase.TestNameLogger.class)
 public class TestBase {
 
     protected static final String BASE_URL = "http://localhost:8080";
@@ -31,9 +31,6 @@ public class TestBase {
     protected static final String SSL_BASE_URL = "https://localhost:8080";
 
     protected static final String WS_BASE_URL = "ws://localhost:8080";
-
-    @Rule
-    public TestRule watcher = new TestNameLogger();
 
     private ConfigurableApplicationContext context;
 
@@ -152,14 +149,14 @@ public class TestBase {
         }
     }
 
-    private static class TestNameLogger extends TestWatcher {
+    static class TestNameLogger implements TestWatcher {
 
-        protected void starting(Description description) {
-            System.out.println("Starting test: " + description.getClassName() + "#" + description.getMethodName());
+        public void testSuccessful(ExtensionContext context) {
+            System.out.println(context.getDisplayName() + " has succeeded");
         }
 
-        protected void finished(Description description) {
-            System.out.println("Finished test: " + description.getClassName() + "#" + description.getMethodName());
+        public void testFailed(ExtensionContext context, Throwable cause) {
+            System.out.println(context.getDisplayName() + " has failed");
         }
     }
 }

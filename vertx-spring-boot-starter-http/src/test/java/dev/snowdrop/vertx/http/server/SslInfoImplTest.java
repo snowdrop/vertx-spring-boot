@@ -6,16 +6,17 @@ import java.security.cert.X509Certificate;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.BDDMockito.given;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SslInfoImplTest {
 
     @Mock
@@ -29,14 +30,14 @@ public class SslInfoImplTest {
 
     private SslInfoImpl sslInfo;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         sslInfo = new SslInfoImpl(mockSession);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void shouldNotAllowNullSession() {
-        new SslInfoImpl(null);
+        assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> new SslInfoImpl(null));
     }
 
     @Test

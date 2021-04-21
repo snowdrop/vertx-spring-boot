@@ -23,9 +23,9 @@ public abstract class AbstractIT {
 
     private KafkaConsumerFactory consumerFactory;
 
-    private List<KafkaProducer<?, ?>> producersToCleanup = new LinkedList<>();
+    private final List<KafkaProducer<?, ?>> producersToCleanup = new LinkedList<>();
 
-    private List<KafkaConsumer<?, ?>> consumersToCleanup = new LinkedList<>();
+    private final List<KafkaConsumer<?, ?>> consumersToCleanup = new LinkedList<>();
 
     protected void setUp(KafkaProducerFactory producerFactory, KafkaConsumerFactory consumerFactory,
         KafkaProperties properties, EmbeddedKafkaBroker broker) {

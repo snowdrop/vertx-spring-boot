@@ -4,16 +4,16 @@ import java.util.Arrays;
 
 import io.vertx.mutiny.kafka.client.producer.KafkaHeader;
 import org.apache.kafka.common.record.TimestampType;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SnowdropConsumerRecordTest {
 
     @Mock
@@ -24,7 +24,7 @@ public class SnowdropConsumerRecordTest {
 
     private ConsumerRecord<Integer, String> record;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         given(mockMutinyConsumerRecord.topic()).willReturn("test-topic");
         given(mockMutinyConsumerRecord.partition()).willReturn(1);

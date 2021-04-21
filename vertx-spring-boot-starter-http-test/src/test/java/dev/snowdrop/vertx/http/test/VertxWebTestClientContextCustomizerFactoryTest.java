@@ -1,6 +1,6 @@
 package dev.snowdrop.vertx.http.test;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextCustomizer;
 
@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class VertxWebTestClientContextCustomizerFactoryTest {
 
-    private VertxWebTestClientContextCustomizerFactory factory = new VertxWebTestClientContextCustomizerFactory();
+    private final VertxWebTestClientContextCustomizerFactory factory = new VertxWebTestClientContextCustomizerFactory();
 
     @Test
     public void shouldCreateCustomizer() {

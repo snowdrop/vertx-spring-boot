@@ -13,8 +13,8 @@ import dev.snowdrop.vertx.amqp.AmqpMessage;
 import dev.snowdrop.vertx.amqp.AmqpReceiver;
 import dev.snowdrop.vertx.amqp.AmqpSender;
 import dev.snowdrop.vertx.streams.Pump;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
@@ -34,7 +34,7 @@ public abstract class AbstractAmqpClientIT {
 
     private AmqpConnection connection;
 
-    @After
+    @AfterEach
     public void tearDown() {
         client.close().block();
     }

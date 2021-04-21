@@ -4,35 +4,34 @@ import java.util.function.Function;
 
 import io.vertx.core.Handler;
 import io.vertx.core.streams.ReadStream;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ReadStreamFluxBuilderTest {
 
     @Mock
     private ReadStream<String> mockReadStream;
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void shouldNotAcceptNullReadStream() {
-        new ReadStreamFluxBuilder<String, String>()
-            .dataConverter(Function.identity())
-            .build();
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(
+            () -> new ReadStreamFluxBuilder<String, String>().dataConverter(Function.identity()).build());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void shouldNotAcceptNullDataConverter() {
-        new ReadStreamFluxBuilder<String, String>()
-            .readStream(mockReadStream)
-            .build();
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(
+            () -> new ReadStreamFluxBuilder<String, String>().readStream(mockReadStream).build());
     }
 
     @Test

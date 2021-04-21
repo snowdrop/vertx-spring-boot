@@ -3,7 +3,7 @@ package dev.snowdrop.vertx.kafka;
 import java.nio.charset.StandardCharsets;
 
 import io.vertx.mutiny.kafka.client.producer.KafkaHeader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 

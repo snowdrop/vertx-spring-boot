@@ -7,21 +7,18 @@ import dev.snowdrop.vertx.kafka.KafkaProducer;
 import dev.snowdrop.vertx.kafka.KafkaProducerFactory;
 import dev.snowdrop.vertx.kafka.KafkaProperties;
 import dev.snowdrop.vertx.kafka.ProducerRecord;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.test.context.junit4.SpringRunner;
 import reactor.test.StepVerifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(properties = {
     "vertx.kafka.producer.key.serializer=org.apache.kafka.common.serialization.StringSerializer",
     "vertx.kafka.producer.value.serializer=org.apache.kafka.common.serialization.StringSerializer"
@@ -38,12 +35,12 @@ public class ProducerIT extends AbstractIT {
     @Autowired
     private KafkaProducerFactory producerFactory;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         super.setUp(producerFactory, null, properties, broker);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         super.tearDown();
     }
