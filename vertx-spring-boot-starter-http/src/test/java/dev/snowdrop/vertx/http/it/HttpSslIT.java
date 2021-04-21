@@ -16,8 +16,8 @@ import io.vertx.core.net.JdkSSLEngineOptions;
 import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.OpenSSLEngineOptions;
 import io.vertx.core.net.PemKeyCertOptions;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -27,7 +27,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 import static org.springframework.web.reactive.function.server.ServerResponse.noContent;
 import static org.springframework.web.reactive.function.server.ServerResponse.status;
@@ -54,7 +54,7 @@ public class HttpSslIT extends TestBase {
 
     private static final String CERT_PATH = "target/test-classes/tls/server-cert.pem";
 
-    @After
+    @AfterEach
     public void tearDown() {
         stopServer();
     }
@@ -66,7 +66,7 @@ public class HttpSslIT extends TestBase {
 
     @Test
     public void testSecureRequestWithAlpn() {
-        assumeTrue("Neither OpenSSL nor Java 9 or higher is in a classpath", isOpenSsl() || isJava9());
+        assumeTrue(isOpenSsl() || isJava9(), "Neither OpenSSL nor Java 9 or higher is in a classpath");
         testSecureRequest(true);
     }
 
@@ -77,7 +77,7 @@ public class HttpSslIT extends TestBase {
 
     @Test
     public void testUntrustedClientWithAlpn() {
-        assumeTrue("Neither OpenSSL nor Java 9 or higher is in a classpath", isOpenSsl() || isJava9());
+        assumeTrue(isOpenSsl() || isJava9(), "Neither OpenSSL nor Java 9 or higher is in a classpath");
         testUntrustedClient(true);
     }
 
@@ -88,19 +88,19 @@ public class HttpSslIT extends TestBase {
 
     @Test
     public void testDefaultEngineWithAlpn() {
-        assumeTrue("Neither OpenSSL nor Java 9 or higher is in a classpath", isOpenSsl() || isJava9());
+        assumeTrue(isOpenSsl() || isJava9(), "Neither OpenSSL nor Java 9 or higher is in a classpath");
         testEngine(true, Engine.NONE);
     }
 
     @Test
     public void testOpenSslEngine() {
-        assumeTrue("OpenSSL is not in a classpath", isOpenSsl());
+        assumeTrue(isOpenSsl(), "OpenSSL is not in a classpath");
         testEngine(false, Engine.OPENSSL);
     }
 
     @Test
     public void testOpenSslEngineWithAlpn() {
-        assumeTrue("OpenSSL is not in a classpath", isOpenSsl());
+        assumeTrue(isOpenSsl(), "OpenSSL is not in a classpath");
         testEngine(true, Engine.OPENSSL);
     }
 
@@ -111,7 +111,7 @@ public class HttpSslIT extends TestBase {
 
     @Test
     public void testJdkEngineWithAlpn() {
-        assumeTrue("Java 9 or higher is not in a classpath", isJava9());
+        assumeTrue(isJava9(), "Java 9 or higher is not in a classpath");
         testEngine(true, Engine.JDK);
     }
 

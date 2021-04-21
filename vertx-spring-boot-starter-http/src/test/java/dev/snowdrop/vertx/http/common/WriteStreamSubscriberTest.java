@@ -2,21 +2,22 @@ package dev.snowdrop.vertx.http.common;
 
 import io.vertx.core.Handler;
 import io.vertx.core.streams.WriteStream;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivestreams.Subscriber;
 import reactor.core.publisher.MonoSink;
 import reactor.test.publisher.TestPublisher;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class WriteStreamSubscriberTest {
 
     @Mock
@@ -27,7 +28,7 @@ public class WriteStreamSubscriberTest {
 
     private WriteStreamSubscriber<WriteStream<String>, String> subscriber;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         subscriber = new WriteStreamSubscriber.Builder<WriteStream<String>, String>()
             .writeStream(mockWriteStream)
@@ -36,28 +37,28 @@ public class WriteStreamSubscriberTest {
             .build();
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void shouldNotAllowNullWriteStream() {
-        new WriteStreamSubscriber.Builder<WriteStream<String>, String>()
-            .nextHandler((stream, value) -> {})
-            .endHook(mockMonoSink)
-            .build();
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(
+            () -> new WriteStreamSubscriber.Builder<WriteStream<String>, String>().nextHandler((stream, value) -> {})
+                .endHook(mockMonoSink)
+                .build());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void shouldNotAllowNullNextHandler() {
-        new WriteStreamSubscriber.Builder<WriteStream<String>, String>()
-            .writeStream(mockWriteStream)
-            .endHook(mockMonoSink)
-            .build();
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(
+            () -> new WriteStreamSubscriber.Builder<WriteStream<String>, String>().writeStream(mockWriteStream)
+                .endHook(mockMonoSink)
+                .build());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void shouldNotAllowNullEndHook() {
-        new WriteStreamSubscriber.Builder<WriteStream<String>, String>()
-            .writeStream(mockWriteStream)
-            .nextHandler((stream, value) -> {})
-            .build();
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(
+            () -> new WriteStreamSubscriber.Builder<WriteStream<String>, String>().writeStream(mockWriteStream)
+                .nextHandler((stream, value) -> {})
+                .build());
     }
 
     @Test

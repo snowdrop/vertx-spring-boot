@@ -1,16 +1,13 @@
 package dev.snowdrop.vertx;
 
 import io.vertx.core.Vertx;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
-@Import(VertxAutoConfiguration.class)
+@SpringBootTest(classes = VertxAutoConfiguration.class)
 public class VertxAutoConfigurationTest {
 
     @Autowired
@@ -20,5 +17,4 @@ public class VertxAutoConfigurationTest {
     public void shouldInjectVertxInstance() {
         assertThat(vertx).isNotNull();
     }
-
 }

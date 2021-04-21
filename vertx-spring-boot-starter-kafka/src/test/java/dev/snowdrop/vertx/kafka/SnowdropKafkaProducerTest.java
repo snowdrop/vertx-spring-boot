@@ -8,12 +8,12 @@ import java.util.function.Function;
 import io.smallrye.mutiny.Uni;
 import io.vertx.kafka.client.common.PartitionInfo;
 import io.vertx.kafka.client.producer.RecordMetadata;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.StepVerifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,7 +22,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SnowdropKafkaProducerTest {
 
     @Mock
@@ -33,7 +33,7 @@ public class SnowdropKafkaProducerTest {
 
     private KafkaProducer<Integer, String> producer;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         producer = new SnowdropKafkaProducer<>(mockMutinyProducer);
     }

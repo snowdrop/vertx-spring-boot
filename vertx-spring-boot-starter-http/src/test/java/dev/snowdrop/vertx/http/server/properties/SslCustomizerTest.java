@@ -6,12 +6,12 @@ import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.PfxOptions;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.web.server.AbstractConfigurableWebServerFactory;
 import org.springframework.boot.web.server.Ssl;
 
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SslCustomizerTest {
 
     @Mock
@@ -37,7 +37,7 @@ public class SslCustomizerTest {
 
     private SslCustomizer customizer;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         given(mockFactory.getSsl()).willReturn(mockSsl);
 

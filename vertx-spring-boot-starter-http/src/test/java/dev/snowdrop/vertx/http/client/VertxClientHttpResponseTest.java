@@ -5,10 +5,10 @@ import java.util.Arrays;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.impl.headers.VertxHttpHeaders;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
@@ -22,7 +22,7 @@ import reactor.core.publisher.Flux;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class VertxClientHttpResponseTest {
 
     @Mock

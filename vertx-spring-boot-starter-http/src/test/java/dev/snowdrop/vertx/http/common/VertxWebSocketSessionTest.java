@@ -4,11 +4,10 @@ import dev.snowdrop.vertx.http.utils.BufferConverter;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.ServerWebSocket;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.web.reactive.socket.CloseStatus;
 import org.springframework.web.reactive.socket.HandshakeInfo;
@@ -21,7 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class VertxWebSocketSessionTest {
 
     @Mock
@@ -30,28 +29,11 @@ public class VertxWebSocketSessionTest {
     @Mock
     private HandshakeInfo mockHandshakeInfo;
 
-    private BufferConverter bufferConverter = new BufferConverter();
-
-    private VertxWebSocketSession session;
-
-    @Before
-    public void setUp() {
-        given(mockServerWebSocket.pause()).willReturn(mockServerWebSocket);
-        given(mockServerWebSocket.textMessageHandler(any())).willReturn(mockServerWebSocket);
-        given(mockServerWebSocket.binaryMessageHandler(any())).willReturn(mockServerWebSocket);
-        given(mockServerWebSocket.pongHandler(any())).willReturn(mockServerWebSocket);
-        given(mockServerWebSocket.exceptionHandler(any())).willReturn(mockServerWebSocket);
-        given(mockServerWebSocket.endHandler(any())).will(invocation -> {
-            Handler<Void> handler = invocation.getArgument(0);
-            handler.handle(null);
-            return mockServerWebSocket;
-        });
-
-        session = new VertxWebSocketSession(mockServerWebSocket, mockHandshakeInfo, bufferConverter, 1, 1);
-    }
+    private final BufferConverter bufferConverter = new BufferConverter();
 
     @Test
     public void shouldReceiveTextMessages() {
+        initMockSocketHandlers();
         given(mockServerWebSocket.textMessageHandler(any())).will(invocation -> {
             Handler<String> handler = invocation.getArgument(0);
             handler.handle("test1");
@@ -59,7 +41,7 @@ public class VertxWebSocketSessionTest {
             return mockServerWebSocket;
         });
 
-        StepVerifier.create(session.receive())
+        StepVerifier.create(getWebSocketSession().receive())
             .expectNext(getWebSocketMessage(WebSocketMessage.Type.TEXT, "test1"))
             .expectNext(getWebSocketMessage(WebSocketMessage.Type.TEXT, "test2"))
             .verifyComplete();
@@ -67,6 +49,7 @@ public class VertxWebSocketSessionTest {
 
     @Test
     public void shouldReceiveBinaryMessages() {
+        initMockSocketHandlers();
         given(mockServerWebSocket.binaryMessageHandler(any())).will(invocation -> {
             Handler<Buffer> handler = invocation.getArgument(0);
             handler.handle(Buffer.buffer("test1"));
@@ -74,7 +57,7 @@ public class VertxWebSocketSessionTest {
             return mockServerWebSocket;
         });
 
-        StepVerifier.create(session.receive())
+        StepVerifier.create(getWebSocketSession().receive())
             .expectNext(getWebSocketMessage(WebSocketMessage.Type.BINARY, "test1"))
             .expectNext(getWebSocketMessage(WebSocketMessage.Type.BINARY, "test2"))
             .verifyComplete();
@@ -82,6 +65,7 @@ public class VertxWebSocketSessionTest {
 
     @Test
     public void shouldReceivePongMessages() {
+        initMockSocketHandlers();
         given(mockServerWebSocket.pongHandler(any())).will(invocation -> {
             Handler<Buffer> handler = invocation.getArgument(0);
             handler.handle(Buffer.buffer("test1"));
@@ -89,7 +73,7 @@ public class VertxWebSocketSessionTest {
             return mockServerWebSocket;
         });
 
-        StepVerifier.create(session.receive())
+        StepVerifier.create(getWebSocketSession().receive())
             .expectNext(getWebSocketMessage(WebSocketMessage.Type.PONG, "test1"))
             .expectNext(getWebSocketMessage(WebSocketMessage.Type.PONG, "test2"))
             .verifyComplete();
@@ -98,7 +82,7 @@ public class VertxWebSocketSessionTest {
     @Test
     public void shouldSendTextMessage() {
         TestPublisher<WebSocketMessage> source = TestPublisher.create();
-        Mono<Void> result = session.send(source);
+        Mono<Void> result = getWebSocketSession().send(source);
 
         StepVerifier.create(result)
             .expectSubscription()
@@ -117,7 +101,7 @@ public class VertxWebSocketSessionTest {
     @Test
     public void shouldSendBinaryMessage() {
         TestPublisher<WebSocketMessage> source = TestPublisher.create();
-        Mono<Void> result = session.send(source);
+        Mono<Void> result = getWebSocketSession().send(source);
 
         StepVerifier.create(result)
             .expectSubscription()
@@ -136,7 +120,7 @@ public class VertxWebSocketSessionTest {
     @Test
     public void shouldSendPingMessage() {
         TestPublisher<WebSocketMessage> source = TestPublisher.create();
-        Mono<Void> result = session.send(source);
+        Mono<Void> result = getWebSocketSession().send(source);
 
         StepVerifier.create(result)
             .expectSubscription()
@@ -155,7 +139,7 @@ public class VertxWebSocketSessionTest {
     @Test
     public void shouldSendPongMessage() {
         TestPublisher<WebSocketMessage> source = TestPublisher.create();
-        Mono<Void> result = session.send(source);
+        Mono<Void> result = getWebSocketSession().send(source);
 
         StepVerifier.create(result)
             .expectSubscription()
@@ -179,14 +163,31 @@ public class VertxWebSocketSessionTest {
             return mockServerWebSocket;
         });
 
-        session.close(new CloseStatus(1000, "test")).block();
+        getWebSocketSession().close(new CloseStatus(1000, "test")).block();
 
         verify(mockServerWebSocket).close((short) 1000, "test");
+    }
+
+    private VertxWebSocketSession getWebSocketSession() {
+        return new VertxWebSocketSession(mockServerWebSocket, mockHandshakeInfo, bufferConverter, 1, 1);
     }
 
     private WebSocketMessage getWebSocketMessage(WebSocketMessage.Type type, String data) {
         DataBuffer dataBuffer = bufferConverter.toDataBuffer(Buffer.buffer(data));
 
         return new WebSocketMessage(type, dataBuffer);
+    }
+
+    private void initMockSocketHandlers() {
+        given(mockServerWebSocket.pause()).willReturn(mockServerWebSocket);
+        given(mockServerWebSocket.textMessageHandler(any())).willReturn(mockServerWebSocket);
+        given(mockServerWebSocket.binaryMessageHandler(any())).willReturn(mockServerWebSocket);
+        given(mockServerWebSocket.pongHandler(any())).willReturn(mockServerWebSocket);
+        given(mockServerWebSocket.exceptionHandler(any())).willReturn(mockServerWebSocket);
+        given(mockServerWebSocket.endHandler(any())).will(invocation -> {
+            Handler<Void> handler = invocation.getArgument(0);
+            handler.handle(null);
+            return mockServerWebSocket;
+        });
     }
 }

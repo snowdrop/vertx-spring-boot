@@ -17,15 +17,13 @@ import io.vertx.kafka.client.serialization.JsonArrayDeserializer;
 import io.vertx.kafka.client.serialization.JsonArraySerializer;
 import io.vertx.kafka.client.serialization.JsonObjectDeserializer;
 import io.vertx.kafka.client.serialization.JsonObjectSerializer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -34,7 +32,6 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(properties = {
     "vertx.kafka.producer.key.serializer=org.apache.kafka.common.serialization.StringSerializer",
     "vertx.kafka.consumer.key.deserializer=org.apache.kafka.common.serialization.StringDeserializer",
@@ -71,12 +68,12 @@ public class VertxSerializationIT extends AbstractIT {
     @Autowired
     private KafkaConsumerFactory consumerFactory;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         super.setUp(producerFactory, consumerFactory, properties, broker);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         super.tearDown();
     }

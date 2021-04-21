@@ -1,13 +1,10 @@
 package dev.snowdrop.vertx.amqp.it;
 
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(properties = {
     "vertx.amqp.ssl=true",
     "vertx.amqp.jks-key-store.enabled=true",
@@ -22,12 +19,12 @@ public class AmqpClientSslIT extends AbstractAmqpClientIT {
 
     private static EmbeddedActiveMQ BROKER;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         BROKER = new EmbeddedActiveMQ().setConfigResourcePath("tls-broker.xml").start();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {
         if (BROKER != null) {
             BROKER.stop();

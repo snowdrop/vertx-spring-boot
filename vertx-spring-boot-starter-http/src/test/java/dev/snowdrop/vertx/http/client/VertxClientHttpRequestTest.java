@@ -4,14 +4,14 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 
+import dev.snowdrop.vertx.http.utils.BufferConverter;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientRequest;
-import dev.snowdrop.vertx.http.utils.BufferConverter;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.http.HttpCookie;
@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class VertxClientHttpRequestTest {
 
     @Mock
@@ -35,7 +35,7 @@ public class VertxClientHttpRequestTest {
 
     private VertxClientHttpRequest request;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         bufferConverter = new BufferConverter();
         request = new VertxClientHttpRequest(mockHttpClientRequest, bufferConverter);

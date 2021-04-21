@@ -11,12 +11,12 @@ import io.smallrye.mutiny.Uni;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.mutiny.core.Vertx;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
@@ -31,7 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class VertxMailClientTest {
 
     private final DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
@@ -43,7 +43,7 @@ public class VertxMailClientTest {
 
     private MailClient mailClient;
 
-    @Before
+    @BeforeEach
     public void before() {
         io.vertx.ext.mail.MailResult vertxResult = new io.vertx.ext.mail.MailResult();
         vertxResult.setMessageID("1");

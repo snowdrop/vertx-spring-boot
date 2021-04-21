@@ -2,7 +2,7 @@ package dev.snowdrop.vertx.http.utils;
 
 import io.netty.buffer.ByteBufAllocator;
 import io.vertx.core.buffer.Buffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
 
@@ -29,7 +29,6 @@ public class BufferConverterTest {
     }
 
     @Test
-
     public void shouldConvertToDataBuffer() {
         Buffer buffer = Buffer.buffer("test");
         DataBuffer expectedDataBuffer = dataBufferFactory.wrap("test".getBytes());

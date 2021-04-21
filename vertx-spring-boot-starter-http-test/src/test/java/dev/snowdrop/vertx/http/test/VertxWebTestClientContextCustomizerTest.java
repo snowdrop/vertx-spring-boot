@@ -1,10 +1,10 @@
 package dev.snowdrop.vertx.http.test;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -17,7 +17,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class VertxWebTestClientContextCustomizerTest {
 
     @Mock
@@ -29,7 +29,7 @@ public class VertxWebTestClientContextCustomizerTest {
     @Mock
     private DefaultListableBeanFactory mockRegistry;
 
-    private VertxWebTestClientContextCustomizer customizer = new VertxWebTestClientContextCustomizer();
+    private final VertxWebTestClientContextCustomizer customizer = new VertxWebTestClientContextCustomizer();
 
     @Test
     public void shouldRegisterBean() {

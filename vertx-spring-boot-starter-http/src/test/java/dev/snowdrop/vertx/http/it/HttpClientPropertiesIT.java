@@ -6,14 +6,14 @@ import java.util.concurrent.TimeUnit;
 
 import dev.snowdrop.vertx.http.client.properties.HttpClientProperties;
 import io.vertx.core.http.HttpVersion;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class HttpClientPropertiesIT extends TestBase {
 
-    @After
+    @AfterEach
     public void tearDown() {
         stopServer();
     }

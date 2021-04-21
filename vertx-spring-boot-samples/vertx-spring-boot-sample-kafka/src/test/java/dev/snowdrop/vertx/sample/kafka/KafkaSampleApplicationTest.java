@@ -3,29 +3,19 @@ package dev.snowdrop.vertx.sample.kafka;
 import java.time.Duration;
 import java.util.List;
 
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.springframework.http.MediaType.TEXT_EVENT_STREAM;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@EmbeddedKafka(partitions = 1, ports = { 9092 })
 public class KafkaSampleApplicationTest {
-
-    @ClassRule
-    public static EmbeddedKafkaRule EMBEDDED_KAFKA_RULE = new EmbeddedKafkaRule(1);
-
-    static {
-        EMBEDDED_KAFKA_RULE.kafkaPorts(9092);
-    }
 
     @Autowired
     private WebTestClient client;

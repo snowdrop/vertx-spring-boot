@@ -10,21 +10,18 @@ import dev.snowdrop.vertx.kafka.KafkaConsumerFactory;
 import dev.snowdrop.vertx.kafka.KafkaProducer;
 import dev.snowdrop.vertx.kafka.KafkaProducerFactory;
 import dev.snowdrop.vertx.kafka.KafkaProperties;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(properties = {
     "vertx.kafka.producer.key.serializer=org.apache.kafka.common.serialization.StringSerializer",
     "vertx.kafka.producer.value.serializer=org.apache.kafka.common.serialization.StringSerializer",
@@ -48,12 +45,12 @@ public class SinglePartitionE2EIT extends AbstractIT {
     @Autowired
     private KafkaConsumerFactory consumerFactory;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         super.setUp(producerFactory, consumerFactory, properties, broker);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         super.tearDown();
     }
