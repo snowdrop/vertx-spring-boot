@@ -7,7 +7,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: main
+          ref: 1.1.x
       - name: Set up JDK 11 and Maven
         uses: actions/setup-java@v1
         with:
