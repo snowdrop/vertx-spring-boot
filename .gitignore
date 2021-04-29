@@ -9,6 +9,11 @@ buildNumber.properties
 .mvn/timing.properties
 *.iml
 .idea
+.project
+.settings
+.classpath
+.factorypath
+.vscode
 .vertx
 
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
