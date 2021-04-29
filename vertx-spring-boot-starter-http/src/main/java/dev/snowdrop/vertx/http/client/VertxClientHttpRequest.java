@@ -45,12 +45,6 @@ public class VertxClientHttpRequest extends AbstractClientHttpRequest {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <T> T getNativeRequest() {
-        return (T) delegate;
-    }
-
-    @Override
     public DataBufferFactory bufferFactory() {
         return bufferConverter.getDataBufferFactory();
     }
