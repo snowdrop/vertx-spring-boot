@@ -1,6 +1,7 @@
 package dev.snowdrop.vertx.http.common;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.BaseSubscriber;
 import reactor.core.publisher.MonoSink;
+import reactor.core.publisher.SignalType;
 
 public class WriteStreamSubscriber<T extends WriteStream<?>, U> extends BaseSubscriber<U> {
 
@@ -24,7 +26,9 @@ public class WriteStreamSubscriber<T extends WriteStream<?>, U> extends BaseSubs
 
     private final long requestLimit;
 
-    private AtomicLong pendingCount = new AtomicLong();
+    private final AtomicLong pendingCount = new AtomicLong();
+
+    private final AtomicBoolean isActive = new AtomicBoolean(false);
 
     private final String logPrefix;
 
@@ -37,13 +41,14 @@ public class WriteStreamSubscriber<T extends WriteStream<?>, U> extends BaseSubs
         this.logPrefix = "[" + ObjectUtils.getIdentityHexString(writeStream) + "] ";
 
         writeStream.exceptionHandler(this::exceptionHandler);
+        writeStream.drainHandler(this::drainHandler);
     }
 
     @Override
     protected void hookOnSubscribe(Subscription subscription) {
         logger.debug("{}{} subscribed", logPrefix, writeStream);
+        isActive.set(true);
         requestIfNotFull();
-        writeStream.drainHandler(event -> requestIfNotFull());
     }
 
     @Override
@@ -72,13 +77,24 @@ public class WriteStreamSubscriber<T extends WriteStream<?>, U> extends BaseSubs
         endHook.error(throwable);
     }
 
+    @Override
+    protected void hookFinally(SignalType type) {
+        isActive.set(false);
+    }
+
     private void exceptionHandler(Throwable ignored) {
         cancel();
     }
 
+    private void drainHandler(Void event) {
+        logger.debug("{} drain", logPrefix);
+        requestIfNotFull();
+    }
+
     private void requestIfNotFull() {
-        if (!writeStream.writeQueueFull() && pendingCount.get() < requestLimit) {
-            logger.debug("{}Requesting more data", logPrefix);
+        if (isActive.get() && !writeStream.writeQueueFull() && pendingCount.get() < requestLimit) {
+            logger.debug("{}Requesting more data pendingCount={} requestLimit={}", logPrefix, pendingCount.get(),
+                requestLimit);
             request(requestLimit - pendingCount.getAndSet(requestLimit));
         }
     }
