@@ -25,6 +25,8 @@ jobs:
           email: gytis@redhat.com
           profiles: release
           releaseVersion: ${{env.RELEASE_VERSION}}
+          prepareArguments: -DskipTests
+          performArguments: -DskipTests
         env:
           MAVEN_USERNAME: ${{secrets.MAVEN_USERNAME}}
           MAVEN_PASSWORD: ${{secrets.MAVEN_PASSWORD}}
