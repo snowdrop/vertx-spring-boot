@@ -159,7 +159,7 @@ public class HttpIT extends TestBase {
             .uri("/actuator/health")
             .exchange()
             .expectBody(String.class)
-            .isEqualTo("{\"status\":\"UP\"}");
+            .value(org.hamcrest.Matchers.containsString("\"status\":\"UP\""));
     }
 
     @Test
