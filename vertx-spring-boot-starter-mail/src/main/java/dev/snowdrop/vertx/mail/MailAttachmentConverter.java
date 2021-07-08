@@ -25,7 +25,7 @@ class MailAttachmentConverter {
     }
 
     Mono<io.vertx.ext.mail.MailAttachment> toVertxMailAttachment(MailAttachment attachment) {
-        io.vertx.ext.mail.MailAttachment delegateAttachment = new io.vertx.ext.mail.MailAttachment();
+        io.vertx.ext.mail.MailAttachment delegateAttachment = io.vertx.ext.mail.MailAttachment.create();
         delegateAttachment.setName(attachment.getName());
         delegateAttachment.setContentType(attachment.getContentType());
         delegateAttachment.setDisposition(attachment.getDisposition());
