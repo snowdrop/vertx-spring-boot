@@ -189,25 +189,10 @@ public class HttpServerProperties {
 
     /**
      * @return Get the WebSocket sub-protocols
-     * @see HttpServerOptions#getWebsocketSubProtocols()
-     * @deprecated use {@link #getWebSocketSubProtocols()}
-     */
-    @Deprecated
-    public String getWebsocketSubProtocols() {
-        return delegate.getWebsocketSubProtocols();
-    }
-
-    /**
-     * @return Get the WebSocket sub-protocols
      * @see HttpServerOptions#getWebSocketSubProtocols()
      */
     public List<String> getWebSocketSubProtocols() {
         return delegate.getWebSocketSubProtocols();
-    }
-
-    @Deprecated
-    public void setWebsocketSubProtocols(String subProtocols) {
-        delegate.setWebsocketSubProtocols(subProtocols);
     }
 
     public void setWebSocketSubProtocols(List<String> subProtocols) {

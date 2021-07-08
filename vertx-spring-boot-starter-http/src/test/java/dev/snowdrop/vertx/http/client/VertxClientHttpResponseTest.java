@@ -4,7 +4,6 @@ import java.util.Arrays;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.http.impl.headers.VertxHttpHeaders;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -59,7 +58,7 @@ public class VertxClientHttpResponseTest {
 
     @Test
     public void shouldGetHeaders() {
-        MultiMap originalHeaders = new VertxHttpHeaders()
+        MultiMap originalHeaders = MultiMap.caseInsensitiveMultiMap()
             .add("key1", "value1")
             .add("key1", "value2")
             .add("key2", "value3");

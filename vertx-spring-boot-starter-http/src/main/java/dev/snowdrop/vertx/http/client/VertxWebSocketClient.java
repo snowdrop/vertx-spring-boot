@@ -4,12 +4,12 @@ import java.net.URI;
 
 import dev.snowdrop.vertx.http.common.VertxWebSocketSession;
 import dev.snowdrop.vertx.http.utils.BufferConverter;
+import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.http.WebSocketConnectOptions;
-import io.vertx.core.http.impl.headers.VertxHttpHeaders;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.Assert;
 import org.springframework.web.reactive.socket.HandshakeInfo;
@@ -47,12 +47,12 @@ public class VertxWebSocketClient implements WebSocketClient {
 
     @Override
     public Mono<Void> execute(URI uri, HttpHeaders headers, WebSocketHandler handler) {
-        VertxHttpHeaders vertxHeaders = convertHeaders(headers);
+        MultiMap vertxHeaders = convertHeaders(headers);
 
         return Mono.create(sink -> connect(uri, vertxHeaders, handler, sink));
     }
 
-    private void connect(URI uri, VertxHttpHeaders headers, WebSocketHandler handler, MonoSink<Void> callback) {
+    private void connect(URI uri, MultiMap headers, WebSocketHandler handler, MonoSink<Void> callback) {
         HttpClient client = vertx.createHttpClient(clientOptions);
         WebSocketConnectOptions options = new WebSocketConnectOptions()
             .setPort(uri.getPort())
@@ -72,10 +72,9 @@ public class VertxWebSocketClient implements WebSocketClient {
         });
     }
 
-    private VertxHttpHeaders convertHeaders(HttpHeaders headers) {
-        VertxHttpHeaders vertxHeaders = new VertxHttpHeaders();
+    private MultiMap convertHeaders(HttpHeaders headers) {
+        MultiMap vertxHeaders = MultiMap.caseInsensitiveMultiMap();
         headers.forEach(vertxHeaders::add);
-
         return vertxHeaders;
     }
 

@@ -42,7 +42,7 @@ public class VertxRequestUpgradeStrategy implements RequestUpgradeStrategy {
         ServerHttpRequest request = exchange.getRequest();
         HttpServerRequest vertxRequest = ((AbstractServerHttpRequest) request).getNativeRequest();
 
-        ServerWebSocket webSocket = vertxRequest.upgrade();
+        ServerWebSocket webSocket = vertxRequest.toWebSocket().result();
         VertxWebSocketSession session = new VertxWebSocketSession(webSocket, handshakeInfoFactory.get(),
             bufferConverter, maxWebSocketFrameSize, maxWebSocketMessageSize);
 

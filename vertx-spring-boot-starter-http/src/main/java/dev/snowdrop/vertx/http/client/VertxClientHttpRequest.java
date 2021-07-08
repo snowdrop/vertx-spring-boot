@@ -36,7 +36,7 @@ public class VertxClientHttpRequest extends AbstractClientHttpRequest {
 
     @Override
     public HttpMethod getMethod() {
-        return HttpMethod.resolve(delegate.method().name());
+        return HttpMethod.resolve(delegate.getMethod().name());
     }
 
     @Override
