@@ -36,7 +36,7 @@ public class ActuatorIT {
                 .build())
             .exchange()
             .expectBody(String.class)
-            .isEqualTo("{\"status\":\"UP\"}");
+            .value(org.hamcrest.Matchers.containsString("\"status\":\"UP\""));
 
         client.get()
             .exchange()
