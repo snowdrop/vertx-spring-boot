@@ -4,7 +4,7 @@
   <groupId>dev.snowdrop</groupId>
   <artifactId>vertx-spring-boot-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.2.2-SNAPSHOT</version>
+  <version>1.2.2</version>
 
   <name>Vert.x Spring Boot - parent</name>
   <description>Spring Boot starters of different Vert.x components</description>
@@ -22,7 +22,7 @@
     <url>https://github.com/snowdrop</url>
     <connection>scm:git:https://github.com/snowdrop/vertx-spring-boot.git</connection>
     <developerConnection>scm:git:git:@github.com:snowdrop/vertx-spring-boot.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>1.2.2</tag>
   </scm>
 
   <developers>
