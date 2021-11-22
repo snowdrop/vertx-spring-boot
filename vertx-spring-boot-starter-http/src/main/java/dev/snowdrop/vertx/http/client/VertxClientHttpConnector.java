@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import dev.snowdrop.vertx.http.common.ReadStreamFluxBuilder;
 import dev.snowdrop.vertx.http.utils.BufferConverter;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -59,16 +60,26 @@ public class VertxClientHttpConnector implements ClientHttpConnector {
 
         CompletableFuture<ClientHttpResponse> responseFuture = new CompletableFuture<>();
         HttpClient client = vertx.createHttpClient(clientOptions);
-        HttpClientRequest request = client.requestAbs(HttpMethod.valueOf(method.name()), uri.toString())
-            .exceptionHandler(responseFuture::completeExceptionally)
-            .handler(response -> {
-                Flux<DataBuffer> responseBody = responseToFlux(response)
+        Future<HttpClientRequest> request = client.request(HttpMethod.valueOf(method.name()), uri.toString());
+        request.onComplete(response -> {
+            if (response.succeeded()) {
+                Flux<DataBuffer> responseBody = responseToFlux(response.result().response().result())
                     .doFinally(ignore -> client.close());
 
-                responseFuture.complete(new VertxClientHttpResponse(response, responseBody));
-            });
+                responseFuture.complete(new VertxClientHttpResponse(response.result().response().result(), responseBody));
+            } else {
+                Throwable failure = response.cause();
+            }
+        });
+//            .exceptionHandler(responseFuture::completeExceptionally)
+//            .handler(response -> {
+//                Flux<DataBuffer> responseBody = responseToFlux(response)
+//                    .doFinally(ignore -> client.close());
+//
+//                responseFuture.complete(new VertxClientHttpResponse(response, responseBody));
+//            });
 
-        return requestCallback.apply(new VertxClientHttpRequest(request, bufferConverter))
+        return requestCallback.apply(new VertxClientHttpRequest(request.result(), bufferConverter))
             .then(Mono.fromCompletionStage(responseFuture));
     }
 

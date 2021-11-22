@@ -3,9 +3,11 @@ package dev.snowdrop.vertx.sample.kafka;
 import java.time.Duration;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -18,7 +20,15 @@ import static org.springframework.http.MediaType.TEXT_EVENT_STREAM;
 public class KafkaSampleApplicationTest {
 
     @Autowired
+    ApplicationContext context;
+
+    @Autowired
     private WebTestClient client;
+
+    @BeforeEach
+    public void setup() {
+        this.client = WebTestClient.bindToApplicationContext(this.context).build();
+    }
 
     @Test
     public void shouldLogAndReceiveMessages() {

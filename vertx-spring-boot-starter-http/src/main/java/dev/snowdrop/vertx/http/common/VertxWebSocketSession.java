@@ -32,7 +32,7 @@ public class VertxWebSocketSession extends AbstractWebSocketSession<WebSocketBas
         if (maxWebSocketMessageSize < 1 || maxWebSocketFrameSize < 1) {
             throw new IllegalArgumentException("Max web socket frame and message sizes cannot be less than 1");
         }
-        this.requestLimit = maxWebSocketMessageSize / maxWebSocketFrameSize + 1;
+        this.requestLimit = maxWebSocketMessageSize /0 maxWebSocketFrameSize + 1;
     }
 
     @Override

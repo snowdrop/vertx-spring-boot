@@ -12,7 +12,7 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.http.impl.headers.VertxHttpHeaders;
+import io.vertx.core.http.impl.headers.HeadersMultiMap;
 import io.vertx.ext.web.RoutingContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,7 +54,7 @@ public class VertxServerHttpResponseTest {
     @BeforeEach
     public void setUp() {
         given(mockRoutingContext.response()).willReturn(mockHttpServerResponse);
-        given(mockHttpServerResponse.headers()).willReturn(new VertxHttpHeaders());
+        given(mockHttpServerResponse.headers()).willReturn(new HeadersMultiMap());
 
         bufferConverter = new BufferConverter();
         response = new VertxServerHttpResponse(mockRoutingContext, bufferConverter);
@@ -62,7 +62,7 @@ public class VertxServerHttpResponseTest {
 
     @Test
     public void shouldInitHeaders() {
-        MultiMap originalHeaders = new VertxHttpHeaders()
+        MultiMap originalHeaders = new HeadersMultiMap()
             .add("key1", "value1")
             .add("key1", "value2")
             .add("key2", "value3");

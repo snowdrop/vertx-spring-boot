@@ -14,7 +14,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.impl.headers.VertxHttpHeaders;
+import io.vertx.core.http.impl.headers.HeadersMultiMap;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.ext.web.RoutingContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +49,7 @@ public class VertxServerHttpRequestTest {
     public void setUp() {
         given(mockRoutingContext.request()).willReturn(mockHttpServerRequest);
         given(mockHttpServerRequest.absoluteURI()).willReturn("http://localhost:8080");
-        given(mockHttpServerRequest.headers()).willReturn(new VertxHttpHeaders());
+        given(mockHttpServerRequest.headers()).willReturn(new HeadersMultiMap());
 
         bufferConverter = new BufferConverter();
         vertxServerHttpRequest = new VertxServerHttpRequest(mockRoutingContext, bufferConverter);
