@@ -1,26 +1,27 @@
 package dev.snowdrop.vertx.kafka;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import io.smallrye.mutiny.Uni;
-import io.vertx.kafka.client.common.PartitionInfo;
-import io.vertx.kafka.client.producer.RecordMetadata;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import reactor.test.StepVerifier;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import io.smallrye.mutiny.Uni;
+import io.vertx.kafka.client.common.PartitionInfo;
+import io.vertx.kafka.client.producer.RecordMetadata;
+import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
 public class SnowdropKafkaProducerTest {
@@ -92,11 +93,8 @@ public class SnowdropKafkaProducerTest {
     @Test
     @SuppressWarnings("unchecked")
     public void shouldFlush() {
-        given(mockMutinyProducer.flush(any()))
-            .will(a -> {
-                ((Consumer<Void>) a.getArgument(0)).accept(null);
-                return mockMutinyProducer;
-            });
+        given(mockMutinyProducer.flush())
+            .will(args -> Uni.createFrom().voidItem());
 
         StepVerifier.create(producer.flush())
             .verifyComplete();
@@ -104,8 +102,8 @@ public class SnowdropKafkaProducerTest {
 
     @Test
     public void shouldHandleFlushFailure() {
-        given(mockMutinyProducer.flush(any()))
-            .willThrow(new RuntimeException("test"));
+        given(mockMutinyProducer.flush())
+            .will(args -> Uni.createFrom().failure(new RuntimeException("test")));
 
         StepVerifier.create(producer.flush())
             .verifyErrorMessage("test");
@@ -162,7 +160,7 @@ public class SnowdropKafkaProducerTest {
 
         producer.drainHandler(handler);
 
-        verify(mockMutinyProducer).drainHandler(handler);
+        verify(mockMutinyProducer).drainHandler(any());
     }
 
     @Test

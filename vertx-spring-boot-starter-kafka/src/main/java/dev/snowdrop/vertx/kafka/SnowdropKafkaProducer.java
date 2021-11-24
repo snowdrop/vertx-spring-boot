@@ -48,13 +48,7 @@ final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
 
     @Override
     public Mono<Void> flush() {
-        return Mono.create(sink -> {
-            try {
-                delegate.flush(v -> sink.success());
-            } catch (Throwable t) {
-                sink.error(t);
-            }
-        });
+        return Mono.from(delegate.flush().toMulti());
     }
 
     @Override
@@ -90,7 +84,7 @@ final class SnowdropKafkaProducer<K, V> implements KafkaProducer<K, V> {
 
     @Override
     public KafkaProducer<K, V> drainHandler(Consumer<Void> handler) {
-        delegate.drainHandler(handler);
+        delegate.drainHandler(() -> handler.accept(null));
         return this;
     }
 

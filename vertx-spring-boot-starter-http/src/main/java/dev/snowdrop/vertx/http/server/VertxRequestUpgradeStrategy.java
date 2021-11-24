@@ -45,11 +45,11 @@ public class VertxRequestUpgradeStrategy implements RequestUpgradeStrategy {
         HandshakeInfo handshakeInfo = handshakeInfoFactory.get();
         URI uri = exchange.getRequest().getURI();
 
-        return response.setComplete().then(Mono.fromCompletionStage(vertxRequest.toWebSocket().toCompletionStage())
+        return Mono.fromCompletionStage(vertxRequest.toWebSocket().toCompletionStage())
             .flatMap(ws -> {
                 VertxWebSocketSession session = new VertxWebSocketSession(ws, handshakeInfo, bufferConverter, maxWebSocketFrameSize, maxWebSocketMessageSize);
                 return handler.handle(session).checkpoint(uri + " [VertxRequestUpgradeStrategy]");
-            }));
+            }).then(response.setComplete());
     }
 
 }
