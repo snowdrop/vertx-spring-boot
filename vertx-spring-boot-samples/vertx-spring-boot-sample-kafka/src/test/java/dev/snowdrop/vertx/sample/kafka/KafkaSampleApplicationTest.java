@@ -22,7 +22,6 @@ public class KafkaSampleApplicationTest {
     @Autowired
     ApplicationContext context;
 
-    @Autowired
     private WebTestClient client;
 
     @BeforeEach

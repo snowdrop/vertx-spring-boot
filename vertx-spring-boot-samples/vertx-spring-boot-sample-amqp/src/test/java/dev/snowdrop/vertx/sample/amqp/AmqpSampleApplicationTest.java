@@ -21,7 +21,6 @@ public class AmqpSampleApplicationTest {
     @Autowired
     ApplicationContext context;
 
-    @Autowired
     private WebTestClient client;
 
     @BeforeEach
