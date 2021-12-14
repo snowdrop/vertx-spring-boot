@@ -77,19 +77,19 @@ public class VertxClientHttpConnector implements ClientHttpConnector {
         CompletableFuture<HttpClientRequest> requestFuture = new CompletableFuture<>();
         client.request(requestOptions)
             .onFailure(requestFuture::completeExceptionally)
-            .onSuccess(requestFuture::complete);
-        // wait for request
-        HttpClientRequest request = requestFuture.join();
+            .onSuccess(request -> {
+                request.response()
+                    .onSuccess(response -> {
+                        Flux<DataBuffer> responseBody = responseToFlux(response).doFinally(ignore -> client.close());
+                        responseFuture.complete(new VertxClientHttpResponse(response, responseBody));
+                    })
+                    .onFailure(responseFuture::completeExceptionally);
 
-        // response handler
-        request.response()
-            .onSuccess(response -> {
-                Flux<DataBuffer> responseBody = responseToFlux(response).doFinally(ignore -> client.close());
-                responseFuture.complete(new VertxClientHttpResponse(response, responseBody));
-            })
-            .onFailure(responseFuture::completeExceptionally);
+                requestFuture.complete(request);
+            });
 
-        return requestCallback.apply(new VertxClientHttpRequest(requestFuture.join(), bufferConverter))
+        return Mono.fromFuture(requestFuture)
+            .flatMap(request -> requestCallback.apply(new VertxClientHttpRequest(request, bufferConverter)))
             .then(Mono.fromCompletionStage(responseFuture));
     }
 
