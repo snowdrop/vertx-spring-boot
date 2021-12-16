@@ -30,7 +30,7 @@ class SnowdropAmqpSender implements AmqpSender {
 
     @Override
     public AmqpSender drainHandler(Consumer<Void> handler) {
-        delegate.drainHandler(handler);
+        delegate.drainHandler(() -> handler.accept(null));
 
         return this;
     }

@@ -2,9 +2,12 @@ package dev.snowdrop.vertx.sample.amqp;
 
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -16,7 +19,14 @@ import static org.springframework.http.MediaType.TEXT_EVENT_STREAM;
 public class AmqpSampleApplicationTest {
 
     @Autowired
+    ApplicationContext context;
+
     private WebTestClient client;
+
+    @BeforeEach
+    public void setup() {
+        this.client = WebTestClient.bindToApplicationContext(this.context).build();
+    }
 
     @Test
     public void testProcessorController() {

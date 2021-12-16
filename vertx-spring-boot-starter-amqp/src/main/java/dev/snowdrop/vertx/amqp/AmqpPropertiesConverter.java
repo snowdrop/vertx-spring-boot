@@ -67,7 +67,10 @@ class AmqpPropertiesConverter {
         to.setTcpNoDelay(from.isTcpNoDelay());
         to.setTcpKeepAlive(from.isTcpKeepAlive());
         to.setSoLinger(from.getSoLinger());
-        to.setUsePooledBuffers(from.isUsePooledBuffers());
+        if (from.isUsePooledBuffers()) {
+            to.setReceiveBufferSize(from.getReceiveBufferSize());
+            to.setSendBufferSize(from.getSendBufferSize());
+        }
         to.setIdleTimeout(from.getIdleTimeout());
         to.setIdleTimeoutUnit(from.getIdleTimeoutUnit());
         to.setSsl(from.isSsl());

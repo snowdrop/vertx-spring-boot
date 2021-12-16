@@ -43,7 +43,7 @@ public class VertxClientHttpRequestTest {
 
     @Test
     public void shouldGetMethod() {
-        given(mockHttpClientRequest.method()).willReturn(io.vertx.core.http.HttpMethod.GET);
+        given(mockHttpClientRequest.getMethod()).willReturn(io.vertx.core.http.HttpMethod.GET);
 
         HttpMethod method = request.getMethod();
 

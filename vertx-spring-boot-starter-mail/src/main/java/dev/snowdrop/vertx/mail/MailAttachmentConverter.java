@@ -5,6 +5,7 @@ import java.io.File;
 import io.smallrye.mutiny.converters.multi.MultiReactorConverters;
 import io.smallrye.mutiny.converters.uni.UniReactorConverters;
 import io.vertx.core.file.OpenOptions;
+import io.vertx.ext.mail.impl.MailAttachmentImpl;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.core.file.AsyncFile;
@@ -19,13 +20,15 @@ class MailAttachmentConverter {
 
     private final MultiMapConverter multiMapConverter;
 
+    private final MailAttachmentConverter mailAttachmentConverter=null;
+
     MailAttachmentConverter(Vertx vertx, MultiMapConverter multiMapConverter) {
         this.vertx = vertx;
         this.multiMapConverter = multiMapConverter;
     }
 
     Mono<io.vertx.ext.mail.MailAttachment> toVertxMailAttachment(MailAttachment attachment) {
-        io.vertx.ext.mail.MailAttachment delegateAttachment = new io.vertx.ext.mail.MailAttachment();
+        io.vertx.ext.mail.MailAttachment delegateAttachment = new MailAttachmentImpl();
         delegateAttachment.setName(attachment.getName());
         delegateAttachment.setContentType(attachment.getContentType());
         delegateAttachment.setDisposition(attachment.getDisposition());

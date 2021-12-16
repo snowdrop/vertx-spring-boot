@@ -1,8 +1,17 @@
 package dev.snowdrop.vertx.http.client;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.client.reactive.ClientHttpConnector;
+import org.springframework.http.client.reactive.ClientHttpRequest;
+import org.springframework.http.client.reactive.ClientHttpResponse;
+import org.springframework.util.Assert;
 
 import dev.snowdrop.vertx.http.common.ReadStreamFluxBuilder;
 import dev.snowdrop.vertx.http.utils.BufferConverter;
@@ -13,13 +22,7 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.http.client.reactive.ClientHttpConnector;
-import org.springframework.http.client.reactive.ClientHttpRequest;
-import org.springframework.http.client.reactive.ClientHttpResponse;
-import org.springframework.util.Assert;
+import io.vertx.core.http.RequestOptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -59,16 +62,34 @@ public class VertxClientHttpConnector implements ClientHttpConnector {
 
         CompletableFuture<ClientHttpResponse> responseFuture = new CompletableFuture<>();
         HttpClient client = vertx.createHttpClient(clientOptions);
-        HttpClientRequest request = client.requestAbs(HttpMethod.valueOf(method.name()), uri.toString())
-            .exceptionHandler(responseFuture::completeExceptionally)
-            .handler(response -> {
-                Flux<DataBuffer> responseBody = responseToFlux(response)
-                    .doFinally(ignore -> client.close());
 
-                responseFuture.complete(new VertxClientHttpResponse(response, responseBody));
+        // New way to create absolute requests is via RequestOptions.
+        // More info in https://github.com/vert-x3/vertx-4-migration-guide/issues/61.
+        RequestOptions requestOptions = new RequestOptions();
+        try {
+            requestOptions.setAbsoluteURI(uri.toURL());
+            requestOptions.setMethod(HttpMethod.valueOf(method.name()));
+        } catch (MalformedURLException e) {
+            return Mono.error(new IllegalArgumentException("URI is malformed: " + uri));
+        }
+
+        // request handler
+        CompletableFuture<HttpClientRequest> requestFuture = new CompletableFuture<>();
+        client.request(requestOptions)
+            .onFailure(requestFuture::completeExceptionally)
+            .onSuccess(request -> {
+                request.response()
+                    .onSuccess(response -> {
+                        Flux<DataBuffer> responseBody = responseToFlux(response).doFinally(ignore -> client.close());
+                        responseFuture.complete(new VertxClientHttpResponse(response, responseBody));
+                    })
+                    .onFailure(responseFuture::completeExceptionally);
+
+                requestFuture.complete(request);
             });
 
-        return requestCallback.apply(new VertxClientHttpRequest(request, bufferConverter))
+        return Mono.fromFuture(requestFuture)
+            .flatMap(request -> requestCallback.apply(new VertxClientHttpRequest(request, bufferConverter)))
             .then(Mono.fromCompletionStage(responseFuture));
     }
 

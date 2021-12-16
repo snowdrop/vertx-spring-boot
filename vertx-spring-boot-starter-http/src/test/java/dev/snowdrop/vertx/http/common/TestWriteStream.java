@@ -46,16 +46,15 @@ public class TestWriteStream<T> implements WriteStream<T> {
     }
 
     @Override
-    public TestWriteStream<T> write(T data) {
+    public Future<Void> write(T data) {
         received.add(data);
-        return this;
+        return Future.succeededFuture();
     }
 
     @Override
-    public WriteStream<T> write(T data, Handler<AsyncResult<Void>> handler) {
+    public void write(T data, Handler<AsyncResult<Void>> handler) {
         received.add(data);
         handler.handle(Future.succeededFuture());
-        return this;
     }
 
     @Override
@@ -64,7 +63,8 @@ public class TestWriteStream<T> implements WriteStream<T> {
     }
 
     @Override
-    public void end() {
+    public Future<Void> end() {
+        return null;
     }
 
     @Override
