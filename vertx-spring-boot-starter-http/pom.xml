@@ -82,6 +82,7 @@
       <groupId>io.netty</groupId>
       <artifactId>netty-tcnative-boringssl-static</artifactId>
       <scope>test</scope>
+      <classifier>linux-x86_64</classifier>
     </dependency>
     <!-- Vert.x classes cannot be mocked without this -->
     <dependency>
