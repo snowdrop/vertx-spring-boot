@@ -66,12 +66,8 @@ public class VertxClientHttpConnector implements ClientHttpConnector {
         // New way to create absolute requests is via RequestOptions.
         // More info in https://github.com/vert-x3/vertx-4-migration-guide/issues/61.
         RequestOptions requestOptions = new RequestOptions();
-        try {
-            requestOptions.setAbsoluteURI(uri.toURL());
-            requestOptions.setMethod(HttpMethod.valueOf(method.name()));
-        } catch (MalformedURLException e) {
-            return Mono.error(new IllegalArgumentException("URI is malformed: " + uri));
-        }
+        requestOptions.setAbsoluteURI(uri.toASCIIString());
+        requestOptions.setMethod(HttpMethod.valueOf(method.name()));
 
         // request handler
         CompletableFuture<HttpClientRequest> requestFuture = new CompletableFuture<>();
