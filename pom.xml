@@ -37,12 +37,12 @@
   <properties>
     <awaitility.version>4.0.3</awaitility.version>
     <!-- Align with SmallRye Reactive Utils -->
-    <mutiny-reactor.version>0.12.5</mutiny-reactor.version>
+    <mutiny-reactor.version>1.3.1</mutiny-reactor.version>
     <scala-library.version>2.13.2</scala-library.version>
-    <spring-boot.version>2.5.8</spring-boot.version>
-    <vertx.version>4.2.2</vertx.version>
+    <spring-boot.version>2.5.10</spring-boot.version>
+    <vertx.version>4.2.5</vertx.version>
     <!-- Align with Vert.x -->
-    <vertx-mutiny-clients.version>2.15.1</vertx-mutiny-clients.version>
+    <vertx-mutiny-clients.version>2.18.1</vertx-mutiny-clients.version>
     <!-- Align with Smallrye and Spring Boot -->
     <zookeeper.version>3.5.9</zookeeper.version>
 
