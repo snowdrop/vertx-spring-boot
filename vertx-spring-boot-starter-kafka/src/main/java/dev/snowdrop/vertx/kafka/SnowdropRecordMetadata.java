@@ -12,14 +12,11 @@ final class SnowdropRecordMetadata implements RecordMetadata {
 
     private final long timestamp;
 
-    private final long checksum;
-
     SnowdropRecordMetadata(io.vertx.kafka.client.producer.RecordMetadata vertxRecordMetadata) {
         this.topic = vertxRecordMetadata.getTopic();
         this.partition = vertxRecordMetadata.getPartition();
         this.offset = vertxRecordMetadata.getOffset();
         this.timestamp = vertxRecordMetadata.getTimestamp();
-        this.checksum = vertxRecordMetadata.checksum();
     }
 
     public String topic() {
@@ -38,10 +35,6 @@ final class SnowdropRecordMetadata implements RecordMetadata {
         return timestamp;
     }
 
-    public long checksum() {
-        return checksum;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -57,18 +50,17 @@ final class SnowdropRecordMetadata implements RecordMetadata {
         return partition == that.partition &&
             offset == that.offset &&
             timestamp == that.timestamp &&
-            checksum == that.checksum &&
             Objects.equals(topic, that.topic);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(topic, partition, offset, timestamp, checksum);
+        return Objects.hash(topic, partition, offset, timestamp);
     }
 
     @Override
     public String toString() {
-        return String.format("%s{topic='%s', partition=%d, offset=%d, timestamp=%d, checksum=%d}",
-            getClass().getSimpleName(), topic, partition, offset, timestamp, checksum);
+        return String.format("%s{topic='%s', partition=%d, offset=%d, timestamp=%d}",
+            getClass().getSimpleName(), topic, partition, offset, timestamp);
     }
 }

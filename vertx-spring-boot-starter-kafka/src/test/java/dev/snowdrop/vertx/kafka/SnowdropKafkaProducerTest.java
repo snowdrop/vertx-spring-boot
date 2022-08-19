@@ -43,7 +43,7 @@ public class SnowdropKafkaProducerTest {
     @SuppressWarnings("unchecked")
     public void shouldSend() {
         // Setup a response to be returned by Mutiny producer
-        RecordMetadata vertxRecordMetadata = new RecordMetadata(1, 2, 3, 4, "t");
+        RecordMetadata vertxRecordMetadata = new RecordMetadata(2, 3, 4, "t");
         given(mockMutinyProducer.send(any()))
             .willReturn(Uni.createFrom().item(vertxRecordMetadata));
 

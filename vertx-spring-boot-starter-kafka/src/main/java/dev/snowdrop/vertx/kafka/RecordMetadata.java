@@ -9,6 +9,4 @@ public interface RecordMetadata {
     long offset();
 
     long timestamp();
-
-    long checksum();
 }
