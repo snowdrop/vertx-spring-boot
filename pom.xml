@@ -39,7 +39,7 @@
     <!-- Align with SmallRye Reactive Utils -->
     <mutiny-reactor.version>1.7.0</mutiny-reactor.version>
     <scala-library.version>2.13.8</scala-library.version>
-    <spring-boot.version>2.7.3</spring-boot.version>
+    <spring-boot.version>2.7.2</spring-boot.version>
     <vertx.version>4.3.3</vertx.version>
     <!-- Align with Vert.x -->
     <vertx-mutiny-clients.version>2.26.0</vertx-mutiny-clients.version>
