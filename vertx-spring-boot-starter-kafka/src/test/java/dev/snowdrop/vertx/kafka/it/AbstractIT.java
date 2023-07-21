@@ -12,6 +12,7 @@ import dev.snowdrop.vertx.kafka.KafkaProducer;
 import dev.snowdrop.vertx.kafka.KafkaProducerFactory;
 import dev.snowdrop.vertx.kafka.KafkaProperties;
 import dev.snowdrop.vertx.kafka.ProducerRecord;
+import io.vertx.core.Vertx;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import reactor.core.publisher.Mono;
 
@@ -37,12 +38,16 @@ public abstract class AbstractIT {
     }
 
     protected void tearDown() {
-        producersToCleanup.stream()
-            .map(KafkaProducer::close)
-            .forEach(Mono::block);
-        consumersToCleanup.stream()
-            .map(KafkaConsumer::close)
-            .forEach(Mono::block);
+        Vertx.vertx().executeBlocking(future -> {
+            producersToCleanup.stream()
+                .map(KafkaProducer::close)
+                .forEach(Mono::block);
+            consumersToCleanup.stream()
+                .map(KafkaConsumer::close)
+                .forEach(Mono::block);
+
+            future.complete();
+        });
     }
 
     protected <K, V> KafkaProducer<K, V> createProducer() {
