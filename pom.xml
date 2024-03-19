@@ -44,7 +44,7 @@
     <!-- Align with Vert.x -->
     <vertx-mutiny-clients.version>2.26.0</vertx-mutiny-clients.version>
     <!-- Align with Smallrye and Spring Boot -->
-    <zookeeper.version>3.8.3</zookeeper.version>
+    <zookeeper.version>3.8.4</zookeeper.version>
 
     <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
