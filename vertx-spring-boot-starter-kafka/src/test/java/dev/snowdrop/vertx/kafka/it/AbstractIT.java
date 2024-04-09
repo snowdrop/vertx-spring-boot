@@ -89,13 +89,13 @@ public abstract class AbstractIT {
     protected  <K, V> void sendToTopic(KafkaProducer<K, V> producer, String topic, V value) {
         producer
             .send(ProducerRecord.<K, V>builder(topic, value).build())
-            .block();
+            .subscribe();
     }
 
     protected  <K, V> void sendToTopic(KafkaProducer<K, V> producer, String topic, K key, V value) {
         producer
             .send(ProducerRecord.builder(topic, value, key).build())
-            .block();
+            .subscribe();
     }
 
     private Map<String, String> addBootstrapServersToConfig(Map<String, String> config, String bootstrapServers) {
